@@ -142,7 +142,7 @@ namespace Masa.ScriptEngine
 		{
 			codeMapper = mapper;
 			FileName = file;
-			Load();
+			//Load();
 		}
 
 		/// <summary>

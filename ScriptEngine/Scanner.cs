@@ -123,6 +123,7 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		string[] Split(string code)
 		{
+
 			var ret = new List<string>();
 			bool isLiteral = false;
 			bool isComment = false;
@@ -135,7 +136,10 @@ namespace Masa.ScriptEngine
 						builder.Clear();
 					}
 				};
-			
+		
+			code += "\n";//末行処理
+			code = code.Replace(System.Environment.NewLine, "\n");
+		
 
 			for (int i = 0; i < code.Length; i++)
 			{
@@ -235,6 +239,7 @@ namespace Masa.ScriptEngine
 			}
 			if (result != null)
 			{
+				result.AddRange(tokens.Skip(head).Take(tokens.Length - head));
 				return result.ToArray();
 			}
 			else
@@ -245,9 +250,7 @@ namespace Masa.ScriptEngine
 
 		void Scan(string code)
 		{
-			code += "\n";//末行処理
-			code = code.Replace(System.Environment.NewLine, "\n");
-		
+			
 			//if (headerDictionary != null)
 			//{
 			//	code = Include(code);

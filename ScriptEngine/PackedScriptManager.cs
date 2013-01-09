@@ -92,7 +92,7 @@ namespace Masa.ScriptEngine
 		{
 			Name = name;
 			Code = code;
-			Load();
+			//Load();
 		}
 
 		public override void Load()

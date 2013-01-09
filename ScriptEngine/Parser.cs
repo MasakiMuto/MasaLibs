@@ -50,7 +50,6 @@ namespace Masa.ScriptEngine
 		public static Line[] Parse(object[] tokens)
 		{
 			var lines = SplitTokensToLine(tokens).Where(l=>!l.IsEmpty);
-			tokens = null;//不要
 			foreach (Line item in lines)
 			{
 				if (!(item.Tokens[0] is string))
@@ -59,6 +58,8 @@ namespace Masa.ScriptEngine
 				}
 				item.Tokens = ParseStatement(item.Tokens);
 			}
+			tokens = null;//不要
+			
 			return lines.ToArray();
 		}
 

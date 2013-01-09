@@ -126,6 +126,8 @@ namespace Masa.ScriptEngine
 						HeaderDictionary = this.HeaderDictionary
 					};
 				}
+				data.Load();
+				
 			}
 			catch (Exception e)
 			{
