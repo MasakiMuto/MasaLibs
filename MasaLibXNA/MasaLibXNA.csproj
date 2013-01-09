@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C91DC223-ED7F-4E12-B465-FBA807F6817A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Masa.Lib.XNA</RootNamespace>
+    <AssemblyName>MasaLibXNA</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>bin\Debug\MasaLibXNA.XML</DocumentationFile>
+    <NoWarn>1591, 1573,1570,1587,1572</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="SlimDX.DirectInput">
+      <HintPath>.\SlimDX.DirectInput.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CircleCollision\CircleCollisionSystem.cs" />
+    <Compile Include="Collision\Collision.cs" />
+    <Compile Include="Collision\CollisionChainCircle.cs" />
+    <Compile Include="Collision\CollisionCircle.cs" />
+    <Compile Include="Collision\CollisionLine.cs" />
+    <Compile Include="Collision\CollisionPoint.cs" />
+    <Compile Include="Collision\CollisionPolygon.cs" />
+    <Compile Include="Collision\CollisionRect.cs" />
+    <Compile Include="Graphics\AnimeTexture.cs" />
+    <Compile Include="Graphics\DividedTexture.cs" />
+    <Compile Include="Graphics\GraphicUtil.cs" />
+    <Compile Include="Graphics\HSVColor.cs" />
+    <Compile Include="Input\Configs.cs" />
+    <Compile Include="Input\GamePad.cs" />
+    <Compile Include="Input\InputDevice.cs" />
+    <Compile Include="Input\InputManager.cs" />
+    <Compile Include="Input\KeyBoard.cs" />
+    <Compile Include="Input\NativeGamePad.cs" />
+    <Compile Include="Input\XInputPad.cs" />
+    <Compile Include="ItemSelecter.cs" />
+    <Compile Include="LiteCollision.cs" />
+    <Compile Include="MathUtilXNA.cs" />
+    <Compile Include="Graphics\PrimitiveBatch.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Selecter.cs" />
+    <Compile Include="Graphics\TextureColorConverter.cs" />
+    <Compile Include="Graphics\WritableVertexBuffer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MasaLib\MasaLib.csproj">
+      <Project>{badd7c9a-bc50-46cf-882c-58d597dc8495}</Project>
+      <Name>MasaLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

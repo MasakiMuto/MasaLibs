@@ -1,0 +1,201 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MasaLib</name>
+    </assembly>
+    <members>
+        <member name="M:Masa.Lib.LinkedPoolObjectBaseManager`1.Next(System.Collections.Generic.LinkedListNode{`0})">
+            <summary>
+            一周したらtrue
+            </summary>
+            <param name="last"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.NextPN(System.Random)">
+            <summary>
+            +1 か -1をランダムに返す
+            </summary>
+            <param name="rand"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.NextDistorted(System.Random,System.Single,System.Single)">
+            <summary>
+            歪んだ分布のfloat乱数
+            </summary>
+            <param name="rand"></param>
+            <param name="max">最大値(負の場合は負が帰る)</param>
+            <param name="a">正の乗数。0に近いほど0付近に集まり、大きいほどmax付近に集まる。</param>
+            <returns>0~maxまでのflaot</returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.NextNormal(System.Random,System.Double,System.Double)">
+            <summary>
+            擬似的・簡易的な正規乱数 N(μ, σ^2) (μ前後)
+            </summary>
+            <param name="rand"></param>
+            <param name="average">平均値μ</param>
+            <param name="devitation">標準偏差σ</param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.NextSemiNormal(System.Random,System.Double,System.Double,System.Int32)">
+            <summary>
+            
+            </summary>
+            <param name="rand"></param>
+            <param name="average">平均値μ</param>
+            <param name="devitation">標準偏差σ</param>
+            <param name="num">0～1の積み重ね量</param>
+            <returns>average + (-num ~ +num) * devitation</returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.ValueOr0(System.Single)">
+            <summary>
+            NaNなら0、そうでなければ値を返す
+            </summary>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.Pow(System.Single,System.Int32)">
+            <summary>
+            xのy乗
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.Pow(System.Single,System.Single)">
+            <summary>
+            xのy乗
+            </summary>
+            <param name="x"></param>
+            <param name="y"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.Pow2(System.Single)">
+            <summary>
+            自乗
+            </summary>
+            <param name="x"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.PositiveMod(System.Int32,System.Int32)">
+            <summary>
+            1以下なら常に0を返す
+            </summary>
+            <param name="x"></param>
+            <param name="divider"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.MathUtil.PositiveMod(System.Single,System.Single)">
+            <summary>
+            1以下なら常に0を返す
+            </summary>
+            <param name="x"></param>
+            <param name="divider"></param>
+            <returns></returns>
+        </member>
+        <member name="P:Masa.Lib.PoolObjectBase.ListIndex">
+            <summary>
+            PoolObjectManagerBaseにより設定される
+            </summary>
+        </member>
+        <member name="M:Masa.Lib.PoolObjectManagerBase`1.#ctor(System.Int32)">
+            <summary>
+            リストの生成、および項目の初期化
+            </summary>
+            <param name="defaultSize"></param>
+        </member>
+        <member name="M:Masa.Lib.PoolObjectManagerBase`1.GetFirstUnusedItem">
+            <summary>
+            先頭の未使用アイテムを返す
+            </summary>
+            <returns>使えるものが無ければnull</returns>
+        </member>
+        <member name="M:Masa.Lib.PoolObjectManagerBase`1.GetFirstUnusedIndex">
+            <summary>
+            未使用アイテムのインデックスを返す。
+            </summary>
+            <returns>正規化された配列のインデックス、存在しなければ-1</returns>
+        </member>
+        <member name="M:Masa.Lib.PoolObjectManagerBase`1.Extend(System.Int32)">
+            <summary>
+            配列を拡張する
+            </summary>
+            <param name="extraSize"></param>
+        </member>
+        <member name="M:Masa.Lib.PoolObjectManagerBase`1.DeleteAll">
+            <summary>
+            生きているもの全てにDeleteを適用する
+            </summary>
+        </member>
+        <member name="M:Masa.Lib.Utility.Slice``1(``0[],System.Int32,System.Int32)">
+            <summary>
+            fromからlength個の配列を返す (fromを含む)
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="origin"></param>
+            <param name="from"></param>
+            <param name="length">返り値の配列の要素数。もとの配列を突破する場合はもとの配列の末尾まで。</param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.Utility.SliceFromTo``1(``0[],System.Int32,System.Int32)">
+            <summary>
+            最初と最後を指定してスライス (最初の項と最後の項を含む)
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="origin"></param>
+            <param name="from">ここから含む</param>
+            <param name="to">ここまで含む</param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.Utility.ElementAtNormal``1(``0[],System.Int32)">
+            <summary>
+            array[index % length]のアイテムを取得する。負対応
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="array"></param>
+            <param name="index"></param>
+            <returns>配列の長さが0ならばdefault(T)</returns>
+        </member>
+        <member name="M:Masa.Lib.Utility.ForAllWithRemove``1(System.Collections.Generic.LinkedList{``0},System.Func{``0,System.Boolean})">
+            <summary>
+            リスト全体に対し処理を行いつつ、条件を満たす要素をリストから削除する。falseで削除
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="list"></param>
+            <param name="method">要素に対して行う処理。falseを返すとリストから削除される</param>
+        </member>
+        <member name="M:Masa.Lib.Utility.PositiveMod(System.Int32,System.Int32)">
+            <summary>
+            1以下なら常に0を返す
+            </summary>
+            <param name="x"></param>
+            <param name="divider"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.Utility.PositiveMod(System.Single,System.Single)">
+            <summary>
+            1以下なら常に0を返す
+            </summary>
+            <param name="x"></param>
+            <param name="divider"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.Utility.Vibrate(System.Single,System.Single,System.Single)">
+            <summary>
+            単振動。count=0で0
+            </summary>
+            <param name="count">位相</param>
+            <param name="time">周期</param>
+            <param name="a">振幅</param>
+            <returns></returns>
+        </member>
+        <member name="M:Masa.Lib.Utility.LimitChange(System.Single,System.Single,System.Single)">
+            <summary>
+            最大の変化量を指定して値を変化させる
+            </summary>
+            <param name="value">元の値</param>
+            <param name="target">目的の値</param>
+            <param name="limit">変化量上限(正値)</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

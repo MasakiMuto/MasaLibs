@@ -1,0 +1,16 @@
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\ParticleEngine.dll
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\ParticleEngine.pdb
+D:\projects\MasaLibs\ParticleEngine\obj\Debug\ParticleEngine.csprojResolveAssemblyReference.cache
+D:\projects\MasaLibs\ParticleEngine\obj\Debug\ParticleEngine.dll
+D:\projects\MasaLibs\ParticleEngine\obj\Debug\ParticleEngine.pdb
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\MasaLib.dll
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\MasaLibXNA.dll
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\ScriptEngine.dll
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\SlimDX.DirectInput.dll
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\MasaLibXNA.pdb
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\MasaLib.pdb
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\ScriptEngine.pdb
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\ParticleEngine.XML
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\MasaLibXNA.xml
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\MasaLib.xml
+D:\projects\MasaLibs\ParticleEngine\bin\Debug\ScriptEngine.xml

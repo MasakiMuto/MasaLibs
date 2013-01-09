@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasaLib", "MasaLib\MasaLib.csproj", "{BADD7C9A-BC50-46CF-882C-58D597DC8495}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ParticleEngine", "ParticleEngine\ParticleEngine.csproj", "{30D007CC-761B-4DF9-A4C5-14B52D76BF79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptEngine", "ScriptEngine\ScriptEngine.csproj", "{62865417-0F86-47A2-97E6-1DEA541F7B23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasaLibXNA", "MasaLibXNA\MasaLibXNA.csproj", "{C91DC223-ED7F-4E12-B465-FBA807F6817A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BADD7C9A-BC50-46CF-882C-58D597DC8495}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BADD7C9A-BC50-46CF-882C-58D597DC8495}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BADD7C9A-BC50-46CF-882C-58D597DC8495}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BADD7C9A-BC50-46CF-882C-58D597DC8495}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30D007CC-761B-4DF9-A4C5-14B52D76BF79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30D007CC-761B-4DF9-A4C5-14B52D76BF79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30D007CC-761B-4DF9-A4C5-14B52D76BF79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30D007CC-761B-4DF9-A4C5-14B52D76BF79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62865417-0F86-47A2-97E6-1DEA541F7B23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62865417-0F86-47A2-97E6-1DEA541F7B23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62865417-0F86-47A2-97E6-1DEA541F7B23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62865417-0F86-47A2-97E6-1DEA541F7B23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C91DC223-ED7F-4E12-B465-FBA807F6817A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C91DC223-ED7F-4E12-B465-FBA807F6817A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C91DC223-ED7F-4E12-B465-FBA807F6817A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C91DC223-ED7F-4E12-B465-FBA807F6817A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
