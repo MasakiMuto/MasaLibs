@@ -1,9 +1,0 @@
-D:\projects\MasaLibs\ScriptEngine\bin\Debug\ScriptEngine.dll
-D:\projects\MasaLibs\ScriptEngine\bin\Debug\ScriptEngine.pdb
-D:\projects\MasaLibs\ScriptEngine\obj\Debug\ScriptEngine.csprojResolveAssemblyReference.cache
-D:\projects\MasaLibs\ScriptEngine\obj\Debug\ScriptEngine.dll
-D:\projects\MasaLibs\ScriptEngine\obj\Debug\ScriptEngine.pdb
-D:\projects\MasaLibs\ScriptEngine\bin\Debug\MasaLib.dll
-D:\projects\MasaLibs\ScriptEngine\bin\Debug\MasaLib.pdb
-D:\projects\MasaLibs\ScriptEngine\bin\Debug\ScriptEngine.XML
-D:\projects\MasaLibs\ScriptEngine\bin\Debug\MasaLib.xml

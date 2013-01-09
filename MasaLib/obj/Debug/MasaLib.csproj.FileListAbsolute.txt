@@ -1,9 +1,0 @@
-D:\projects\MasaLibs\MasaLib\bin\Debug\MasaLib.dll
-D:\projects\MasaLibs\MasaLib\bin\Debug\MasaLib.pdb
-D:\projects\MasaLibs\MasaLib\bin\Debug\Microsoft.Contracts.dll
-D:\projects\MasaLibs\MasaLib\obj\Debug\MasaLib.dll
-D:\projects\MasaLibs\MasaLib\obj\Debug\MasaLib.pdb
-D:\projects\MasaLibs\MasaLib\obj\Debug\MasaLib.csprojResolveAssemblyReference.cache
-D:\projects\MasaLibs\MasaLib\bin\Debug\MasaLib.XML
-D:\projects\MasaLibs\MasaLib\bin\Debug\MasaLib.dll.CodeAnalysisLog.xml
-D:\projects\MasaLibs\MasaLib\bin\Debug\MasaLib.dll.lastcodeanalysissucceeded
