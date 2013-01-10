@@ -33,6 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -58,6 +59,10 @@
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MasaLibXNA\MasaLibXNA.csproj">
+      <Project>{c91dc223-ed7f-4e12-b465-fba807f6817a}</Project>
+      <Name>MasaLibXNA</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MasaLib\MasaLib.csproj">
       <Project>{badd7c9a-bc50-46cf-882c-58d597dc8495}</Project>
       <Name>MasaLib</Name>

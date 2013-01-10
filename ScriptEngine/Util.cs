@@ -7,6 +7,10 @@ using System.Reflection;
 
 namespace Masa.ScriptEngine
 {
+	using Value = System.Single;
+	using Vector2 = Microsoft.Xna.Framework.Vector2;
+	using Vector3 = Microsoft.Xna.Framework.Vector3;
+
 	[AttributeUsage(AttributeTargets.Method, Inherited = true)]
 	public class ScriptDefinedMethodAttribute : Attribute
 	{
@@ -120,4 +124,35 @@ namespace Masa.ScriptEngine
 			PropertyDict = pd;
 		}
 	}
+
+
+
+	internal static class ValueCreaterFunctions
+	{
+		public static Vector2 MakeVector2(Value x, Value y)
+		{
+			return new Vector2(x, y);
+		}
+
+		public static Vector3 MakeVector3(Value x, Value y, Value z)
+		{
+			return new Vector3(x, y, z);
+		}
+
+		public static int MakeInteger(Value x)
+		{
+			return (int)x;
+		}
+
+		public static double MakeDouble(Value x)
+		{
+			return (double)x;
+		}
+
+		public static float MakeFloat(Value x)
+		{
+			return (float)x;
+		}
+	}
+
 }

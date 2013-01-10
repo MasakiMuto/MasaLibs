@@ -5,6 +5,8 @@ using System.Text;
 
 namespace Masa.ScriptEngine
 {
+	using Value = System.Single;
+
 	enum Marks
 	{
 		No,///なし
@@ -40,6 +42,8 @@ namespace Masa.ScriptEngine
 
 		Colon, /// : オプション文マーカー
 
+		Dollar, /// $ varでの型指定
+
 		Tab,
 		Return,
 		Semicolon,///コメント
@@ -66,7 +70,7 @@ namespace Masa.ScriptEngine
 
 		static readonly Dictionary<string, Marks> MarkNameDict;
 		public const char StringLiteralMark = '@';
-		
+
 
 		static Scanner()
 		{
@@ -99,13 +103,14 @@ namespace Masa.ScriptEngine
 			MarkNameDict.Add(")", Marks.PareCl);
 			MarkNameDict["#define"] = Marks.Define;
 			MarkNameDict["#include"] = Marks.Include;
+			MarkNameDict["$"] = Marks.Dollar;
 		}
 
 		//TODO 例外が出たところのファイル名や行を表示できるようにする
 		public Scanner(string code)
 			: this(code, null)
 		{
-			
+
 		}
 
 		public Scanner(string code, Dictionary<string, string> headerDict)
@@ -115,7 +120,7 @@ namespace Masa.ScriptEngine
 			Scan(code);
 		}
 
-		
+
 		/// <summary>
 		/// 単語に分割する(;含めてコメント除去、@@リテラルを@始まりの1単語に)
 		/// </summary>
@@ -136,10 +141,10 @@ namespace Masa.ScriptEngine
 						builder.Clear();
 					}
 				};
-		
+
 			code += "\n";//末行処理
 			code = code.Replace(System.Environment.NewLine, "\n");
-		
+
 
 			for (int i = 0; i < code.Length; i++)
 			{
@@ -206,7 +211,7 @@ namespace Masa.ScriptEngine
 		//		tokens = item.Split(null);
 		//		if (tokens.Length == 2 && tokens[0] == "#define")
 		//		{
-					
+
 		//		}
 		//	}
 		//}
@@ -250,7 +255,7 @@ namespace Masa.ScriptEngine
 
 		void Scan(string code)
 		{
-			
+
 			//if (headerDictionary != null)
 			//{
 			//	code = Include(code);
@@ -277,7 +282,7 @@ namespace Masa.ScriptEngine
 				{
 					try
 					{
-						Tokens.Add(Single.Parse(item));
+						Tokens.Add(Value.Parse(item));
 					}
 					catch
 					{

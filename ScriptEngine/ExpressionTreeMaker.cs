@@ -10,6 +10,10 @@ using Masa.Lib;
 
 namespace Masa.ScriptEngine
 {
+	using Value = System.Single;
+	using Vector2 = Microsoft.Xna.Framework.Vector2;
+	using Vector3 = Microsoft.Xna.Framework.Vector3;
+
 	public class ExpressionTreeMaker : IExpressionTreeMaker
 	{
 		public Action<ScriptEngine.Environment> Statement { get; private set; }
@@ -33,10 +37,10 @@ namespace Masa.ScriptEngine
 		public List<string> StringLiterals { get; private set; }
 
 		static readonly LabelTarget ExitLabel = Expression.Label("_ScriptExit");
-		static readonly Type FLOAT = typeof(float);
-		static readonly Expression ZERO = Expression.Constant(0f, FLOAT);
-		static readonly Expression ONE = Expression.Constant(1f, FLOAT);
-		static readonly Expression NAN = Expression.Constant(float.NaN, FLOAT);
+		static readonly Type ValueType = typeof(Value);
+		static readonly Expression ZeroExpression = Expression.Constant(0f, ValueType);
+		static readonly Expression OneExpression = Expression.Constant(1f, ValueType);
+		static readonly Expression NanExpression = Expression.Constant(Value.NaN, ValueType);
 		//static readonly LabelTarget LOOPEND = Expression.Label("EndLoop");
 		static readonly Dictionary<string, FieldInfo> EnvironmentField = GetEnvironmentFieldInfo();
 		static readonly Dictionary<string, PropertyInfo> EnvironmentProperty = GetEnvironmentPropertyInfo();
@@ -44,8 +48,17 @@ namespace Masa.ScriptEngine
 		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = new Dictionary<Type, ClassReflectionInfo>();
 		static readonly Dictionary<string, Expression> ConstantValueDict = new Dictionary<string, Expression>()
 		{
-			{"PI2", Expression.Constant((float)Math.PI * 2f, FLOAT)},
-			{"PI", Expression.Constant((float)Math.PI, FLOAT)},
+			{"PI2", Expression.Constant((Value)Math.PI * 2f, ValueType)},
+			{"PI", Expression.Constant((Value)Math.PI, ValueType)},
+		};
+
+		static readonly Dictionary<string, Type> TypeNameDictionary = new Dictionary<string, Type>()
+		{
+			{"float", typeof(float)},
+			{"float2", typeof(Vector2)},
+			{"float3", typeof(Vector3)},
+			{"double", typeof(double)},
+			{"int", typeof(int)},
 		};
 
 		public ExpressionTreeMaker(object[] token, Type targetType)
@@ -113,14 +126,25 @@ namespace Masa.ScriptEngine
 		{
 			var ret = new Dictionary<string, MethodInfo>();
 			var mu = typeof(Masa.Lib.MathUtil);
+			var xmath = typeof(Masa.Lib.XNA.MathUtilXNA);
+			var vals = typeof(ValueCreaterFunctions);
+			Type vec = typeof(Vector2);
+			Type[][] args = Enumerable.Range(0, 4).Select(x => Enumerable.Repeat(ValueType, x).ToArray()).ToArray();
 			ret.Add("cos", mu.GetMethod("Cos"));
 			ret.Add("sin", mu.GetMethod("Sin"));
 			ret.Add("tan", mu.GetMethod("Tan"));
 			ret.Add("atan", mu.GetMethod("Atan2"));
-			ret.Add("pow", typeof(Masa.Lib.MathUtil).GetMethod("Pow", new[] { FLOAT, FLOAT }));
-			ret.Add("abs", typeof(Math).GetMethod("Abs", new[] { FLOAT }));
-			ret.Add("max", typeof(Math).GetMethod("Max", new[] { FLOAT, FLOAT }));
-			ret.Add("min", typeof(Math).GetMethod("Min", new[] { FLOAT, FLOAT }));
+			ret.Add("pow", typeof(Masa.Lib.MathUtil).GetMethod("Pow", new[] { ValueType, ValueType }));
+			ret.Add("abs", typeof(Math).GetMethod("Abs", new[] { ValueType }));
+			ret.Add("max", typeof(Math).GetMethod("Max", new[] { ValueType, ValueType }));
+			ret.Add("min", typeof(Math).GetMethod("Min", new[] { ValueType, ValueType }));
+			ret["float2"] = vals.GetMethod("MakeVector2", args[2]);
+			ret["float3"] = vals.GetMethod("MakeVector3", args[3]);
+			ret["float"] = vals.GetMethod("MakeFloat", args[1]);
+			ret["double"] = vals.GetMethod("MakeDouble", args[1]);
+			ret["int"] = vals.GetMethod("MakeInteger", args[1]);
+			ret["float2arc"] = xmath.GetMethod("GetVector", args[2]);
+			ret["float2ang"] = xmath.GetMethod("Angle", new[] { vec });
 			return ret;
 		}
 
@@ -135,17 +159,24 @@ namespace Masa.ScriptEngine
 			var pd = new Dictionary<string, PropertyInfo>();
 			foreach (var item in target.GetMembers(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.GetProperty | BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.FlattenHierarchy))
 			{
-				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true);
-				foreach (ScriptMemberAttribute a in atr)
+				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>();
+				int num = atr.Count();
+				if (num == 0)
 				{
-					if (item.MemberType == MemberTypes.Method)
-					{
-						md.Add(a.Name, (MethodInfo)item);
-					}
-					if (item.MemberType == MemberTypes.Property)
-					{
-						pd.Add(a.Name, (PropertyInfo)item);
-					}
+					continue;
+				}
+				if (num > 1)
+				{
+					throw new Exception(item.Name + ":同一のメンバに対し複数のScriptMemberAttributeが定義されている。\n" + atr.Select(a => a.Name).Aggregate("", (x, sum) => sum + "\n" + x));
+				}
+				var atribute = atr.First();
+				if (item.MemberType == MemberTypes.Method)
+				{
+					md.Add(atribute.Name, (MethodInfo)item);
+				}
+				if (item.MemberType == MemberTypes.Property)
+				{
+					pd.Add(atribute.Name, (PropertyInfo)item);
 				}
 			}
 			ReflectionCashe.Add(target, new ClassReflectionInfo(md, pd));
@@ -334,7 +365,7 @@ namespace Masa.ScriptEngine
 
 		static ConstantExpression MakeConstantExpression(float value)
 		{
-			return Expression.Constant(value, FLOAT);
+			return Expression.Constant(value, ValueType);
 		}
 
 		/// <summary>
@@ -361,20 +392,7 @@ namespace Masa.ScriptEngine
 			string id = (string)line.Tokens[0];
 			if (id == "var")
 			{
-				//return new Var((string)line[1]);
-				var v = Expression.Parameter(typeof(float), (string)line.Tokens[1]);
-				VarDict.Add((string)line.Tokens[1], v);
-				if (line.Tokens.Length >= 4)// var hoge = 1
-				{
-					if (line.Tokens[2].Equals(Marks.Sub))
-					{
-						return Expression.Assign(v, ParsePareBlock(new PareBlock(line.Tokens.Skip(3).ToArray())));
-					}
-				}
-				else
-				{
-					return null; //初期化なし
-				}
+				return DefineVariable(line);
 			}
 			if (id == "varg")
 			{
@@ -403,6 +421,33 @@ namespace Masa.ScriptEngine
 			//line[1]がMarkでない && var系でない
 			return ProcessNormalStatement(line);
 
+		}
+
+		Expression DefineVariable(Line line)
+		{
+			ParameterExpression v;
+			string name = (string)line.Tokens[1];
+			Type type = typeof(Value);
+			if (line.Tokens.Length >= 4 && line.Tokens[2].Equals(Marks.Dollar))// var hoge $ float2
+			{
+				type = TypeNameDictionary[line.Tokens[3] as string];
+			}
+
+			v = Expression.Parameter(type, name);
+			VarDict.Add(name, v);
+			if (line.Tokens.Length >= 4)// var hoge = 1
+			{
+				int rightPos = Array.FindIndex(line.Tokens, x => x.Equals(Marks.Sub));
+				if (rightPos == -1)
+				{
+					return null;//初期化なし
+				}
+				return Expression.Assign(v, ParsePareBlock(new PareBlock(line.Tokens.Skip(rightPos + 1).ToArray())));
+			}
+			else
+			{
+				return null; //初期化なし
+			}
 		}
 
 		/// <summary>
@@ -476,7 +521,7 @@ namespace Masa.ScriptEngine
 			switch (id)
 			{
 				case "if":
-					return MakeIfStatement(line, Expression.NotEqual(args()[0], ZERO));
+					return MakeIfStatement(line, Expression.NotEqual(args()[0], ZeroExpression));
 				//return Expression.IfThen(Expression.NotEqual(args()[0], ZERO), GetBlock(line));
 				case "else"://if - else の流れで処理するため単体ではスルー
 					return null;
@@ -484,7 +529,7 @@ namespace Masa.ScriptEngine
 					goto case "repeat";
 				case "repeat":
 					LabelTarget label = Expression.Label(line.Number.ToString());
-					return Expression.Loop(GetBlockWithBreak(line, Expression.Equal(args()[0], ZERO), label), label);
+					return Expression.Loop(GetBlockWithBreak(line, Expression.Equal(args()[0], ZeroExpression), label), label);
 				case "loop":
 					return MakeLoopStatement(line);
 				case "goto":
@@ -575,7 +620,7 @@ namespace Masa.ScriptEngine
 				}
 				else
 				{
-					last = Expression.Subtract(frame, Expression.Constant(1f, FLOAT));
+					last = Expression.Subtract(frame, Expression.Constant(1f, ValueType));
 				}
 			}
 			firstSentence = Expression.AndAlso
@@ -583,7 +628,7 @@ namespace Masa.ScriptEngine
 									Expression.GreaterThanOrEqual(frame, from),
 									Expression.OrElse
 									(
-										Expression.Equal(times, ZERO),
+										Expression.Equal(times, ZeroExpression),
 										Expression.LessThan(frame, Expression.Add(from, Expression.Multiply(freq, times)))
 									)
 								);
@@ -597,7 +642,7 @@ namespace Masa.ScriptEngine
 				return Expression.IfThen(Expression.AndAlso
 					(
 						firstSentence,
-						Expression.Equal(Expression.Modulo(Expression.Subtract(frame, from), freq), ZERO)
+						Expression.Equal(Expression.Modulo(Expression.Subtract(frame, from), freq), ZeroExpression)
 					),
 					GetBlock(line));
 			}
@@ -708,14 +753,14 @@ namespace Masa.ScriptEngine
 					Option op = options.FirstOrDefault(o => o.Name == name[i]);
 					if (op == null)//オプションが指定されていなければNaNで埋める
 					{
-						args.AddRange(Enumerable.Repeat(NAN, num[i]));
+						args.AddRange(Enumerable.Repeat(NanExpression, num[i]));
 					}
 					else
 					{
 						IEnumerable<Expression> addition = op.Args.ToArray();
 						if (op.Args.Count() < num[i])//不足はNaNで埋める
 						{
-							addition = addition.Concat(Enumerable.Repeat(NAN, num[i] - addition.Count()));
+							addition = addition.Concat(Enumerable.Repeat(NanExpression, num[i] - addition.Count()));
 						}
 						args.AddRange(addition.Take(num[i]));
 					}
@@ -800,6 +845,8 @@ namespace Masa.ScriptEngine
 			return Expression.Block(list.ToArray());
 		}
 
+		static readonly Marks[] UnaryOperators = new[] { Marks.Pos, Marks.Neg, Marks.Not };
+
 		/// <summary>
 		/// 単項演算子を処理してExpressionにする
 		/// </summary>
@@ -807,36 +854,31 @@ namespace Masa.ScriptEngine
 		/// <returns>単項演算子処理済みのExpressionと(二項演算子であるはずの)Markの混合物</returns>
 		object[] ProcessUnaryExpression(object[] tokens)
 		{
-			Marks[] mks = new[] { Marks.Pos, Marks.Neg, Marks.Not };//単項演算子
 			List<object> l = new List<object>();
 			for (int i = 0; i < tokens.Length; i++)
 			{
 				if (tokens[i] is Marks)
 				{
 					Marks m = (Marks)tokens[i];
-					if (Array.Exists(mks, (mk) => mk == m))
+					if (UnaryOperators.Contains(m) && (i == 0 || tokens[i - 1] is Marks))//単項演算子であれば式の先頭、もしくはその前がExpressionでない
 					{
-						if (i == 0 || tokens[i - 1] is Marks)//単項演算子であれば式の先頭、もしくはその前がExpressionでない
+						if (!(tokens[i + 1] is Expression))
 						{
-
-							if (!(tokens[i + 1] is Expression))
-							{
-								throw new ParseException("単項演算子の直後が式でない");
-							}
-							Expression e = (Expression)tokens[i + 1];
-							i++;//一つ後の項は処理済み
-							switch (m)
-							{
-								case Marks.Pos:
-									l.Add(Expression.UnaryPlus(e));
-									continue;
-								case Marks.Neg:
-									l.Add(Expression.Negate(e));
-									continue;
-								case Marks.Not:
-									l.Add(BoolToFloat(Expression.Equal(e, ZERO)));//val == 0 => 1, val != 0 => 0
-									continue;
-							}
+							throw new ParseException("単項演算子の直後が式でない");
+						}
+						Expression e = (Expression)tokens[i + 1];
+						i++;//一つ後の項は処理済み
+						switch (m)
+						{
+							case Marks.Pos:
+								l.Add(Expression.UnaryPlus(e));
+								continue;
+							case Marks.Neg:
+								l.Add(Expression.Negate(e));
+								continue;
+							case Marks.Not:
+								l.Add(BoolToFloat(Expression.Equal(e, ZeroExpression)));//val == 0 => 1, val != 0 => 0
+								continue;
 						}
 					}
 				}
@@ -911,7 +953,7 @@ namespace Masa.ScriptEngine
 				{
 					ret.Add(ParseVariable((string)item));
 				}
-				else if (item is float)//数値リテラル
+				else if (item is Value)//数値リテラル
 				{
 					ret.Add(Expression.Constant(item, typeof(float)));
 				}
@@ -943,7 +985,7 @@ namespace Masa.ScriptEngine
 
 
 		/// <summary>
-		/// PareBlockをパースしてひとつのfloatExpressionにする
+		/// PareBlockをパースしてひとつの値のExpressionにする
 		/// </summary>
 		/// <param name="pare"></param>
 		/// <returns></returns>
@@ -971,24 +1013,26 @@ namespace Masa.ScriptEngine
 			return ParseArithExpression(pare);//多項式の時
 		}
 
+		static readonly Marks[][] OperatorPriorityList = new[]
+		{
+			new[]{ Marks.Mul, Marks.Div, Marks.Mod },
+			new[]{ Marks.Pos, Marks.Neg },
+			new[]{ Marks.Equal, Marks.NotEqual, Marks.Big, Marks.BigEqual, Marks.Small, Marks.SmallEqual },
+			new[]{Marks.And, Marks.Or, },
+		};
+
 		Expression ParseArithExpression(PareBlock p)
 		{
 			//多項式構築
-			Marks[][] lvl = new[]{
-				new[]{ Marks.Mul, Marks.Div, Marks.Mod },
-				new[]{ Marks.Pos, Marks.Neg },
-				new[]{ Marks.Equal, Marks.NotEqual, Marks.Big, Marks.BigEqual, Marks.Small, Marks.SmallEqual },
-				new[]{Marks.And, Marks.Or, },
-			};
 			List<object>[] list = new List<object>[2];
 			int ind = 0;
 			list[0] = new List<object>(ProcessToExpressionAndMark(p));
 			list[1] = new List<object>();
-			for (int i = 0; i < lvl.Length; i++)
+			for (int i = 0; i < OperatorPriorityList.Length; i++)
 			{
 				for (int j = 0; j < list[ind].Count; j++)
 				{
-					if (list[ind][j] is Marks && Array.Exists(lvl[i], (mk) => (Marks)list[ind][j] == mk))
+					if (list[ind][j] is Marks && Array.Exists(OperatorPriorityList[i], (mk) => (Marks)list[ind][j] == mk))
 					{
 						Expression e = MakeBinaryExpression((Marks)list[ind][j], (Expression)list[1 - ind][list[1 - ind].Count - 1], (Expression)list[ind][j + 1]);
 						list[1 - ind].RemoveAt(list[1 - ind].Count - 1);//1つ前の項は使用済み
@@ -1005,20 +1049,18 @@ namespace Masa.ScriptEngine
 				ind = 1 - ind;
 			}
 
-
 			return (Expression)list[ind][0];
-
 		}
 
 
 		static Expression FloatToBool(Expression val)
 		{
-			return Expression.NotEqual(val, ZERO);
+			return Expression.NotEqual(val, ZeroExpression);
 		}
 
 		static Expression BoolToFloat(Expression val)
 		{
-			return Expression.Condition(val, ONE, ZERO);
+			return Expression.Condition(val, OneExpression, ZeroExpression);
 		}
 
 		/// <summary>
@@ -1032,9 +1074,9 @@ namespace Masa.ScriptEngine
 			var tmp = new List<object>();
 			for (int i = 0; i < l.Length; i++)
 			{
-				if (l[i] is float)
+				if (l[i] is Value)
 				{
-					tmp.Add(Expression.Constant(l[i], FLOAT));
+					tmp.Add(Expression.Constant(l[i], ValueType));
 				}
 				else if (l[i] is Marks)
 				{
