@@ -8,12 +8,14 @@ using System.Reflection;
 
 namespace Masa.ScriptEngine
 {
+	using TypeScriptDictionary = Dictionary<string, ScriptDataBase>;
+
 	/// <summary>
 	/// ScriptDataをさらにラップしたクラス。エラーログ出力機能付き
 	/// </summary>
 	public class ScriptManager
 	{
-		protected Dictionary<string, ScriptDataBase> items;
+		protected Dictionary<Type, TypeScriptDictionary> items;
 		public Func<string, string> PathToKey;
 		//List<CompiledExpressionTree> CompiledTrees;
 		Dictionary<string, System.Reflection.Assembly> assemblyDict;
@@ -62,7 +64,7 @@ namespace Masa.ScriptEngine
 		public ScriptManager()
 		{
 			CodeMapper = s => s;
-			items = new Dictionary<string, ScriptDataBase>();
+			items = new Dictionary<Type, TypeScriptDictionary>();
 			//CompiledTrees = new List<CompiledExpressionTree>();
 			assemblyDict = new Dictionary<string, System.Reflection.Assembly>();
 			PathToKey = s => Path.GetFileNameWithoutExtension(s);
@@ -127,7 +129,7 @@ namespace Masa.ScriptEngine
 					};
 				}
 				data.Load();
-				
+
 			}
 			catch (Exception e)
 			{
@@ -141,7 +143,14 @@ namespace Masa.ScriptEngine
 			//	//throw new Exception(msg);
 
 			//}
-			items[key] = data;
+			TypeScriptDictionary dict;
+			if (!items.TryGetValue(target, out dict))
+			{
+				dict = new TypeScriptDictionary();
+				items[target] = dict;
+			}
+			dict[key] = data;
+			//items[target][key] = data;
 
 		}
 
@@ -257,10 +266,17 @@ namespace Masa.ScriptEngine
 			try
 			{
 				items
-					.Where(i => i.Value is FileScriptData)
-					.Select(i => (FileScriptData)i.Value)
+					.SelectMany(pair => pair.Value.Values)
+					.OfType<FileScriptData>()
 					.AsParallel()
 					.ForAll(s => s.Load());
+
+				//items
+				//	.Where(i => i.Value is FileScriptData)
+				//	.Select(i => (FileScriptData)i.Value)
+				//	.AsParallel()
+				//	.ForAll(s => s.Load());
+
 				//items.AsParallel().ForAll(p => p.Value.Load());
 			}
 			catch (Exception e)
@@ -270,6 +286,7 @@ namespace Masa.ScriptEngine
 			}
 		}
 
+		/*
 		/// <summary>
 		/// スクリプトを破棄する。指定したスクリプトが存在しなくても問題は起こさない
 		/// </summary>
@@ -281,25 +298,40 @@ namespace Masa.ScriptEngine
 				items.Remove(name);
 			}
 		}
+		 * */
 
-		ScriptDataBase GetScriptData(string key)
+		public ScriptDataBase GetScriptData(object target, string key)
 		{
+
 			ScriptDataBase data;
-			if (items.TryGetValue(key, out data))
+			TypeScriptDictionary dict;
+			Type type = target.GetType();
+			if (items.TryGetValue(type, out dict))
 			{
-				return data;
+				if (dict.TryGetValue(key, out data))
+				{
+					return data;
+				}
+				else
+				{
+					throw new Exception(type.ToString() + "のスクリプト " + key + "は読み込まれていない");
+				}
 			}
-			throw new Exception("スクリプト " + key + "は読み込まれていない");
+			else
+			{
+				throw new Exception(type.ToString() + "のスクリプトが存在しない");
+			}
+
 		}
 
 		public ScriptRunner GetScript(object target, string key)
 		{
-			return GetScriptData(key).GetScriptRunner(target);
+			return GetScriptData(target.GetType(), key).GetScriptRunner(target);
 		}
 
-		public List<string> GetLiteralTable(string key)
+		public List<string> GetLiteralTable(object target, string key)
 		{
-			return GetScriptData(key).StringLiterals;
+			return GetScriptData(target, key).StringLiterals;
 		}
 
 		void WriteLog(string txt)
@@ -318,10 +350,10 @@ namespace Masa.ScriptEngine
 		public void OutputDocument(string fileName)
 		{
 			var str = new StringBuilder();
-			foreach (var item in items.GroupBy(i => i.Value.TargetType))
+			foreach (var item in items)
 			{
 				str.AppendLine("*" + item.Key.ToString());
-				str.Append(item.First().Value.GetDocument());
+				str.Append(item.Value.First().Value.GetDocument());
 				str.AppendLine("-----");
 				str.AppendLine();
 			}
