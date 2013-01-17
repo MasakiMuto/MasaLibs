@@ -6,10 +6,11 @@ using System.Reflection;
 
 namespace Masa.ScriptEngine
 {
+	using Value = System.Single;
 	public class SimpleEnvironment
 	{
 		[ScriptMember("state")]
-		public float State
+		public Value State
 		{
 			get
 			{
@@ -21,17 +22,17 @@ namespace Masa.ScriptEngine
 				StateFrame = 0;
 			}
 		}
-		float state;
+		Value state;
 
 
 		[ScriptMember("count")]
-		public float Frame;
+		public Value Frame;
 		[ScriptMember("scount")]
-		public float StateFrame;
+		public Value StateFrame;
 		[ScriptMember("lcount")]
-		public float LastFrame;
+		public Value LastFrame;
 		[ScriptMember("slcount")]
-		public float LastStateFrame;
+		public Value LastStateFrame;
 		
 		public void FrameUpdate()
 		{
@@ -68,7 +69,10 @@ namespace Masa.ScriptEngine
 
 		public Environment(object target, int globalNum) : base()
 		{
-			GlobalVar = new float[globalNum];
+			if (globalNum > 0)
+			{
+				GlobalVar = new float[globalNum];
+			}
 			TargetObject = target;
 		}
 

@@ -7,14 +7,14 @@ using System.Reflection;
 
 namespace Masa.ScriptEngine
 {
+	using Value = System.Single;
+
 	public interface IExpressionTreeMaker
 	{
 		int GlobalVarNumber { get; }
 		Action<Environment> Statement { get; }
 		Action<Environment> InitStatement { get; }
 		Action<Environment> GetLabelStatement(string label);
-		List<string> StringLiterals { get; }
-
 
 		string OutputClassInformation();
 	}
@@ -56,13 +56,6 @@ namespace Masa.ScriptEngine
 			return Tree.OutputClassInformation();
 		}
 
-		public List<string> StringLiterals
-		{
-			get
-			{
-				return Tree.StringLiterals; 
-			}				
-		}
 	}
 
 	public abstract class ScriptData : ScriptDataBase
@@ -164,31 +157,23 @@ namespace Masa.ScriptEngine
 		public readonly Environment Environment;
 		readonly Action<Environment> UpdateAction;
 		readonly IExpressionTreeMaker Tree;
-		public float State
+		public Value State
 		{
 			get { return Environment.State; }
 			set { Environment.State = value; }
 		}
 
-		public List<string> LiteralList
-		{
-			get
-			{
-				return Tree.StringLiterals;
-			}
-		}
-
 		/// <summary>
 		/// このオブジェクトが生成されてからのUpdate呼び出し回数
 		/// </summary>
-		public float Count
+		public Value Count
 		{
 			get { return Environment.Frame; }
 		}
 		/// <summary>
 		/// 最後にStateが変更されてからのUpdate呼び出し回数
 		/// </summary>
-		public float StateCount
+		public Value StateCount
 		{
 			get { return Environment.StateFrame; }
 		}
@@ -232,11 +217,6 @@ namespace Masa.ScriptEngine
 				act(Environment);
 			}
 			
-		}
-
-		public string Lookup(float index)
-		{
-			return LiteralList[(int)index];
 		}
 	}
 }

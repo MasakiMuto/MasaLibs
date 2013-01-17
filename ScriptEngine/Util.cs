@@ -153,6 +153,16 @@ namespace Masa.ScriptEngine
 		{
 			return (float)x;
 		}
+
+		public static float GetVectorLength(Vector2 vector)
+		{
+			return vector.Length();
+		}
+
+		public static float GetVectorLengthSquared(Vector2 vector)
+		{
+			return vector.LengthSquared();
+		}
 	}
 
 }

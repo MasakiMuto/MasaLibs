@@ -326,12 +326,7 @@ namespace Masa.ScriptEngine
 
 		public ScriptRunner GetScript(object target, string key)
 		{
-			return GetScriptData(target.GetType(), key).GetScriptRunner(target);
-		}
-
-		public List<string> GetLiteralTable(object target, string key)
-		{
-			return GetScriptData(target, key).StringLiterals;
+			return GetScriptData(target, key).GetScriptRunner(target);
 		}
 
 		void WriteLog(string txt)

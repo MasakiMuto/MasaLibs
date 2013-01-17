@@ -34,7 +34,6 @@ namespace Masa.ScriptEngine
 		string[] NameValueTable;
 		Line[] Lines;
 		Type TargetType;
-		public List<string> StringLiterals { get; private set; }
 
 		static readonly LabelTarget ExitLabel = Expression.Label("_ScriptExit");
 		static readonly Type ValueType = typeof(Value);
@@ -79,7 +78,6 @@ namespace Masa.ScriptEngine
 			TargetType = targetType;
 			VarDict = new Dictionary<string, ParameterExpression>();
 			LabelDict = new Dictionary<string, Expression>();
-			StringLiterals = new List<string>();
 			Environment = Expression.Parameter(typeof(ScriptEngine.Environment));
 			GlobalVarList = new List<string>();
 			MethodDict = new Dictionary<string, MethodInfo>();
@@ -129,6 +127,7 @@ namespace Masa.ScriptEngine
 			var xmath = typeof(Masa.Lib.XNA.MathUtilXNA);
 			var vals = typeof(ValueCreaterFunctions);
 			Type vec = typeof(Vector2);
+			Type[] vecs = new[]{vec};
 			Type[][] args = Enumerable.Range(0, 4).Select(x => Enumerable.Repeat(ValueType, x).ToArray()).ToArray();
 			ret.Add("cos", mu.GetMethod("Cos"));
 			ret.Add("sin", mu.GetMethod("Sin"));
@@ -144,7 +143,9 @@ namespace Masa.ScriptEngine
 			ret["double"] = vals.GetMethod("MakeDouble", args[1]);
 			ret["int"] = vals.GetMethod("MakeInteger", args[1]);
 			ret["float2arc"] = xmath.GetMethod("GetVector", args[2]);
-			ret["float2ang"] = xmath.GetMethod("Angle", new[] { vec });
+			ret["float2ang"] = xmath.GetMethod("Angle", vecs);
+			ret["float2len"] = vals.GetMethod("GetVectorLength", vecs);
+			ret["float2len2"] = vals.GetMethod("GetVectorLengthSquared", vecs);
 			return ret;
 		}
 
@@ -157,7 +158,10 @@ namespace Masa.ScriptEngine
 
 			var md = new Dictionary<string, MethodInfo>();
 			var pd = new Dictionary<string, PropertyInfo>();
-			foreach (var item in target.GetMembers(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.SetProperty | BindingFlags.GetProperty | BindingFlags.InvokeMethod | BindingFlags.Static | BindingFlags.FlattenHierarchy))
+			foreach (var item in target.GetMembers(BindingFlags.NonPublic | BindingFlags.Public 
+				| BindingFlags.Instance | BindingFlags.Static
+				//| BindingFlags.SetProperty | BindingFlags.GetProperty
+				| BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy))
 			{
 				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>();
 				int num = atr.Count();
@@ -351,16 +355,17 @@ namespace Masa.ScriptEngine
 
 		Expression RegistLiteral(string id)
 		{
-			int i = StringLiterals.FindIndex(s => s == id);
-			if (i == -1)
-			{
-				StringLiterals.Add(id);
-				return MakeConstantExpression(StringLiterals.Count - 1);
-			}
-			else
-			{
-				return MakeConstantExpression(i);
-			}
+			return Expression.Constant(id, typeof(string));
+			//int i = StringLiterals.FindIndex(s => s == id);
+			//if (i == -1)
+			//{
+			//	StringLiterals.Add(id);
+			//	return MakeConstantExpression(StringLiterals.Count - 1);
+			//}
+			//else
+			//{
+			//	return MakeConstantExpression(i);
+			//}
 		}
 
 		static ConstantExpression MakeConstantExpression(float value)
@@ -766,7 +771,22 @@ namespace Masa.ScriptEngine
 					}
 				}
 			}
-			return Expression.Call(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), MethodDict[id], args);
+			var method = MethodDict[id];
+			var param = method.GetParameters();
+			if (param.Length != args.Count)
+			{
+				throw new ParseException("外部メソッド呼び出しで引数とパラメータの数の不一致\n" + method.ToString() + String.Format(" need {0} params but {1} args.", param.Length, args.Count));
+			}
+			for (int i = 0; i < param.Length; i++)
+			{
+				if (!param[i].ParameterType.IsAssignableFrom(args[i].Type))
+				{
+					args[i] = Expression.Convert(args[i], param[i].ParameterType);
+				}
+			}
+
+
+			return Expression.Call(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), method, args);
 		}
 
 		/// <summary>
