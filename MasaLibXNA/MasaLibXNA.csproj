@@ -59,6 +59,8 @@
     <Compile Include="Collision\CollisionPoint.cs" />
     <Compile Include="Collision\CollisionPolygon.cs" />
     <Compile Include="Collision\CollisionRect.cs" />
+    <Compile Include="Graphics\BeltDrawer.cs" />
+    <Compile Include="Graphics\BlendStateManager.cs" />
     <Compile Include="Graphics\AnimeTexture.cs" />
     <Compile Include="Graphics\DividedTexture.cs" />
     <Compile Include="Graphics\GraphicUtil.cs" />
