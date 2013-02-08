@@ -28,7 +28,7 @@ namespace Masa.ScriptEngine
 		List<string> GlobalVarList;
 		Dictionary<string, ParameterExpression> VarDict;
 		Dictionary<string, Expression> LabelDict;
-		Dictionary<string, MethodInfo> MethodDict;
+		Dictionary<string, ScriptMethodInfo> MethodDict;
 		Dictionary<string, PropertyInfo> PropertyDict;
 		ParameterExpression Environment;
 		string[] NameValueTable;
@@ -68,8 +68,8 @@ namespace Masa.ScriptEngine
 			LabelDict = new Dictionary<string, Expression>();
 			Environment = Expression.Parameter(typeof(ScriptEngine.Environment));
 			GlobalVarList = new List<string>();
-			MethodDict = new Dictionary<string, MethodInfo>();
-			PropertyDict = new Dictionary<string, PropertyInfo>();
+			//MethodDict = new Dictionary<string, ScriptMethodInfo>();
+			//PropertyDict = new Dictionary<string, PropertyInfo>();
 			GetTargetInfo();
 			Parse(token);
 		}
@@ -129,47 +129,48 @@ namespace Masa.ScriptEngine
 
 		#region Compiler
 
-		/// <summary>
-		/// スクリプト全体をコンパイルする
-		/// </summary>
-		/// <param name="mtd">出力先</param>
-		public void Compile(System.Reflection.Emit.MethodBuilder mtd)
-		{
-			var lambda = Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, TotalBlock), Environment);
-			lambda.CompileToMethod(mtd);
-		}
 
-		public bool CompileLabel(string label, System.Reflection.Emit.MethodBuilder mtd)
-		{
-			if (!LabelDict.ContainsKey(label)) return false;
-			var lambda = Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, LabelDict[label]), Environment);
-			lambda.CompileToMethod(mtd);
-			return true;
-		}
+		///// <summary>
+		///// スクリプト全体をコンパイルする
+		///// </summary>
+		///// <param name="mtd">出力先</param>
+		//public void Compile(System.Reflection.Emit.MethodBuilder mtd)
+		//{
+		//	var lambda = Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, TotalBlock), Environment);
+		//	lambda.CompileToMethod(mtd);
+		//}
 
-		public Type CompileToClass(Type original, string className, System.Reflection.Emit.ModuleBuilder mb)
-		{
-			TypeBuilder tp = mb.DefineType(className, TypeAttributes.Public, original);
+		//public bool CompileLabel(string label, System.Reflection.Emit.MethodBuilder mtd)
+		//{
+		//	if (!LabelDict.ContainsKey(label)) return false;
+		//	var lambda = Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, LabelDict[label]), Environment);
+		//	lambda.CompileToMethod(mtd);
+		//	return true;
+		//}
 
-			Func<string, MethodBuilder> define = (n) => tp.DefineMethod(n, MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.ReuseSlot | MethodAttributes.Virtual, null, new[] { typeof(Environment) });
-			Compile(define("ScriptMain"));
-			//foreach (var item in original.GetMethods().Where(m=>m.GetCustomAttributes(typeof(ScriptDefinedMethodAttribute), true).Count() > 0))
-			//{
-			//    if (LabelExist(item.Name))
-			//    {
-			//        CompileLabel(item.Name, define(item.Name));
-			//    }
-			//}			
-			foreach (var item in LabelDict)
-			{
-				CompileLabel(item.Key, define("Script" + item.Key));
-			}
-			var getter = tp.DefineMethod("get_GlobalVarNumber", MethodAttributes.Family | MethodAttributes.SpecialName | MethodAttributes.HideBySig);
-			Expression.Lambda<Func<int>>(Expression.Constant(GlobalVarNumber)).CompileToMethod(getter);
-			tp.DefineProperty("GlobalVarNumber", PropertyAttributes.None, typeof(int), null).SetGetMethod(getter);
-			//tp.DefineField("GlobalVarNumber", typeof(int), FieldAttributes.Private | FieldAttributes.Literal).SetConstant(GlobalVarNumber);
-			return tp.CreateType();
-		}
+		//public Type CompileToClass(Type original, string className, System.Reflection.Emit.ModuleBuilder mb)
+		//{
+		//	TypeBuilder tp = mb.DefineType(className, TypeAttributes.Public, original);
+
+		//	Func<string, MethodBuilder> define = (n) => tp.DefineMethod(n, MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.ReuseSlot | MethodAttributes.Virtual, null, new[] { typeof(Environment) });
+		//	Compile(define("ScriptMain"));
+		//	//foreach (var item in original.GetMethods().Where(m=>m.GetCustomAttributes(typeof(ScriptDefinedMethodAttribute), true).Count() > 0))
+		//	//{
+		//	//    if (LabelExist(item.Name))
+		//	//    {
+		//	//        CompileLabel(item.Name, define(item.Name));
+		//	//    }
+		//	//}			
+		//	foreach (var item in LabelDict)
+		//	{
+		//		CompileLabel(item.Key, define("Script" + item.Key));
+		//	}
+		//	var getter = tp.DefineMethod("get_GlobalVarNumber", MethodAttributes.Family | MethodAttributes.SpecialName | MethodAttributes.HideBySig);
+		//	Expression.Lambda<Func<int>>(Expression.Constant(GlobalVarNumber)).CompileToMethod(getter);
+		//	tp.DefineProperty("GlobalVarNumber", PropertyAttributes.None, typeof(int), null).SetGetMethod(getter);
+		//	//tp.DefineField("GlobalVarNumber", typeof(int), FieldAttributes.Private | FieldAttributes.Literal).SetConstant(GlobalVarNumber);
+		//	return tp.CreateType();
+		//}
 
 		#endregion
 
@@ -217,13 +218,15 @@ namespace Masa.ScriptEngine
 			{
 				return RegistLiteral(id.Substring(1));
 			}
+
 			ParameterExpression prm;
-			if (VarDict.TryGetValue(id, out prm))
+			if (VarDict.TryGetValue(id, out prm))//スクリプトローカル引数
 			{
 				return prm;
 			}
+
 			PropertyInfo prp;
-			if (PropertyDict.TryGetValue(id, out prp))
+			if (PropertyDict.TryGetValue(id, out prp))//外部プロパティ
 			{
 				return Expression.Property(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), prp);
 			}
@@ -236,19 +239,28 @@ namespace Masa.ScriptEngine
 			{
 				return Expression.Property(Environment, EnvironmentProperty[id]);
 			}
-			if (ConstantValueDict.ContainsKey(id))
+			
+			if (ConstantValueDict.ContainsKey(id))//スクリプト側定数
 			{
 				return ConstantValueDict[id];
 			}
+			
 			if (NameValueTable != null && NameValueTable.Contains(id))
 			{
 				return MakeConstantExpression(Array.FindIndex(NameValueTable, s => s == id));
 			}
+			
 			int gvar = GlobalVarList.FindIndex(k => k == id);
-			if (gvar != -1)
+			if (gvar != -1)//スクリプトglobal変数
 			{
 				return Expression.Property(Environment, ScriptEngine.Environment.Info_Item, Expression.Constant(gvar, typeof(int)));
 			}
+
+			if (MethodDict.Any(p => p.Value.DefaultParameterCount == 0 && p.Key == id))//必須引数が0個の関数を呼び出す
+			{
+				return CallExternalMethod(id, null);
+			}
+
 			return RegistLiteral(id);
 		}
 
@@ -279,12 +291,16 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		Option[] GetOptions(object[] line)
 		{
+			if (line == null)
+			{
+				return new Option[0];
+			}
 			return line.OfType<OptionBlock>().Select((o) => ParseOptionBlock(o)).ToArray();
 		}
 
 		Option ParseOptionBlock(OptionBlock opt)
 		{
-			return new Option(opt.Name, GetArgs(opt.Tokens));
+			return new Option(opt.Name, GetArgs(opt.Tokens).ToArray());
 		}
 
 		#endregion
@@ -421,7 +437,7 @@ namespace Masa.ScriptEngine
 		Expression ProcessNormalStatement(Line line)
 		{
 			string id = (string)line.Tokens[0];
-			Func<Expression[]> args = () => GetArgs(line.Tokens.Skip(1));
+			Func<Expression[]> args = () => GetArgs(line.Tokens.Skip(1)).ToArray();
 			switch (id)
 			{
 				case "if":
@@ -640,9 +656,16 @@ namespace Masa.ScriptEngine
 		Expression CallExternalMethod(string id, object[] l)
 		{
 			//object[] l = line.Tokens.Slice(1, line.Tokens.Length - 1);
-			List<Expression> args = GetArgs(l).ToList();
+			
+			var method = MethodDict[id];
+			List<Expression> args = GetArgs(l);
 			Option[] options = GetOptions(l);
-			ScriptMemberAttribute atrribute = (ScriptMemberAttribute)MethodDict[id].GetCustomAttributes(typeof(ScriptMemberAttribute), true).First();
+			var atrribute = method.Attribute;
+			if (args.Count != method.DefaultParameterCount)
+			{
+				throw new ParseException("外部メソッド呼び出しで必須引数の数が不一致" + method.ToString() + String.Format(" need {0} params but {1} args.", method.DefaultParameterCount, args.Count));
+			}
+		
 			if (atrribute.OptionName != null)//オプションが定義されていれば
 			{
 				string[] name = atrribute.OptionName;
@@ -670,8 +693,7 @@ namespace Masa.ScriptEngine
 					}
 				}
 			}
-			var method = MethodDict[id];
-			var param = method.GetParameters();
+			var param = method.MethodInfo.GetParameters();
 			if (param.Length != args.Count)
 			{
 				throw new ParseException("外部メソッド呼び出しで引数とパラメータの数の不一致\n" + method.ToString() + String.Format(" need {0} params but {1} args.", param.Length, args.Count));
@@ -685,7 +707,7 @@ namespace Masa.ScriptEngine
 			}
 
 
-			return Expression.Call(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), method, args);
+			return Expression.Call(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), method.MethodInfo, args);
 		}
 
 		/// <summary>
@@ -740,9 +762,14 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		/// <param name="line">引数とオプションがくっついたトークン列</param>
 		/// <returns></returns>
-		Expression[] GetArgs(IEnumerable<object> line)
+		List<Expression> GetArgs(IEnumerable<object> line)
 		{
+			
 			var ret = new List<Expression>();
+			if (line == null)
+			{
+				return ret;
+			}
 			foreach (var item in line)
 			{
 				if (item is PareBlock)
@@ -769,7 +796,7 @@ namespace Masa.ScriptEngine
 					throw new ParseException("予期せぬエラー");
 				}
 			}
-			return ret.ToArray();
+			return ret;
 		}
 
 		class Option
@@ -801,7 +828,7 @@ namespace Masa.ScriptEngine
 
 				if (StaticMethodDict.ContainsKey((string)l[0]))
 				{
-					Expression[] args = GetArgs(l.Slice(1, l.Length - 1));
+					Expression[] args = GetArgs(l.Slice(1, l.Length - 1)).ToArray();
 					return Expression.Call(StaticMethodDict[(string)l[0]], args);
 				}
 				if (MethodDict.ContainsKey((string)l[0]))//関数の時

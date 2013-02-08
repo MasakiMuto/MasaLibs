@@ -11,11 +11,11 @@ namespace Masa.ScriptEngine
 	using Vector2 = Microsoft.Xna.Framework.Vector2;
 	using Vector3 = Microsoft.Xna.Framework.Vector3;
 
-	[AttributeUsage(AttributeTargets.Method, Inherited = true)]
-	public class ScriptDefinedMethodAttribute : Attribute
-	{
+	//[AttributeUsage(AttributeTargets.Method, Inherited = true)]
+	//public class ScriptDefinedMethodAttribute : Attribute
+	//{
 
-	}
+	//}
 
 	class Line
 	{
@@ -114,16 +114,41 @@ namespace Masa.ScriptEngine
 		}
 	}
 
+	internal class ScriptMethodInfo
+	{
+		public readonly MethodInfo MethodInfo;
+		public readonly ScriptMemberAttribute Attribute;
+		public readonly int DefaultParameterCount;
+
+		public ScriptMethodInfo(MethodInfo method)
+		{
+			MethodInfo = method;
+			var atr = method.GetCustomAttributes(typeof(ScriptMemberAttribute), true).First() as ScriptMemberAttribute;
+			Attribute = atr;
+			var paramNum = method.GetParameters().Length;
+			if (atr.OptionName == null)
+			{
+				DefaultParameterCount = paramNum;
+			}
+			else
+			{
+				DefaultParameterCount = paramNum - atr.OptionArgNum.Sum();
+			}
+		}
+	}
+
 	struct ClassReflectionInfo
 	{
-		public readonly Dictionary<string, MethodInfo> MethodDict;
+		public readonly Dictionary<string, ScriptMethodInfo> MethodDict;
 		public readonly Dictionary<string, PropertyInfo> PropertyDict;
-		public ClassReflectionInfo(Dictionary<string, MethodInfo> md, Dictionary<string, PropertyInfo> pd)
+		public ClassReflectionInfo(Dictionary<string, ScriptMethodInfo> md, Dictionary<string, PropertyInfo> pd)
 		{
 			MethodDict = md;
 			PropertyDict = pd;
 		}
 	}
+
+
 
 
 

@@ -13,7 +13,7 @@ namespace Masa.ScriptEngine
 	using Value = System.Single;
 	using Vector2 = Microsoft.Xna.Framework.Vector2;
 	using Vector3 = Microsoft.Xna.Framework.Vector3;
-	
+
 	internal static class ExpressionTreeMakerHelper
 	{
 		static Type ValueType = ExpressionTreeMaker.ValueType;
@@ -108,7 +108,7 @@ namespace Masa.ScriptEngine
 		public static ClassReflectionInfo MakeTargetInfoCache(Type target)
 		{
 
-			var md = new Dictionary<string, MethodInfo>();
+			var md = new Dictionary<string, ScriptMethodInfo>();
 			var pd = new Dictionary<string, PropertyInfo>();
 			foreach (var item in target.GetMembers(BindingFlags.NonPublic | BindingFlags.Public
 				| BindingFlags.Instance | BindingFlags.Static
@@ -128,11 +128,11 @@ namespace Masa.ScriptEngine
 				var atribute = atr.First();
 				if (item.MemberType == MemberTypes.Method)
 				{
-					md.Add(atribute.Name, (MethodInfo)item);
+					md.Add(atribute.Name, new ScriptMethodInfo(item as MethodInfo));
 				}
 				if (item.MemberType == MemberTypes.Property)
 				{
-					pd.Add(atribute.Name, (PropertyInfo)item);
+					pd.Add(atribute.Name, item as PropertyInfo);
 				}
 			}
 			return new ClassReflectionInfo(md, pd);

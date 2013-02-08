@@ -8,20 +8,20 @@ namespace Masa.ScriptEngine
 {
 	public static class DocumentCreater
 	{
-		public static string OutputClass(Dictionary<string, MethodInfo> method, Dictionary<string, PropertyInfo> property)
+		internal static string OutputClass(Dictionary<string, ScriptMethodInfo> method, Dictionary<string, PropertyInfo> property)
 		{
 			var str = new StringBuilder();
 			string[] itemTypes = {"Method", "Function", "Property" };
 			foreach (var item in method.OrderBy(i=>i.Key))
 			{
-				PrintName(str, item.Value.ReturnType == typeof(float) ? "Function" : "Method", item.Key, item.Value.Name);
+				PrintName(str, item.Value.MethodInfo.ReturnType == typeof(float) ? "Function" : "Method", item.Key, item.Value.MethodInfo.Name);
 				//str.Append(itemTypes[item.Value.ReturnType == typeof(float) ? 1 : 0]);
 				//str.Append(": ");
 				//str.Append(item.Key);
 				//str.Append(" from ");
 				//str.AppendLine(item.Value.Name);
-				var attr = item.Value.GetCustomAttributes(typeof(ScriptMemberAttribute), true).First() as ScriptMemberAttribute;
-				var param = item.Value.GetParameters();
+				var attr = item.Value.Attribute;
+				var param = item.Value.MethodInfo.GetParameters();
 				int index = 0;
 				ParameterInfo[] normalParams;
 				if (attr.OptionName != null)
