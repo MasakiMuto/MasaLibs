@@ -13,8 +13,8 @@ namespace Masa.ScriptEngine
 	using Value = System.Single;
 	using Vector2 = Microsoft.Xna.Framework.Vector2;
 	using Vector3 = Microsoft.Xna.Framework.Vector3;
-
-	internal class ExpressionTreeMakerHelper
+	
+	internal static class ExpressionTreeMakerHelper
 	{
 		static Type ValueType = ExpressionTreeMaker.ValueType;
 
@@ -100,6 +100,44 @@ namespace Masa.ScriptEngine
 				{"int", typeof(int)},
 			};
 		}
+
+
+		/// <summary>
+		/// 型情報のキャッシュを作る。明示的に呼ばなくても必要なら作られる
+		/// </summary>
+		public static ClassReflectionInfo MakeTargetInfoCache(Type target)
+		{
+
+			var md = new Dictionary<string, MethodInfo>();
+			var pd = new Dictionary<string, PropertyInfo>();
+			foreach (var item in target.GetMembers(BindingFlags.NonPublic | BindingFlags.Public
+				| BindingFlags.Instance | BindingFlags.Static
+				//| BindingFlags.SetProperty | BindingFlags.GetProperty
+				| BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy))
+			{
+				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>();
+				int num = atr.Count();
+				if (num == 0)
+				{
+					continue;
+				}
+				if (num > 1)
+				{
+					throw new Exception(item.Name + ":同一のメンバに対し複数のScriptMemberAttributeが定義されている。\n" + atr.Select(a => a.Name).Aggregate("", (x, sum) => sum + "\n" + x));
+				}
+				var atribute = atr.First();
+				if (item.MemberType == MemberTypes.Method)
+				{
+					md.Add(atribute.Name, (MethodInfo)item);
+				}
+				if (item.MemberType == MemberTypes.Property)
+				{
+					pd.Add(atribute.Name, (PropertyInfo)item);
+				}
+			}
+			return new ClassReflectionInfo(md, pd);
+		}
+
 
 	}
 }

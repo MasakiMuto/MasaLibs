@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArithExpressionMaker.cs" />
     <Compile Include="CompiledScriptManager.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="DocumentCreater.cs" />

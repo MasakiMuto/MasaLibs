@@ -47,6 +47,7 @@ namespace Masa.ScriptEngine
 		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = new Dictionary<Type, ClassReflectionInfo>();
 		static readonly Dictionary<string, Expression> ConstantValueDict = ExpressionTreeMakerHelper.GetConstantValueDictionary();
 		static readonly Dictionary<string, Type> TypeNameDictionary = ExpressionTreeMakerHelper.GetTypeNameDictionary();
+
 		public ExpressionTreeMaker(object[] token, Type targetType)
 			: this(token, targetType, null)
 		{
@@ -75,47 +76,13 @@ namespace Masa.ScriptEngine
 
 		#region 準備系
 
-		
-
-		
-
-		
-
 		/// <summary>
 		/// 型情報のキャッシュを作る。明示的に呼ばなくても必要なら作られる
 		/// </summary>
 		public static void MakeTargetInfoCache(Type target)
 		{
 			if (ReflectionCashe.ContainsKey(target)) return;
-
-			var md = new Dictionary<string, MethodInfo>();
-			var pd = new Dictionary<string, PropertyInfo>();
-			foreach (var item in target.GetMembers(BindingFlags.NonPublic | BindingFlags.Public 
-				| BindingFlags.Instance | BindingFlags.Static
-				//| BindingFlags.SetProperty | BindingFlags.GetProperty
-				| BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy))
-			{
-				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>();
-				int num = atr.Count();
-				if (num == 0)
-				{
-					continue;
-				}
-				if (num > 1)
-				{
-					throw new Exception(item.Name + ":同一のメンバに対し複数のScriptMemberAttributeが定義されている。\n" + atr.Select(a => a.Name).Aggregate("", (x, sum) => sum + "\n" + x));
-				}
-				var atribute = atr.First();
-				if (item.MemberType == MemberTypes.Method)
-				{
-					md.Add(atribute.Name, (MethodInfo)item);
-				}
-				if (item.MemberType == MemberTypes.Property)
-				{
-					pd.Add(atribute.Name, (PropertyInfo)item);
-				}
-			}
-			ReflectionCashe.Add(target, new ClassReflectionInfo(md, pd));
+			ReflectionCashe[target] = ExpressionTreeMakerHelper.MakeTargetInfoCache(target);
 		}
 
 		void GetTargetInfo()
@@ -728,21 +695,6 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		Expression GetBlock(Line user)
 		{
-			//if (Lines[user.Index + 1].Level != user.Level + 1)
-			//{
-			//    throw new ParseException("ブロックの書き方が不正", user);
-			//}
-			//var ret = new List<Expression>();
-			//for (int i = user.Index + 1; i < Lines.Length; i++)
-			//{
-			//    if (Lines[i].Level <= user.Level) break;
-			//    if (Lines[i].Level == user.Level + 1)
-			//    {
-			//        var e = ProcessStatement(Lines[i]);
-			//        if (e != null) ret.Add(e);
-			//    }
-			//}
-			//return Expression.Block(ret.ToArray());
 			return InnerGetBlock(new List<Expression>(), user);
 		}
 
@@ -755,25 +707,6 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		Expression GetBlockWithBreak(Line user, Expression test, LabelTarget label)
 		{
-			//if (Lines[user.Index + 1].Level != user.Level + 1)
-			//{
-			//    throw new ParseException("ブロックの書き方が不正", user);
-			//}
-			//var ret = new List<Expression>();
-			//ret.Add(Expression.IfThen(test, Expression.Break(label)));
-			//for (int i = user.Index + 1; i < Lines.Length; i++)
-			//{
-			//    if (Lines[i].Level <= user.Level) break;
-			//    if (Lines[i].Level == user.Level + 1)
-			//    {
-			//        var e = ProcessStatement(Lines[i]);
-			//        if (e != null)
-			//        {
-			//            ret.Add(e);
-			//        }
-			//    }
-			//}
-			//return Expression.Block(ret.ToArray());
 			var list = new List<Expression>();
 			list.Add(Expression.IfThen(test, Expression.Break(label)));
 			return InnerGetBlock(list, user);
