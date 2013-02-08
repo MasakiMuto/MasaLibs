@@ -18,7 +18,9 @@ namespace Masa.ParticleEngine
 		/// 位置や速度加速度は複数オプション指定の場合すべての効果が加算される
 		/// Theta=xy2次元での角度、Phi=3次元での角度(省略した場合0)
 		/// </summary>
-		[ScriptMember("make", OptionName = new[] { "pos", "apos", "posa", "vel", "vela", "ac", "aca", "acv", "alp", "r", "angle" }, OptionArgNum = new[] { 3, 3, 3, 3, 3, 3, 3, 1, 3, 2, 2 })]
+		[ScriptMember("make",
+			OptionName = new[] { "pos", "apos", "posa", "vel", "vela", "ac", "aca", "acv", "alp", "r", "angle" },
+			OptionArgNum = new[] { 3, 3, 3, 3, 3, 3, 3, 1, 3, 2, 2 })]
 		protected void Make(float name,
 			float relativePosX, float relativePosY, float relativePosZ,
 			float absolutePosX, float absolutePosY, float absolutePosZ,

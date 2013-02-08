@@ -204,6 +204,16 @@ namespace Masa.Lib.XNA
 				: -1;
 		}
 
+		public static Rectangle GetRect(float x, float y, float width, float height)
+		{
+			return new Rectangle((int)x, (int)y, (int)width, (int)height);
+		}
+
+		public static Rectangle GetRect(Vector2 pos, Vector2 size)
+		{
+			return GetRect(pos.X, pos.Y, size.X, size.Y);
+		}
+
 		#endregion
 
 		#region Collisions
