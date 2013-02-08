@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Masa.Lib;
+using System.Diagnostics;
 
 namespace Masa.Lib.XNA
 {
@@ -34,10 +35,10 @@ namespace Masa.Lib.XNA
 								0, 0, -(farPlane - alpha) / fn * nearPlane, alpha);
 		}
 
-	
-		
-		
-		
+
+
+
+
 
 		//角度差を -Pi ~ +Piで返す
 		public static float GetAngleDistance(float a1, float a2)
@@ -46,8 +47,8 @@ namespace Masa.Lib.XNA
 		}
 
 
-	
-	
+
+
 
 		/// <summary>
 		/// 戦車風固定角度自機狙い
@@ -121,12 +122,14 @@ namespace Masa.Lib.XNA
 
 		public static Vector3 GetVector(float length, float angle1, float angle2)
 		{
+			Debug.Assert(!length.IsNan() && !angle1.IsNan() && !angle2.IsNan());
 			return new Vector3(MathUtil.Cos(angle1) * MathUtil.Cos(angle2), MathUtil.Sin(angle1),
 				MathUtil.Cos(angle1) * MathUtil.Sin(angle2)) * length;
 		}
 
 		public static Vector2 GetVector(float length, float angle)
 		{
+			Debug.Assert(!length.IsNan() && !angle.IsNan());
 			return new Vector2(MathUtil.Cos(angle) * length, MathUtil.Sin(angle) * length);
 		}
 
@@ -218,7 +221,7 @@ namespace Masa.Lib.XNA
 
 		#region Collisions
 
-		
+
 		public static bool CollisionRect(Vector2 center1, Vector2 size1, Vector2 center2, Vector2 size2)
 		{
 			return Math.Abs(center1.X - center2.X) < (size1.X + size2.X) * .5f && Math.Abs(center1.Y - center2.Y) < (size1.Y + size2.Y) * .5f;

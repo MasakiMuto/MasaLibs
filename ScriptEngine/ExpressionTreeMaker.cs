@@ -36,30 +36,17 @@ namespace Masa.ScriptEngine
 		Type TargetType;
 
 		static readonly LabelTarget ExitLabel = Expression.Label("_ScriptExit");
-		static readonly Type ValueType = typeof(Value);
+		internal static readonly Type ValueType = typeof(Value);
 		static readonly Expression ZeroExpression = Expression.Constant(0f, ValueType);
 		static readonly Expression OneExpression = Expression.Constant(1f, ValueType);
 		static readonly Expression NanExpression = Expression.Constant(Value.NaN, ValueType);
 		//static readonly LabelTarget LOOPEND = Expression.Label("EndLoop");
-		static readonly Dictionary<string, FieldInfo> EnvironmentField = GetEnvironmentFieldInfo();
-		static readonly Dictionary<string, PropertyInfo> EnvironmentProperty = GetEnvironmentPropertyInfo();
-		static readonly Dictionary<string, MethodInfo> StaticMethodDict = GetStaticMethodInfo();
+		static readonly Dictionary<string, FieldInfo> EnvironmentField = ExpressionTreeMakerHelper.GetEnvironmentFieldInfo();
+		static readonly Dictionary<string, PropertyInfo> EnvironmentProperty = ExpressionTreeMakerHelper.GetEnvironmentPropertyInfo();
+		static readonly Dictionary<string, MethodInfo> StaticMethodDict = ExpressionTreeMakerHelper.GetStaticMethodInfo();
 		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = new Dictionary<Type, ClassReflectionInfo>();
-		static readonly Dictionary<string, Expression> ConstantValueDict = new Dictionary<string, Expression>()
-		{
-			{"PI2", Expression.Constant((Value)Math.PI * 2f, ValueType)},
-			{"PI", Expression.Constant((Value)Math.PI, ValueType)},
-		};
-
-		static readonly Dictionary<string, Type> TypeNameDictionary = new Dictionary<string, Type>()
-		{
-			{"float", typeof(float)},
-			{"float2", typeof(Vector2)},
-			{"float3", typeof(Vector3)},
-			{"double", typeof(double)},
-			{"int", typeof(int)},
-		};
-
+		static readonly Dictionary<string, Expression> ConstantValueDict = ExpressionTreeMakerHelper.GetConstantValueDictionary();
+		static readonly Dictionary<string, Type> TypeNameDictionary = ExpressionTreeMakerHelper.GetTypeNameDictionary();
 		public ExpressionTreeMaker(object[] token, Type targetType)
 			: this(token, targetType, null)
 		{
@@ -88,66 +75,11 @@ namespace Masa.ScriptEngine
 
 		#region 準備系
 
-		static Dictionary<string, FieldInfo> GetEnvironmentFieldInfo()
-		{
-			var ret = new Dictionary<string, FieldInfo>();
-			foreach (var item in typeof(Environment).GetFields())
-			{
-				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true);
-				foreach (ScriptMemberAttribute a in atr)
-				{
-					ret.Add(a.Name, item);
-				}
-			}
-			return ret;
-		}
+		
 
-		static Dictionary<string, PropertyInfo> GetEnvironmentPropertyInfo()
-		{
-			var ret = new Dictionary<string, PropertyInfo>();
-			foreach (var item in typeof(Environment).GetProperties())
-			{
-				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true);
-				foreach (ScriptMemberAttribute a in atr)
-				{
-					ret.Add(a.Name, item);
-				}
-			}
-			return ret;
-		}
+		
 
-		/// <summary>
-		/// 用意されたメソッドの定義
-		/// </summary>
-		/// <returns></returns>
-		static Dictionary<string, MethodInfo> GetStaticMethodInfo()
-		{
-			var ret = new Dictionary<string, MethodInfo>();
-			var mu = typeof(Masa.Lib.MathUtil);
-			var xmath = typeof(Masa.Lib.XNA.MathUtilXNA);
-			var vals = typeof(ValueCreaterFunctions);
-			Type vec = typeof(Vector2);
-			Type[] vecs = new[]{vec};
-			Type[][] args = Enumerable.Range(0, 4).Select(x => Enumerable.Repeat(ValueType, x).ToArray()).ToArray();
-			ret.Add("cos", mu.GetMethod("Cos"));
-			ret.Add("sin", mu.GetMethod("Sin"));
-			ret.Add("tan", mu.GetMethod("Tan"));
-			ret.Add("atan", mu.GetMethod("Atan2"));
-			ret.Add("pow", typeof(Masa.Lib.MathUtil).GetMethod("Pow", new[] { ValueType, ValueType }));
-			ret.Add("abs", typeof(Math).GetMethod("Abs", new[] { ValueType }));
-			ret.Add("max", typeof(Math).GetMethod("Max", new[] { ValueType, ValueType }));
-			ret.Add("min", typeof(Math).GetMethod("Min", new[] { ValueType, ValueType }));
-			ret["float2"] = vals.GetMethod("MakeVector2", args[2]);
-			ret["float3"] = vals.GetMethod("MakeVector3", args[3]);
-			ret["float"] = vals.GetMethod("MakeFloat", args[1]);
-			ret["double"] = vals.GetMethod("MakeDouble", args[1]);
-			ret["int"] = vals.GetMethod("MakeInteger", args[1]);
-			ret["float2arc"] = xmath.GetMethod("GetVector", args[2]);
-			ret["float2ang"] = xmath.GetMethod("Angle", vecs);
-			ret["float2len"] = vals.GetMethod("GetVectorLength", vecs);
-			ret["float2len2"] = vals.GetMethod("GetVectorLengthSquared", vecs);
-			return ret;
-		}
+		
 
 		/// <summary>
 		/// 型情報のキャッシュを作る。明示的に呼ばなくても必要なら作られる
@@ -314,7 +246,7 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		Expression ParseVariable(string id)
 		{
-			if (id[0] == Scanner.StringLiteralMark)
+			if (id[0] == Scanner.StringLiteralMark)//@エスケープ文字列の場合
 			{
 				return RegistLiteral(id.Substring(1));
 			}
