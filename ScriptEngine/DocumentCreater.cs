@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Masa.ScriptEngine
 {
@@ -11,8 +12,8 @@ namespace Masa.ScriptEngine
 		internal static string OutputClass(Dictionary<string, ScriptMethodInfo> method, Dictionary<string, PropertyInfo> property)
 		{
 			var str = new StringBuilder();
-			string[] itemTypes = {"Method", "Function", "Property" };
-			foreach (var item in method.OrderBy(i=>i.Key))
+			string[] itemTypes = { "Method", "Function", "Property" };
+			foreach (var item in method.OrderBy(i => i.Key))
 			{
 				PrintName(str, item.Value.MethodInfo.ReturnType == typeof(float) ? "Function" : "Method", item.Key, item.Value.MethodInfo.Name);
 				//str.Append(itemTypes[item.Value.ReturnType == typeof(float) ? 1 : 0]);
@@ -55,7 +56,7 @@ namespace Masa.ScriptEngine
 							index++;
 						}
 						str.AppendLine();
-						
+
 					}
 				}
 				str.AppendLine();
@@ -72,6 +73,7 @@ namespace Masa.ScriptEngine
 
 		}
 
+
 		static void PrintName(StringBuilder builder, string typeName, string scriptName, string baseName)
 		{
 			builder.Append(typeName);
@@ -80,6 +82,90 @@ namespace Masa.ScriptEngine
 			builder.Append("(");
 			builder.Append(baseName);
 			builder.AppendLine(")");
+		}
+
+		internal static XElement ClassToXml(Type target, Dictionary<string, ScriptMethodInfo> method, Dictionary<string, PropertyInfo> property)
+		{
+			var root = new XElement("class");
+			root.Add(NameToXml(target.Name));
+			var methodRoot = new XElement("methods");
+			methodRoot.Add(method.Select(x => MethodToXml(x.Value)).ToArray());
+			var propRoot = new XElement("propertys");
+			propRoot.Add(property.Select(x => PropertyToXml(x.Value)).ToArray());
+			root.Add(methodRoot, propRoot);
+
+			return root;
+		}
+
+		static XElement MemberToXml(string type, MemberInfo member)
+		{
+			var root = new XElement(type);
+			root.Add(NameToXml(member.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>().First().Name));
+			//root.Add(new XElement("type", member.MemberType));
+			root.Add(new XElement("source", member.DeclaringType.Name + "." + member.Name));
+			return root;
+		}
+
+		static XElement MethodToXml(ScriptMethodInfo method)
+		{
+			var root = MemberToXml("method", method.MethodInfo);
+			//root.Add(NameToXml(method.Attribute.Name));
+			root.Add(new XElement("return", method.MethodInfo.ReturnType));
+			//root.Add(new XElement("source", method.MethodInfo.Name));
+			var param = new XElement("params");
+			if (method.DefaultParameterCount > 0)
+			{
+				var defparam = new XElement("default");
+				foreach (var item in method.MethodInfo.GetParameters().Take(method.DefaultParameterCount))
+				{
+					defparam.Add(ParameterToXml(item)); 
+				}
+				param.Add(defparam);
+			}
+			if (method.Attribute.OptionName != null && method.Attribute.OptionName.Count() > 0)
+			{
+				var opt = new XElement("options");
+				int index = method.DefaultParameterCount;
+				foreach (var item in method.Attribute.OptionName.Zip(method.Attribute.OptionArgNum, (name, num)=>new{name, num}))
+				{
+					var option = new XElement("option", NameToXml(item.name));
+					for (int i = 0; i < item.num; i++)
+					{
+						option.Add(ParameterToXml(method.MethodInfo.GetParameters()[index]));
+						index++;
+					}
+					opt.Add(option);
+
+					//opt.Add(new XElement(,  ParameterToXml(method.MethodInfo.GetParameters()[index])
+				}
+				param.Add(opt);
+			}
+			root.Add(param);
+			return root;
+		}
+
+		static XElement PropertyToXml(PropertyInfo prop)
+		{
+			var root = MemberToXml("property", prop);
+			root.Add(TypeToXml(prop.PropertyType));
+			root.Add(new XElement("get", prop.CanRead), new XElement("set", prop.CanWrite));
+			return root;
+		}
+
+
+		static XElement TypeToXml(Type type)
+		{
+			return new XElement("type", type.Name);
+		}
+
+		static XElement ParameterToXml(ParameterInfo param)
+		{
+			return new XElement("param", NameToXml(param.Name), TypeToXml(param.ParameterType));
+		}
+
+		static XElement NameToXml(string name)
+		{
+			return new XElement("name", name);
 		}
 	}
 }

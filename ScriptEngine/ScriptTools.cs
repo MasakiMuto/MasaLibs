@@ -21,7 +21,7 @@ namespace Masa.ScriptEngine
 
 	public abstract class ScriptDataBase
 	{
-		protected IExpressionTreeMaker Tree;
+		public IExpressionTreeMaker Tree { get; protected set; }
 		public Type TargetType { get; private set; }
 
 		protected ScriptDataBase(Type type)

@@ -100,6 +100,11 @@ namespace Masa.ScriptEngine
 			return DocumentCreater.OutputClass(MethodDict, PropertyDict);
 		}
 
+		public System.Xml.Linq.XElement OutputClassXml()
+		{
+			return DocumentCreater.ClassToXml(this.TargetType, MethodDict, PropertyDict);
+		}
+
 		#endregion
 
 		/// <summary>

@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Masa.ScriptEngine
 {
@@ -342,7 +343,7 @@ namespace Masa.ScriptEngine
 			}
 		}
 
-		public void OutputDocument(string fileName)
+		public void OutputDocumentText(string fileName)
 		{
 			var str = new StringBuilder();
 			foreach (var item in items)
@@ -353,6 +354,16 @@ namespace Masa.ScriptEngine
 				str.AppendLine();
 			}
 			File.WriteAllText(fileName, str.ToString());
+		}
+
+		public void OutputDocument(string fileName)
+		{
+			//<?xml-stylesheet href="doc.css" type="text/css"?>
+			var doc = new XDocument();
+			doc.Add(new XProcessingInstruction("xml-stylesheet", "type='text/css' href='doc.css'"));
+			doc.Add(new XElement("document", items.Values.Select(d => (d.First().Value.Tree as ExpressionTreeMaker).OutputClassXml()).ToArray()));
+			// .OfType<ScriptData>().Select(x => (x.Tree as ExpressionTreeMaker).OutputClassXml()).ToArray()));
+			doc.Save(fileName);
 		}
 	}
 }
