@@ -397,25 +397,51 @@ namespace Masa.ScriptEngine
 			else
 			{
 				Expression r = ParsePareBlock(new PareBlock(line.Tokens.Skip(2).ToArray()));//代入される値
-				//Expression r = ParsePareBlock(new PareBlock(new[] { line.Tokens[2] }));
-				switch (m)
-				{
-					case Marks.Sub:
-						return Expression.Assign(target, r);
-					case Marks.SubPos:
-						return Expression.AddAssign(target, r);
-					case Marks.SubNeg:
-						return Expression.SubtractAssign(target, r);
-					case Marks.SubMul:
-						return Expression.MultiplyAssign(target, r);
-					case Marks.SubDiv:
-						return Expression.DivideAssign(target, r);
-				}
+				
+				//switch (m)
+				//{
+				//	case Marks.Sub:
+				//		return Expression.Assign(target, r);
+				//	case Marks.SubPos:
+				//		return Expression.AddAssign(target, r);
+				//	case Marks.SubNeg:
+				//		return Expression.SubtractAssign(target, r);
+				//	case Marks.SubMul:
+				//		return Expression.MultiplyAssign(target, r);
+				//	case Marks.SubDiv:
+				//		return Expression.DivideAssign(target, r);
+				//}
+
+				return Assign(m, target, r);
+
 			}
 			//throw new Exception("Line " + line.Number + "がおかしい");
 			throw new ParseException("おかしい", line);
 
 
+		}
+
+		Expression Assign(Marks mark, Expression target, Expression value)
+		{
+			if (!target.Type.IsAssignableFrom(value.Type))
+			{
+				value = Expression.Convert(value, target.Type);
+			}
+			switch (mark)
+			{
+				case Marks.Sub:
+					return Expression.Assign(target, value);
+				case Marks.SubPos:
+					return Expression.AddAssign(target, value);
+				case Marks.SubNeg:
+					return Expression.SubtractAssign(target, value);
+				case Marks.SubMul:
+					return Expression.MultiplyAssign(target, value);
+				case Marks.SubDiv:
+					return Expression.DivideAssign(target, value);
+			
+			}
+			throw new Exception();
 		}
 
 		/// <summary>

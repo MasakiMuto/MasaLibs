@@ -101,6 +101,68 @@ namespace Masa.ScriptEngine
 			};
 		}
 
+		class Maybe<T, S>
+			where T : class
+			where S : class
+		{
+			public readonly T Value1;
+			public readonly S Value2;
+
+			public Maybe(T value)
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException();
+				}
+				Value1 = value;
+			}
+
+			public Maybe(S value)
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException();
+				}
+				Value2 = value;
+			}
+
+			public bool IsT()
+			{
+				return Value1 != null;
+			}
+
+			public bool IsS()
+			{
+				return Value2 != null;
+			}
+
+			public override string ToString()
+			{
+				if (IsT())
+				{
+					return String.Format("{0} is {1}, {2}", base.ToString(), typeof(T).Name, Value1.ToString());
+				}
+				else if (IsS())
+				{
+					return String.Format("{0} is {1}, {2}", base.ToString(), typeof(S).Name, Value2.ToString());
+				}
+				else
+				{
+					throw new Exception();
+				}
+			}
+		}
+
+		/// <summary>
+		/// 単一の属性を返す
+		/// </summary>
+		/// <param name="member"></param>
+		/// <returns></returns>
+		internal static ScriptMemberAttribute GetScriptMemberAttribute(MemberInfo member)
+		{
+			return Attribute.GetCustomAttribute(member, typeof(ScriptMemberAttribute), true) as ScriptMemberAttribute;
+		}
+
 
 		/// <summary>
 		/// 型情報のキャッシュを作る。明示的に呼ばなくても必要なら作られる
@@ -110,31 +172,86 @@ namespace Masa.ScriptEngine
 
 			var md = new Dictionary<string, ScriptMethodInfo>();
 			var pd = new Dictionary<string, PropertyInfo>();
+			var overrideItems = new Dictionary<string, List<Tuple<ScriptMemberAttribute, Maybe<ScriptMethodInfo, PropertyInfo>>>>();
 			foreach (var item in target.GetMembers(BindingFlags.NonPublic | BindingFlags.Public
-				| BindingFlags.Instance | BindingFlags.Static
-				//| BindingFlags.SetProperty | BindingFlags.GetProperty
-				| BindingFlags.InvokeMethod | BindingFlags.FlattenHierarchy))
+				| BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy))
 			{
-				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>();
-				int num = atr.Count();
-				if (num == 0)
+
+				//var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>();
+				var attribute = GetScriptMemberAttribute(item);
+				//var attribute = Attribute.GetCustomAttribute(item, typeof(ScriptMemberAttribute), true) as ScriptMemberAttribute;
+				if (attribute == null)
 				{
 					continue;
 				}
-				if (num > 1)
+				////var atr = ScriptMemberAttribute.GetCustomAttributes(
+				//if (!atr.Any())
+				//{
+				//	//if (item is MethodInfo)
+				//	//{
+				//	//	var m = (item as MethodInfo).GetBaseDefinition().GetCustomAttributes(typeof(Scanner;
+						
+				//	//}
+				//	continue;
+				//}
+
+				//if (atr.Count() > 1)
+				//{
+				//	throw new Exception(item.Name + ":同一のメンバに対し複数のScriptMemberAttributeが定義されている。\n" + atr.Select(a => a.Name).Aggregate("", (x, sum) => sum + "\n" + x));
+				//}
+				//var attribute = atr.First();
+				Maybe<ScriptMethodInfo, PropertyInfo> maybe = null;
+
+				if (!overrideItems.ContainsKey(attribute.Name))
 				{
-					throw new Exception(item.Name + ":同一のメンバに対し複数のScriptMemberAttributeが定義されている。\n" + atr.Select(a => a.Name).Aggregate("", (x, sum) => sum + "\n" + x));
+					overrideItems[attribute.Name] = new List<Tuple<ScriptMemberAttribute, Maybe<ScriptMethodInfo, PropertyInfo>>>();
 				}
-				var atribute = atr.First();
 				if (item.MemberType == MemberTypes.Method)
 				{
-					md.Add(atribute.Name, new ScriptMethodInfo(item as MethodInfo));
+					
+					var info = new ScriptMethodInfo(item as MethodInfo);
+					md[attribute.Name] = info;
+					maybe = new Maybe<ScriptMethodInfo, PropertyInfo>(info);
 				}
 				if (item.MemberType == MemberTypes.Property)
 				{
-					pd.Add(atribute.Name, item as PropertyInfo);
+					pd[attribute.Name] = item as PropertyInfo;
+					maybe = new Maybe<ScriptMethodInfo, PropertyInfo>(item as PropertyInfo);
 				}
+				overrideItems[attribute.Name].Add(new Tuple<ScriptMemberAttribute, Maybe<ScriptMethodInfo, PropertyInfo>>(attribute, maybe));
 			}
+
+			foreach (var item in overrideItems.Where(i => i.Value.Count > 1))//スクリプト名が重複しているものの処理
+			{
+				var exception = new Exception("スクリプト名の重複" + item.Key + item.Value.Select(x => x.Item2.ToString()));
+				if (!item.Value.Any(x => x.Item1.IsOverride))
+				{
+					throw exception;
+				}
+				var head = item.Value
+					.Select(x => new{x = x, info = x.Item2.IsT() ? x.Item2.Value1.MethodInfo as MemberInfo : x.Item2.Value2 as MemberInfo})
+					.OrderByDescending(x => x, (x, y) => x.info.DeclaringType.GetBaseTypeTree().Count - y.info.DeclaringType.GetBaseTypeTree().Count)
+					.First().x;
+				if (!head.Item1.IsOverride)
+				{
+					throw exception;
+				}
+				else
+				{
+					if (head.Item2.IsT())
+					{
+						md[head.Item1.Name] = head.Item2.Value1;
+					}
+					else
+					{
+						pd[head.Item1.Name] = head.Item2.Value2;
+					}
+				}
+				
+				
+			}
+
+
 			return new ClassReflectionInfo(md, pd);
 		}
 

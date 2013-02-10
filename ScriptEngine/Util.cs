@@ -91,6 +91,7 @@ namespace Masa.ScriptEngine
 		public ScriptMemberAttribute(string scriptName)
 		{
 			name = scriptName;
+			IsOverride = false;
 		}
 		public ScriptMemberAttribute(string scriptName, string[] optionNames, int[] optionArgs)
 			: this(scriptName)
@@ -112,6 +113,11 @@ namespace Masa.ScriptEngine
 			get;
 			set;
 		}
+
+		/// <summary>
+		/// 基底クラスで宣言された同名のスクリプト要素を上書きするか
+		/// </summary>
+		public bool IsOverride { get; set; }
 	}
 
 	internal class ScriptMethodInfo

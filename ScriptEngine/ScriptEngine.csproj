@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnonymousComparer.cs" />
     <Compile Include="ArithExpressionMaker.cs" />
     <Compile Include="CompiledScriptManager.cs" />
     <Compile Include="Compiler.cs" />
@@ -70,6 +71,9 @@
       <Project>{badd7c9a-bc50-46cf-882c-58d597dc8495}</Project>
       <Name>MasaLib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -100,7 +100,8 @@ namespace Masa.ScriptEngine
 		static XElement MemberToXml(string type, MemberInfo member)
 		{
 			var root = new XElement(type);
-			root.Add(NameToXml(member.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>().First().Name));
+			//root.Add(NameToXml(member.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>().First().Name));
+			root.Add(NameToXml(ExpressionTreeMakerHelper.GetScriptMemberAttribute(member).Name));
 			//root.Add(new XElement("type", member.MemberType));
 			root.Add(new XElement("source", member.DeclaringType.Name + "." + member.Name));
 			return root;

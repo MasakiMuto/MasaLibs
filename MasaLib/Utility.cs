@@ -131,7 +131,32 @@ namespace Masa.Lib
 			}
 		}
 
-		#region Utils
+		/// <summary>
+		/// 現在の型のベースクラスを追う(近い順に並びObjectで終わる、自分自身の型は含まない)
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public static List<Type> GetBaseTypeTree(this Type type)
+		{
+			var list = new List<Type>();
+			GetBaseTypeTreeInternal(type, list);
+			return list;
+		}
+
+		static void GetBaseTypeTreeInternal(Type type, List<Type> list)
+		{
+			var bt = type.BaseType;
+			if (bt == null)
+			{
+			}
+			else
+			{
+				list.Add(bt);
+				GetBaseTypeTreeInternal(bt, list);
+			}
+		}
+
+		#region MathUtils
 
 
 		/// <summary>
