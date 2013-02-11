@@ -83,21 +83,21 @@ namespace Masa.ScriptEngine
 				case Marks.Mod:
 					return Expression.Modulo(l, r);
 				case Marks.And:
-					return BoolToFloat(Expression.AndAlso(FloatToBool(l), FloatToBool(r)));
+					return (Expression.AndAlso(ExpressionTreeMakerHelper.ExpressionToBool(l), ExpressionTreeMakerHelper.ExpressionToBool(r)));
 				case Marks.Or:
-					return BoolToFloat(Expression.OrElse(FloatToBool(l), FloatToBool(r)));
+					return (Expression.OrElse(ExpressionTreeMakerHelper.ExpressionToBool(l), ExpressionTreeMakerHelper.ExpressionToBool(r)));
 				case Marks.Equal:
-					return BoolToFloat(Expression.Equal(l, r));
+					return (Expression.Equal(l, r));
 				case Marks.NotEqual:
-					return BoolToFloat(Expression.NotEqual(l, r));
+					return (Expression.NotEqual(l, r));
 				case Marks.Big:
-					return BoolToFloat(Expression.GreaterThan(l, r));
+					return (Expression.GreaterThan(l, r));
 				case Marks.BigEqual:
-					return BoolToFloat(Expression.GreaterThanOrEqual(l, r));
+					return (Expression.GreaterThanOrEqual(l, r));
 				case Marks.Small:
-					return BoolToFloat(Expression.LessThan(l, r));
+					return (Expression.LessThan(l, r));
 				case Marks.SmallEqual:
-					return BoolToFloat(Expression.LessThanOrEqual(l, r));
+					return (Expression.LessThanOrEqual(l, r));
 			}
 			throw new ParseException("ありえない");
 		}
@@ -141,11 +141,6 @@ namespace Masa.ScriptEngine
 			return (Expression)list[ind][0];
 		}
 
-
-		static Expression FloatToBool(Expression val)
-		{
-			return Expression.NotEqual(val, ZeroExpression);
-		}
 
 		static Expression BoolToFloat(Expression val)
 		{

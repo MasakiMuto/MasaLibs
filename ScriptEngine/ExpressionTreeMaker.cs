@@ -472,15 +472,16 @@ namespace Masa.ScriptEngine
 			switch (id)
 			{
 				case "if":
-					return MakeIfStatement(line, Expression.NotEqual(args()[0], ZeroExpression));
-				//return Expression.IfThen(Expression.NotEqual(args()[0], ZERO), GetBlock(line));
+					return MakeIfStatement(line, args()[0]);
 				case "else"://if - else の流れで処理するため単体ではスルー
 					return null;
 				case "while":
 					goto case "repeat";
 				case "repeat":
 					LabelTarget label = Expression.Label(line.Number.ToString());
-					return Expression.Loop(GetBlockWithBreak(line, Expression.Equal(args()[0], ZeroExpression), label), label);
+					var pred = Expression.Not( ExpressionTreeMakerHelper.ExpressionToBool(args()[0]));
+					//pred = Expression.Equal(args()[0], ZeroExpression);
+					return Expression.Loop(GetBlockWithBreak(line, pred, label), label);
 				case "loop":
 					return MakeLoopStatement(line);
 				case "goto":
@@ -520,6 +521,7 @@ namespace Masa.ScriptEngine
 
 		Expression MakeIfStatement(Line line, Expression pred)
 		{
+			pred = ExpressionTreeMakerHelper.ExpressionToBool(pred);
 			var index = line.Index;
 			var ifBlock = GetBlock(line);
 

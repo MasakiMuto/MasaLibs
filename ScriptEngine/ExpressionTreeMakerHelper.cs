@@ -86,6 +86,8 @@ namespace Masa.ScriptEngine
 			{
 				{"PI2", Expression.Constant((Value)Math.PI * 2f, ValueType)},
 				{"PI", Expression.Constant((Value)Math.PI, ValueType)},
+				{"true", Expression.Constant(true)},
+				{"false", Expression.Constant(false)}
 			};
 		}
 
@@ -101,57 +103,7 @@ namespace Masa.ScriptEngine
 			};
 		}
 
-		class Maybe<T, S>
-			where T : class
-			where S : class
-		{
-			public readonly T Value1;
-			public readonly S Value2;
 
-			public Maybe(T value)
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException();
-				}
-				Value1 = value;
-			}
-
-			public Maybe(S value)
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException();
-				}
-				Value2 = value;
-			}
-
-			public bool IsT()
-			{
-				return Value1 != null;
-			}
-
-			public bool IsS()
-			{
-				return Value2 != null;
-			}
-
-			public override string ToString()
-			{
-				if (IsT())
-				{
-					return String.Format("{0} is {1}, {2}", base.ToString(), typeof(T).Name, Value1.ToString());
-				}
-				else if (IsS())
-				{
-					return String.Format("{0} is {1}, {2}", base.ToString(), typeof(S).Name, Value2.ToString());
-				}
-				else
-				{
-					throw new Exception();
-				}
-			}
-		}
 
 		/// <summary>
 		/// 単一の属性を返す
@@ -190,7 +142,7 @@ namespace Masa.ScriptEngine
 				//	//if (item is MethodInfo)
 				//	//{
 				//	//	var m = (item as MethodInfo).GetBaseDefinition().GetCustomAttributes(typeof(Scanner;
-						
+
 				//	//}
 				//	continue;
 				//}
@@ -208,7 +160,7 @@ namespace Masa.ScriptEngine
 				}
 				if (item.MemberType == MemberTypes.Method)
 				{
-					
+
 					var info = new ScriptMethodInfo(item as MethodInfo);
 					md[attribute.Name] = info;
 					maybe = new Maybe<ScriptMethodInfo, PropertyInfo>(info);
@@ -229,7 +181,7 @@ namespace Masa.ScriptEngine
 					throw exception;
 				}
 				var head = item.Value
-					.Select(x => new{x = x, info = x.Item2.IsT() ? x.Item2.Value1.MethodInfo as MemberInfo : x.Item2.Value2 as MemberInfo})
+					.Select(x => new { x = x, info = x.Item2.IsT() ? x.Item2.Value1.MethodInfo as MemberInfo : x.Item2.Value2 as MemberInfo })
 					.OrderByDescending(x => x, (x, y) => x.info.DeclaringType.GetBaseTypeTree().Count - y.info.DeclaringType.GetBaseTypeTree().Count)
 					.First().x;
 				if (!head.Item1.IsOverride)
@@ -247,14 +199,36 @@ namespace Masa.ScriptEngine
 						pd[head.Item1.Name] = head.Item2.Value2;
 					}
 				}
-				
-				
+
+
 			}
 
 
 			return new ClassReflectionInfo(md, pd);
 		}
 
+
+		internal static Expression ExpressionToBool(Expression value)
+		{
+			if (value.Type == typeof(bool))
+			{
+				return value;
+			}
+			var validType = new[]
+			{
+				typeof(int),
+				typeof(float),
+				typeof(double),
+				typeof(short),
+			}
+			.FirstOrDefault(t => value.Type == t);
+			if (validType == null)
+			{
+				throw new ParseException("boolに変換不能な値が渡された" + value);
+			}
+			var zero = Expression.Convert(Expression.Constant(0), validType);
+			return Expression.NotEqual(value, zero);
+		}
 
 	}
 }
