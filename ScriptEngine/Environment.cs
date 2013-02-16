@@ -18,8 +18,11 @@ namespace Masa.ScriptEngine
 			}
 			set
 			{
-				state = value;
-				StateFrame = 0;
+				if (state != value)
+				{
+					state = value;
+					StateFrame = 0;
+				}
 			}
 		}
 		Value state;

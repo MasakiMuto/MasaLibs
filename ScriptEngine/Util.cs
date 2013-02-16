@@ -194,6 +194,16 @@ namespace Masa.ScriptEngine
 		{
 			return vector.LengthSquared();
 		}
+
+		public static float GetVectorX(Vector2 vector)
+		{
+			return vector.X;
+		}
+
+		public static float GetVectorY(Vector2 vector)
+		{
+			return vector.Y;
+		}
 	}
 
 }

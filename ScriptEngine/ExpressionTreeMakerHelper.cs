@@ -77,6 +77,8 @@ namespace Masa.ScriptEngine
 			ret["float2ang"] = xmath.GetMethod("Angle", vecs);
 			ret["float2len"] = vals.GetMethod("GetVectorLength", vecs);
 			ret["float2len2"] = vals.GetMethod("GetVectorLengthSquared", vecs);
+			ret["f2x"] = vals.GetMethod("GetVectorX", vecs);
+			ret["f2y"] = vals.GetMethod("GetVectorY", vecs);
 			return ret;
 		}
 
