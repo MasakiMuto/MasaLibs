@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection.Emit;
 using System.Reflection;
+using Masa.Lib;
 
 namespace Masa.ScriptEngine
 {
@@ -127,9 +128,15 @@ namespace Masa.ScriptEngine
 		public readonly int DefaultParameterCount;
 
 		public ScriptMethodInfo(MethodInfo method)
+			: this(method, method.GetCustomAttributes<ScriptMemberAttribute>(true).First())
+		{
+			
+		}
+
+		internal ScriptMethodInfo(MethodInfo method, ScriptMemberAttribute atr)
 		{
 			MethodInfo = method;
-			var atr = method.GetCustomAttributes(typeof(ScriptMemberAttribute), true).First() as ScriptMemberAttribute;
+		
 			Attribute = atr;
 			var paramNum = method.GetParameters().Length;
 			if (atr.OptionName == null)

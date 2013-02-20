@@ -156,6 +156,11 @@ namespace Masa.Lib
 			}
 		}
 
+		public static IEnumerable<T> GetCustomAttributes<T>(this System.Reflection.MemberInfo info, bool inherit)
+		{
+			return info.GetCustomAttributes(typeof(T), inherit).OfType<T>();
+		}
+
 		#region MathUtils
 
 

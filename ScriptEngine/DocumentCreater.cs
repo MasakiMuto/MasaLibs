@@ -7,7 +7,7 @@ using System.Xml.Linq;
 
 namespace Masa.ScriptEngine
 {
-	public static class DocumentCreater
+	internal static class DocumentCreater
 	{
 		internal static string OutputClass(Dictionary<string, ScriptMethodInfo> method, Dictionary<string, PropertyInfo> property)
 		{
@@ -84,6 +84,23 @@ namespace Masa.ScriptEngine
 			builder.AppendLine(")");
 		}
 
+		internal static XElement GlobalsToXml(Dictionary<string, MethodInfo> method)
+		{
+			var root = new XElement("class");
+			root.Add(NameToXml("global"));
+			var methodRoot = new XElement("methods");
+			methodRoot.Add(
+				method
+				.Select(x => new ScriptMethodInfo(x.Value, new ScriptMemberAttribute(x.Key)))
+				.Select(x=>MethodToXml(x))
+				.ToArray()
+			);
+			root.Add(methodRoot);
+
+			return root;
+
+		}
+
 		internal static XElement ClassToXml(Type target, Dictionary<string, ScriptMethodInfo> method, Dictionary<string, PropertyInfo> property)
 		{
 			var root = new XElement("class");
@@ -97,19 +114,17 @@ namespace Masa.ScriptEngine
 			return root;
 		}
 
-		static XElement MemberToXml(string type, MemberInfo member)
+		static XElement MemberToXml(string type, MemberInfo member, ScriptMemberAttribute atr)
 		{
 			var root = new XElement(type);
-			//root.Add(NameToXml(member.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>().First().Name));
-			root.Add(NameToXml(ExpressionTreeMakerHelper.GetScriptMemberAttribute(member).Name));
-			//root.Add(new XElement("type", member.MemberType));
+			root.Add(NameToXml(atr.Name));
 			root.Add(new XElement("source", member.DeclaringType.Name + "." + member.Name));
 			return root;
 		}
 
 		static XElement MethodToXml(ScriptMethodInfo method)
 		{
-			var root = MemberToXml("method", method.MethodInfo);
+			var root = MemberToXml("method", method.MethodInfo, method.Attribute);
 			//root.Add(NameToXml(method.Attribute.Name));
 			root.Add(TypeToXml(method.MethodInfo.ReturnType));
 			//root.Add(new XElement("source", method.MethodInfo.Name));
@@ -147,7 +162,7 @@ namespace Masa.ScriptEngine
 
 		static XElement PropertyToXml(PropertyInfo prop)
 		{
-			var root = MemberToXml("property", prop);
+			var root = MemberToXml("property", prop, ExpressionTreeMakerHelper.GetScriptMemberAttribute(prop));
 			root.Add(TypeToXml(prop.PropertyType));
 			root.Add(new XElement("get", prop.CanRead), new XElement("set", prop.CanWrite));
 			return root;

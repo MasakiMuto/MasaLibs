@@ -106,6 +106,11 @@ namespace Masa.ScriptEngine
 			return DocumentCreater.ClassToXml(this.TargetType, MethodDict, PropertyDict);
 		}
 
+		public static System.Xml.Linq.XElement OutputGlobalXml()
+		{
+			return DocumentCreater.GlobalsToXml(StaticMethodDict);
+		}
+
 		#endregion
 
 		/// <summary>

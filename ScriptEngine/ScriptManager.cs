@@ -372,10 +372,13 @@ namespace Masa.ScriptEngine
 			{
 				Directory.CreateDirectory(outputDirectory);
 			}
+			Func<string, string> path = name=>Path.Combine(outputDirectory, name + ".xml");
 			foreach (var item in GetTypeScripts())
 			{
-				SaveXmlDocument(Path.Combine(outputDirectory, item.TargetType.Name + ".xml"), item.OutputClassXml());
+				SaveXmlDocument(path(item.TargetType.Name), item.OutputClassXml());
 			}
+			SaveXmlDocument(path("global"), ExpressionTreeMaker.OutputGlobalXml());
+			
 		}
 
 		static void SaveXmlDocument(string outputName, XElement body)

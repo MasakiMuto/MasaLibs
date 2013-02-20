@@ -89,7 +89,8 @@ namespace Masa.ScriptEngine
 				{"PI2", Expression.Constant((Value)Math.PI * 2f, ValueType)},
 				{"PI", Expression.Constant((Value)Math.PI, ValueType)},
 				{"true", Expression.Constant(true)},
-				{"false", Expression.Constant(false)}
+				{"false", Expression.Constant(false)},
+				{"NAN", Expression.Constant(Value.NaN)}
 			};
 		}
 
