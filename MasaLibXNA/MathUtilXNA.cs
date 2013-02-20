@@ -239,6 +239,11 @@ namespace Masa.Lib.XNA
 			return position.X < -margin.X || position.X > frame.X + margin.X || position.Y < -margin.Y || position.Y > frame.Y + margin.Y;
 		}
 
+		public static bool IsOverRect(Vector2 position, Vector2 leftTop, Vector2 rightBottom, Vector2 margin)
+		{
+			return position.X < leftTop.X -margin.X || position.X > rightBottom.X + margin.X || position.Y <leftTop.Y -margin.Y || position.Y > rightBottom.Y + margin.Y;
+		}
+
 		/// <summary>
 		/// 平面上の点の群れから、それら全てを内包する最小の多角形を求める
 		/// </summary>

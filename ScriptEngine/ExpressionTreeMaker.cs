@@ -33,7 +33,8 @@ namespace Masa.ScriptEngine
 		ParameterExpression Environment;
 		string[] NameValueTable;
 		Line[] Lines;
-		Type TargetType;
+		
+		public readonly Type TargetType;
 
 		static readonly LabelTarget ExitLabel = Expression.Label("_ScriptExit");
 		internal static readonly Type ValueType = typeof(Value);

@@ -111,7 +111,7 @@ namespace Masa.ScriptEngine
 		{
 			var root = MemberToXml("method", method.MethodInfo);
 			//root.Add(NameToXml(method.Attribute.Name));
-			root.Add(new XElement("return", method.MethodInfo.ReturnType));
+			root.Add(TypeToXml(method.MethodInfo.ReturnType));
 			//root.Add(new XElement("source", method.MethodInfo.Name));
 			var param = new XElement("params");
 			if (method.DefaultParameterCount > 0)

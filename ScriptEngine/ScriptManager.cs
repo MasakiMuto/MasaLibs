@@ -365,5 +365,36 @@ namespace Masa.ScriptEngine
 			// .OfType<ScriptData>().Select(x => (x.Tree as ExpressionTreeMaker).OutputClassXml()).ToArray()));
 			doc.Save(fileName);
 		}
+
+		public void OutputDocumentsByClass(string outputDirectory)
+		{
+			if (!Directory.Exists(outputDirectory))
+			{
+				Directory.CreateDirectory(outputDirectory);
+			}
+			foreach (var item in GetTypeScripts())
+			{
+				SaveXmlDocument(Path.Combine(outputDirectory, item.TargetType.Name + ".xml"), item.OutputClassXml());
+			}
+		}
+
+		static void SaveXmlDocument(string outputName, XElement body)
+		{
+			var doc = new XDocument();
+			doc.Add(new XProcessingInstruction("xml-stylesheet", "type='text/css' href='doc.css'"));
+			doc.Add(new XElement("document", body));
+			doc.Save(outputName);
+		}
+
+		/// <summary>
+		/// 読み込み済みのスクリプトをそれぞれの型につき1つずつ返す
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<ExpressionTreeMaker> GetTypeScripts()
+		{
+			return items.Values.Select(i => i.First().Value.Tree as ExpressionTreeMaker);
+		}
+
+
 	}
 }
