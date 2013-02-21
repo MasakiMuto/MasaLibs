@@ -61,7 +61,7 @@ namespace Masa.Lib.XNA
 					var p2 = points[i + 1];
 					//var t = (MathUtil.Pow(from * Speed / Lengths[i] - .5f, 3) + 0.125f) * 4;
 					var t = from * Speed / Lengths[i];
-					return CalcPoint(t, p1, p2, Velocitys[i], Velocitys[i + 1]);
+					return CalcPoint(t, p1, p2, Vector2.Normalize( Velocitys[i]) * Lengths[i], Vector2.Normalize( Velocitys[i + 1]) * Lengths[i]);
 				}
 			}
 			return points[points.Length - 1] + LastVelocity * Speed * (time - times[times.Length - 1]);
