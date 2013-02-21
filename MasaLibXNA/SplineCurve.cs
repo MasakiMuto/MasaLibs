@@ -23,9 +23,9 @@ namespace Masa.Lib.XNA
 		{
 			Debug.Assert(points.Count() >= 2);
 			this.points = points.ToArray();
-			
+
 			Speed = speed;
-			LastVelocity = Speed * Vector2.Normalize(lastVelDir);
+			LastVelocity = Vector2.Normalize(lastVelDir);
 			Velocitys = Enumerable.Range(0, this.points.Length).Select(x => CalcVelocity(x)).ToArray();
 			Lengths = Enumerable.Range(0, this.points.Length - 1).Select(x => CalcLength(x)).ToArray();
 
@@ -39,7 +39,7 @@ namespace Masa.Lib.XNA
 				}
 			}
 		}
-		
+
 		/// <summary>
 		/// スプライン曲線上の時刻timeにおける点を取得。points[0]のときtime == 0,曲線を走り終わっていたら終点からそのままの速度で直線運動した点を返す
 		/// </summary>
@@ -50,7 +50,7 @@ namespace Masa.Lib.XNA
 			Debug.Assert(time >= 0);
 			for (int i = 0; i < times.Length; i++)
 			{
-				if (time <= times[i])
+				if (time < times[i])
 				{
 					float from = time;
 					if (i > 0)
@@ -58,29 +58,46 @@ namespace Masa.Lib.XNA
 						from = time - times[i - 1];
 					}
 					var p1 = points[i];
-					var p2 = points[i+1];
+					var p2 = points[i + 1];
+					//var t = (MathUtil.Pow(from * Speed / Lengths[i] - .5f, 3) + 0.125f) * 4;
 					var t = from * Speed / Lengths[i];
-
-					return CalcPoint(t, p1, p2, Velocitys[i], Velocitys[i+1]);
+					return CalcPoint(t, p1, p2, Velocitys[i], Velocitys[i + 1]);
 				}
 			}
-			return points[points.Length - 1] + Velocitys[points.Length - 1] * (time - times[times.Length - 1]);
+			return points[points.Length - 1] + LastVelocity * Speed * (time - times[times.Length - 1]);
 		}
 
 		Vector2 CalcVelocity(int index)
 		{
 			if (index == points.Length - 1)
 			{
-				return LastVelocity;
-			}
-			else if (index == 0)
-			{
-				return Vector2.Normalize(points[1] - points[0]) * Speed;
+				return LastVelocity * (points[index] - points[index - 1]).Length();
 			}
 			else
 			{
-				return Vector2.Normalize(points[index + 1] - points[index - 1]) * Speed;
+				Vector2 dir;
+				if (index == 0)
+				{
+					return points[1] - points[0];
+					dir = points[1] - points[0];
+					dir.Normalize();
+					return (points[0] - points[1]).Length() * dir;
+				}
+				else
+				{
+					
+					
+					dir = points[index + 1] - points[index - 1];
+					//return dir;
+					var len = ((points[index + 1] - points[index]).Length() + (points[index] - points[index - 1]).Length()) * .5f;
+					return Vector2.Normalize(dir) * len;
+				}
+				//dir.Normalize();
+				//return dir * (points[index] - points[index + 1]).Length();
 			}
+
+
+
 		}
 
 		Vector2 CalcPoint(float t, Vector2 p1, Vector2 p2, Vector2 v1, Vector2 v2)
@@ -98,7 +115,7 @@ namespace Masa.Lib.XNA
 			var v2 = Velocitys[index + 1];
 			var p = p1;
 			var length = 0f;
-			const int Divide = 8; 
+			const int Divide = 8;
 			for (int i = 0; i < Divide; i++)
 			{
 				var tmp = CalcPoint((i + 1f) / (Divide + 1), p1, p2, v1, v2);
