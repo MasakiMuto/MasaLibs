@@ -59,6 +59,7 @@
     <Compile Include="Collision\CollisionPoint.cs" />
     <Compile Include="Collision\CollisionPolygon.cs" />
     <Compile Include="Collision\CollisionRect.cs" />
+    <Compile Include="Curves.cs" />
     <Compile Include="Graphics\BeltDrawer.cs" />
     <Compile Include="Graphics\BlendStateManager.cs" />
     <Compile Include="Graphics\AnimeTexture.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="Selecter.cs" />
     <Compile Include="Graphics\TextureColorConverter.cs" />
     <Compile Include="Graphics\WritableVertexBuffer.cs" />
+    <Compile Include="SplineCurve.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MasaLib\MasaLib.csproj">
