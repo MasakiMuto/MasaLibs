@@ -26,16 +26,39 @@ namespace Masa.Lib.XNA
 			batch.DrawString(font, text, pos, col, 0, size / 2, scale, SpriteEffects.None, 0);
 		}
 
+		/// <summary>
+		/// xのみ中央揃え、yは標準と同じ
+		/// </summary>
+		/// <param name="batch"></param>
+		/// <param name="font"></param>
+		/// <param name="text"></param>
+		/// <param name="pos"></param>
+		/// <param name="col"></param>
 		public static void DrawStringXCenter(this SpriteBatch batch, SpriteFont font, string text, Vector2 pos, Color col)
 		{
 			Vector2 size = font.MeasureString(text);
 			batch.DrawString(font, text, new Vector2(pos.X - size.X * .5f, pos.Y), col);
 		}
 
+		/// <summary>
+		/// 右揃え
+		/// </summary>
+		/// <param name="batch"></param>
+		/// <param name="font"></param>
+		/// <param name="text"></param>
+		/// <param name="pos"></param>
+		/// <param name="col"></param>
 		public static void DrawStringRight(this SpriteBatch batch, SpriteFont font, string text, Vector2 pos, Color col)
 		{
 			Vector2 size = font.MeasureString(text);
 			batch.DrawString(font, text, pos - new Vector2(size.X, 0), col);
+		}
+
+		public static void DrawStringRotate(this SpriteBatch batch, SpriteFont font, string text, Vector2 position, float angle, Color color)
+		{
+			var size = font.MeasureString(text);
+			var rot = MathUtilXNA.Rotate(size, angle);
+			batch.DrawString(font, text, position + rot * .5f, color, angle, size * .5f, 1, SpriteEffects.None, 0);
 		}
 
 		public static int ClampStringLengthByWidth(this SpriteFont font, string line, float width)
