@@ -60,105 +60,7 @@ namespace Masa.Lib.XNA.Input
 		}
 	}
 
-	/// <summary>
-	/// コントローラー・キーボードからの入力情報集合体
-	/// </summary>
-	public class ControlState
-	{
-		public Button A, B, X, Y, Start, Esc, Debug;
-		public Button Up, Down, Left, Right;
-
-		/// <summary>
-		/// ボタンを列挙(ABXY START ESC DEBUG)
-		/// </summary>
-		public IEnumerable<Button> Buttons
-		{
-			get
-			{
-				yield return A;///Z
-				yield return B;///X
-				yield return X;///C
-				yield return Y;///Shift
-				yield return Start;///Enter
-				yield return Esc;
-				yield return Debug;///F1
-			}
-		}
-
-		/// <summary>
-		/// 方向を列挙(↑↓←→)
-		/// </summary>
-		public IEnumerable<Button> Directions
-		{
-			get
-			{
-				yield return Up;
-				yield return Down;
-				yield return Left;
-				yield return Right;
-			}
-		}
-
-		/// <summary>
-		/// 全入力を列挙
-		/// </summary>
-		public IEnumerable<Button> Inputs
-		{
-			get
-			{
-				yield return A;///Z
-				yield return B;///X
-				yield return X;///C
-				yield return Y;///Shift
-				yield return Start;///Enter
-				yield return Esc;
-				yield return Debug;///F1
-				yield return Up;
-				yield return Down;
-				yield return Left;
-				yield return Right;
-			}
-		}
-
-		static readonly float OverRoot2 = (float)Math.Sqrt(2) / 2f;
-		/// <summary>
-		/// 正規化された入力ベクトル(入力がなければゼロベクトル)
-		/// </summary>
-		/// <returns></returns>
-		public Vector2 DirectionVector()
-		{
-			int ud = 0;
-			int lr = 0;
-			if (Up.Push) ud--;
-			if (Down.Push) ud++;
-			if (Left.Push) lr--;
-			if (Right.Push) lr++;
-			if (ud == 0 && lr == 0)
-			{
-				return Vector2.Zero;
-			}
-			if (ud * lr == 0)
-			{
-				return new Vector2(lr, ud);
-			}
-			return new Vector2(lr * OverRoot2, ud * OverRoot2);
-		}
-
-		public ControlState()
-		{
-			A = new Button();
-			B = new Button();
-			X = new Button();
-			Y = new Button();
-			Start = new Button();
-			Esc = new Button();
-			Debug = new Button();
-			Up = new Button();
-			Down = new Button();
-			Left = new Button();
-			Right = new Button();
-		}
-	}
+	
 
 
 	/// <summary>
@@ -206,7 +108,7 @@ namespace Masa.Lib.XNA.Input
 		RawKeyBoard = 0x08,///キーボード全体の生入力
 	}
 
-	public class InputManager
+	public class InputManager : IDisposable
 	{
 		public MouseState MouseState
 		{
@@ -314,6 +216,8 @@ namespace Masa.Lib.XNA.Input
 		int[] lastPushedButton = {};
 		Keys[] lastPushedKey = {};
 
+		internal SlimDX.DirectInput.DirectInput DirectInput { get; private set; }
+
 		public IEnumerable<GamePad> GamePads()
 		{
 			if (gamePads != null)
@@ -328,6 +232,7 @@ namespace Masa.Lib.XNA.Input
 		public InputManager(Game game, ActiveDevice device = ActiveDevice.Keyboard | ActiveDevice.Pad, int lever = 500)
 		{
 			Game = game;
+			DirectInput = new SlimDX.DirectInput.DirectInput();
 			LeverDead = lever;
 			MouseState = new MouseState();
 			var ms = MSInput::Mouse.GetState();
@@ -339,6 +244,34 @@ namespace Masa.Lib.XNA.Input
 			padConfig = PadConfig.GetDefault();
 			InitDevices(device);
 			GetPushedKey();//初期化
+		}
+
+		public void Dispose()
+		{
+			if (DirectInput != null)
+			{
+				DirectInput.Dispose();
+				DirectInput = null;
+				
+			}
+			if (gamePads != null)
+			{
+				for (int i = 0; i < gamePads.Length; i++)
+				{
+					gamePads[i].Dispose();
+					gamePads[i] = null;
+				}
+			}
+			gamePads = null;
+			GC.SuppressFinalize(this);
+		}
+
+		~InputManager()
+		{
+			if (DirectInput != null)
+			{
+				DirectInput.Dispose();
+			}
 		}
 
 		void ApplyConfig()
@@ -372,7 +305,7 @@ namespace Masa.Lib.XNA.Input
 				}
 				else
 				{
-					gamePads = Enumerable.Range(0, padNum).Select(i => new GamePad(Game, LeverDead, i)).ToArray();
+					gamePads = Enumerable.Range(0, padNum).Select(i => new GamePad(Game, LeverDead, i, DirectInput)).ToArray();
 				}
 				//try
 				//{
@@ -386,9 +319,9 @@ namespace Masa.Lib.XNA.Input
 			ApplyConfig();
 		}
 
-		public static int GetPadNum()
+		public int GetPadNum()
 		{
-			return GamePadDevice.GetPadNumber();
+			return GamePadDevice.GetPadNumber(DirectInput);
 		}
 
 		//public void InitAllPad(Game game, int lever)

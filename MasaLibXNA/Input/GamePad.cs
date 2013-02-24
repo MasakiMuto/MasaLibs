@@ -10,137 +10,12 @@ using XInput = Microsoft.Xna.Framework.Input;
 
 namespace Masa.Lib.XNA.Input
 {
-	/// <summary>
-	/// デバイスに直接対応するもの。DirectInputを使う。
-	/// </summary>
-	public class GamePadDevice : IDisposable
-	{
-		Joystick Stick { get; set; }
-
-		static DirectInput directInput;
-
-		static DirectInput DirectInput
-		{
-			get
-			{
-				if (directInput == null)
-				{
-					directInput = new DirectInput();
-				}
-				return directInput;
-			}
-		}
-
-		static IList<DeviceInstance> GetDevices()
-		{
-			return DirectInput.GetDevices(DeviceClass.GameController, DeviceEnumerationFlags.AttachedOnly);
-		}
-
-		/// <summary>
-		/// 接続されているパッドの数を取得する
-		/// </summary>
-		/// <returns></returns>
-		public static int GetPadNumber()
-		{
-			return GetDevices().Count;
-		}
-
-		/// <summary>
-		/// 複数のゲームパッドのボタン入力の和を取る
-		/// </summary>
-		/// <param name="pads"></param>
-		/// <returns>各ボタンが押されている/いないの配列。状態をとれるパッドが存在しない場合はnull</returns>
-		public static bool[] ZipPadsStates(GamePadDevice[] pads)
-		{
-			var states = pads.Select(p => p.GetState()).Where(s => s != null);
-			if (states.Any())
-			{
-				bool[] bt = states.Select(s => s.GetButtons())
-					.Aggregate((a, b) => a.Zip(b, (x, y) => x || y).ToArray()).ToArray();//複数パッドを合成
-				return bt;
-			}
-			else return null;
-		}
-
-		/// <summary>
-		/// 番号指定でデバイス生成。番号のデバイスが存在しなければ例外を投げる。
-		/// </summary>
-		/// <param name="window"></param>
-		/// <param name="padNumber">0始まり</param>
-		public GamePadDevice(IntPtr window, int padNumber)
-		{
-
-			var devices = GetDevices();
-			if (devices.Count <= padNumber)
-			{
-				throw new Exception("指定された数のパッドがつながれていない");
-			}
-			try
-			{
-				Stick = new Joystick(DirectInput, devices[padNumber].InstanceGuid);
-				Stick.SetCooperativeLevel(window, CooperativeLevel.Exclusive | CooperativeLevel.Foreground);
-			}
-			catch (DirectInputException e)
-			{
-				throw new Exception("パッドの初期化に失敗", e);
-			}
-
-			///スティックの範囲設定
-			foreach (var item in Stick.GetObjects())
-			{
-				if ((item.ObjectType & ObjectDeviceType.Axis) != 0)
-				{
-					Stick.GetObjectPropertiesById((int)item.ObjectType).SetRange(-1000, 1000);
-				}
-
-			}
-			Stick.Acquire();
-		}
-
-		/// <summary>
-		/// ゲームパッドのデバイスを生成。1番目のパッドを使用。
-		/// </summary>
-		/// <param name="window"></param>
-		public GamePadDevice(IntPtr window)
-			: this(window, 0)
-		{
-
-		}
-
-		public JoystickState GetState()
-		{
-			if (Stick == null)
-			{
-				return null;
-			}
-			if (Stick.Acquire().IsFailure)
-			{
-				return null;
-			}
-			if (Stick.Poll().IsFailure)
-			{
-				throw new Exception();
-			}
-
-			return Stick.GetCurrentState();
-		}
-
-		public void Dispose()
-		{
-			if (Stick != null)
-			{
-				Stick.Unacquire();
-				Stick.Dispose();
-			
-			}
-			GC.SuppressFinalize(this);
-		}
-	}
+	
 
 	/// <summary>
 	/// DirectInputデバイスをラップしたもの
 	/// </summary>
-	public class GamePad : IInputDevice
+	public class GamePad : IInputDevice, IDisposable
 	{
 		GamePadDevice Device;
 
@@ -161,13 +36,13 @@ namespace Masa.Lib.XNA.Input
 
 		public JoystickState State { get; private set; }
 
-		public GamePad(Game game, int lever, int padNumber)
+		public GamePad(Game game, int lever, int padNumber, DirectInput directInput)
 		{
 			Config = PadConfig.GetDefault();
 			StickBorder = lever;
 			try
 			{
-				Device = new GamePadDevice(game.Window.Handle, padNumber);
+				Device = new GamePadDevice(game.Window.Handle, padNumber, directInput);
 			}
 			catch
 			{
@@ -175,18 +50,15 @@ namespace Masa.Lib.XNA.Input
 			}
 		}
 
-		public GamePad(Game game, int lever)
-			: this(game, lever, 0)
+		public GamePad(Game game, int lever, DirectInput directInput)
+			: this(game, lever, 0, directInput)
 		{
 
 		}
 
 		~GamePad()
 		{
-			if (Device != null)
-			{
-				Device.Dispose();
-			}
+			this.Dispose();
 		}
 
 		public short Update()
@@ -268,6 +140,16 @@ namespace Masa.Lib.XNA.Input
 			}
 
 			return dir;
+		}
+
+		public void Dispose()
+		{
+			if (Device != null)
+			{
+				Device.Dispose();
+				Device = null;
+			}
+			GC.SuppressFinalize(this);
 		}
 	}
 }
