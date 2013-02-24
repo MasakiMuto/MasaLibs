@@ -248,11 +248,17 @@ namespace Masa.Lib.XNA.Input
 
 		public void Dispose()
 		{
+			DisposeDevices();
+			GC.SuppressFinalize(this);
+		}
+
+		void DisposeDevices()
+		{
 			if (DirectInput != null)
 			{
 				DirectInput.Dispose();
 				DirectInput = null;
-				
+
 			}
 			if (gamePads != null)
 			{
@@ -263,15 +269,12 @@ namespace Masa.Lib.XNA.Input
 				}
 			}
 			gamePads = null;
-			GC.SuppressFinalize(this);
+			
 		}
 
 		~InputManager()
 		{
-			if (DirectInput != null)
-			{
-				DirectInput.Dispose();
-			}
+			DisposeDevices();
 		}
 
 		void ApplyConfig()
