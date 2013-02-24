@@ -44,10 +44,10 @@ namespace Masa.ScriptEngine
 		//static readonly LabelTarget LOOPEND = Expression.Label("EndLoop");
 		static readonly Dictionary<string, FieldInfo> EnvironmentField = ExpressionTreeMakerHelper.GetEnvironmentFieldInfo();
 		static readonly Dictionary<string, PropertyInfo> EnvironmentProperty = ExpressionTreeMakerHelper.GetEnvironmentPropertyInfo();
-		static readonly Dictionary<string, MethodInfo> StaticMethodDict = ExpressionTreeMakerHelper.GetStaticMethodInfo();
+		static readonly Dictionary<string, MethodInfo> StaticMethodDict = GlobalFunctionProvider.GetStaticMethodInfo();
 		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = new Dictionary<Type, ClassReflectionInfo>();
-		static readonly Dictionary<string, Expression> ConstantValueDict = ExpressionTreeMakerHelper.GetConstantValueDictionary();
-		static readonly Dictionary<string, Type> TypeNameDictionary = ExpressionTreeMakerHelper.GetTypeNameDictionary();
+		static readonly Dictionary<string, Expression> ConstantValueDict = GlobalFunctionProvider.GetConstantValueDictionary();
+		static readonly Dictionary<string, Type> TypeNameDictionary = GlobalFunctionProvider.GetTypeNameDictionary();
 
 		public ExpressionTreeMaker(object[] token, Type targetType)
 			: this(token, targetType, null)

@@ -52,6 +52,7 @@
     <Compile Include="Environment.cs" />
     <Compile Include="ExpressionTreeMaker.cs" />
     <Compile Include="ExpressionTreeMakerHelper.cs" />
+    <Compile Include="GlobalFunctionProvider.cs" />
     <Compile Include="PackedScriptManager.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="PreProcesser.cs" />
