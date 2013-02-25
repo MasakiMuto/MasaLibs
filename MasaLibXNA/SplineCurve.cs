@@ -40,12 +40,23 @@ namespace Masa.Lib.XNA
 			}
 		}
 
+		struct SectionTime
+		{
+			public readonly int Section;
+			public readonly float Time;
+			public SectionTime(int section, float time)
+			{
+				Section = section;
+				Time = time;
+			}
+		}
+
 		/// <summary>
-		/// スプライン曲線上の時刻timeにおける点を取得。points[0]のときtime == 0,曲線を走り終わっていたら終点からそのままの速度で直線運動した点を返す
+		/// ある全区間時刻における点の存在区間と区間開始からの時間を返す
 		/// </summary>
-		/// <param name="time">0以上</param>
+		/// <param name="time"></param>
 		/// <returns></returns>
-		public Vector2 GetPosition(float time)
+		SectionTime GetSectionAndTime(float time)
 		{
 			Debug.Assert(time >= 0);
 			for (int i = 0; i < times.Length; i++)
@@ -57,47 +68,71 @@ namespace Masa.Lib.XNA
 					{
 						from = time - times[i - 1];
 					}
-					var p1 = points[i];
-					var p2 = points[i + 1];
-					//var t = (MathUtil.Pow(from * Speed / Lengths[i] - .5f, 3) + 0.125f) * 4;
-					var t = from * Speed / Lengths[i];
-					return CalcPoint(t, p1, p2, Vector2.Normalize( Velocitys[i]) * Lengths[i], Vector2.Normalize( Velocitys[i + 1]) * Lengths[i]);
+					return new SectionTime(i, from);
 				}
 			}
-			return points[points.Length - 1] + LastVelocity * Speed * (time - times[times.Length - 1]);
+			return new SectionTime(times.Length, time - times[times.Length - 1]);
+		}
+
+		/// <summary>
+		/// スプライン曲線上の時刻timeにおける点を取得。points[0]のときtime == 0,曲線を走り終わっていたら終点からそのままの速度で直線運動した点を返す
+		/// </summary>
+		/// <param name="time">0以上</param>
+		/// <returns></returns>
+		public Vector2 GetPosition(float time)
+		{
+			Debug.Assert(time >= 0);
+			var sect = GetSectionAndTime(time);
+			if (sect.Section < times.Length)
+			{
+				var p1 = points[sect.Section];
+				var p2 = points[sect.Section + 1];
+				var v1 = (Velocitys[sect.Section]) * Lengths[sect.Section];
+				var v2 = (Velocitys[sect.Section + 1]) * Lengths[sect.Section];
+				var t = sect.Time * Speed / Lengths[sect.Section];
+				return CalcPoint(t, p1, p2, v1, v2);
+			}
+			else
+			{
+				return points[points.Length - 1] + LastVelocity * Speed * (sect.Time);
+			}
+
+		}
+
+		public Vector2 GetVelocity(float time)
+		{
+			var sect = GetSectionAndTime(time);
+			if (sect.Section < times.Length)
+			{
+				var p1 = points[sect.Section];
+				var p2 = points[sect.Section + 1];
+				var v1 = Velocitys[sect.Section] * Lengths[sect.Section];
+				var v2 = Velocitys[sect.Section + 1] * Lengths[sect.Section];
+				var t = sect.Time * Speed / Lengths[sect.Section];
+				return Speed / Lengths[sect.Section] * CalcPointDifferent(t, p1, p2, v1, v2);
+			}
+			else
+			{
+				return LastVelocity * Speed;
+			}
 		}
 
 		Vector2 CalcVelocity(int index)
 		{
+			Vector2 dir;
 			if (index == points.Length - 1)
 			{
-				return LastVelocity * (points[index] - points[index - 1]).Length();
+				dir = points[index] - points[index - 1];
+			}
+			else if (index == 0)
+			{
+				dir = points[1] - points[0];
 			}
 			else
 			{
-				Vector2 dir;
-				if (index == 0)
-				{
-					return points[1] - points[0];
-					dir = points[1] - points[0];
-					dir.Normalize();
-					return (points[0] - points[1]).Length() * dir;
-				}
-				else
-				{
-					
-					
-					dir = points[index + 1] - points[index - 1];
-					//return dir;
-					var len = ((points[index + 1] - points[index]).Length() + (points[index] - points[index - 1]).Length()) * .5f;
-					return Vector2.Normalize(dir) * len;
-				}
-				//dir.Normalize();
-				//return dir * (points[index] - points[index + 1]).Length();
+				dir = points[index + 1] - points[index - 1];
 			}
-
-
-
+			return Vector2.Normalize(dir);
 		}
 
 		Vector2 CalcPoint(float t, Vector2 p1, Vector2 p2, Vector2 v1, Vector2 v2)
@@ -107,12 +142,43 @@ namespace Masa.Lib.XNA
 			return p1 * (2 * t3 + -3 * t2 + 1) + p2 * (-2 * t3 + 3 * t2) + v1 * (t3 + -2 * t2 + t) + v2 * (t3 - t2);
 		}
 
+		/// <summary>
+		/// CalcPointの微分
+		/// </summary>
+		/// <param name="t"></param>
+		/// <param name="p1"></param>
+		/// <param name="p2"></param>
+		/// <param name="v1"></param>
+		/// <param name="v2"></param>
+		/// <returns></returns>
+		Vector2 CalcPointDifferent(float t, Vector2 p1, Vector2 p2, Vector2 v1, Vector2 v2)
+		{
+			var t2 = t * t;
+			return p1 * (6 * t2 - 6 * t) + p2 * (-6 * t2 + 6 * t) + v1 * (3 * t2 - 4 * t + 1) + v2 * (3 * t2 - 2 * t);
+		}
+
+		float CalcTemporarySpeed(int index)
+		{
+			if (index == points.Length - 1)
+			{
+				return (points[index] - points[index - 1]).Length();
+			}
+			else if (index == 0)
+			{
+				return (points[1] - points[0]).Length();
+			}
+			else
+			{
+				return ((points[index + 1] - points[index]).Length() + (points[index] - points[index - 1]).Length()) * .5f;
+			}
+		}
+
 		float CalcLength(int index)
 		{
 			var p1 = points[index];
 			var p2 = points[index + 1];
-			var v1 = Velocitys[index];
-			var v2 = Velocitys[index + 1];
+			var v1 = Velocitys[index] * CalcTemporarySpeed(index);
+			var v2 = Velocitys[index + 1] * CalcTemporarySpeed(index + 1);
 			var p = p1;
 			var length = 0f;
 			const int Divide = 8;
@@ -128,79 +194,4 @@ namespace Masa.Lib.XNA
 
 	}
 
-
-	//public class SplineCurve
-	//{
-	//	SplineElement[] elements;
-
-	//	public SplineCurve(IEnumerable<Vector2> points, float time)
-	//	{
-	//		elements = new SplineElement[points.Count()];
-	//		CalcTimes(points, time);
-
-	//	}
-
-	//	void CalcTimes(IEnumerable<Vector2> points, float time)
-	//	{
-	//		var times = ConfigureTimeByLength(points);
-	//		elements[0].Time0 = 0;
-	//		for (int i = 0; i < elements.Length - 1; i++)
-	//		{
-	//			elements[i].Span = time * times[i];
-	//			if (i < elements.Length - 2)
-	//			{
-	//				elements[i + 1].Time0 = elements[i].Time0 + elements[i].Span;
-	//			}
-	//		}
-	//	}
-
-	//	void CalcParams(IEnumerable<Vector2> points)
-	//	{
-	//		for (int i = 0; i < elements.Length; i++)
-	//		{
-	//			elements[i].A = points.ElementAt(i);
-	//			if (i == 0 || i == elements.Length - 1)
-	//			{
-	//				elements[i].C = Vector2.Zero;
-	//			}
-	//			else
-	//			{
-	//				elements[i].C = 3f * ((elements[i + 1].A - elements[i].A) / elements[i].Span - (elements[i].A - elements[i - 1].A) / elements[i - 1].Span);
-	//			}
-
-	//		}
-	//	}
-
-	//	/// <summary>
-	//	/// 時間を各線分の長さで割り振る。合計1
-	//	/// </summary>
-	//	/// <param name="points"></param>
-	//	/// <returns></returns>
-	//	float[] ConfigureTimeByLength(IEnumerable<Vector2> points)
-	//	{
-	//		var len = new float[points.Count() - 1];
-	//		float total = 0f;
-	//		for (int i = 0; i < len.Length; i++)
-	//		{
-	//			len[i] = (points.ElementAt(i + 1) - points.ElementAt(i)).Length();
-	//			total += len[i];
-	//		}
-	//		return len.Select(x => x / total).ToArray();
-	//	}
-
-
-	//}
-
-	//struct SplineElement
-	//{
-	//	public float Time0, Span;
-	//	public Vector2 A, B, C, D;
-
-	//	public Vector2 Calc(float time)
-	//	{
-	//		float t = time - Time0;
-	//		Debug.Assert(t >= 0 && t <= Span);
-	//		return A + B * t + C * t * t + D * t * t * t;
-	//	}
-	//}
 }
