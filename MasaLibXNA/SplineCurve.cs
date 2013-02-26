@@ -40,6 +40,16 @@ namespace Masa.Lib.XNA
 			}
 		}
 
+		/// <summary>
+		/// 最終速度方向を(最後の点 - その一つ前の点)方向にする
+		/// </summary>
+		/// <param name="points"></param>
+		/// <param name="speed"></param>
+		public SplineCurve(IEnumerable<Vector2> points, float speed)
+			: this(points, speed, points.Last() - points.ElementAt(points.Count() - 2))
+		{
+		}
+
 		struct SectionTime
 		{
 			public readonly int Section;
@@ -94,7 +104,7 @@ namespace Masa.Lib.XNA
 			}
 			else
 			{
-				return points[points.Length - 1] + LastVelocity * Speed * (sect.Time);
+				return points[points.Length - 1] + Velocitys[Velocitys.Length - 1] * Speed * (sect.Time);
 			}
 
 		}
@@ -113,7 +123,7 @@ namespace Masa.Lib.XNA
 			}
 			else
 			{
-				return LastVelocity * Speed;
+				return Velocitys[Velocitys.Length - 1] * Speed;
 			}
 		}
 
@@ -122,7 +132,8 @@ namespace Masa.Lib.XNA
 			Vector2 dir;
 			if (index == points.Length - 1)
 			{
-				dir = points[index] - points[index - 1];
+				dir = LastVelocity;
+				//dir = points[index] - points[index - 1];
 			}
 			else if (index == 0)
 			{
@@ -173,6 +184,11 @@ namespace Masa.Lib.XNA
 			}
 		}
 
+		/// <summary>
+		/// 暫定速さを使って大雑把に区間の長さを計算する
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns></returns>
 		float CalcLength(int index)
 		{
 			var p1 = points[index];
