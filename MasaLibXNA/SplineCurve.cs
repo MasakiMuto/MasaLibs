@@ -84,6 +84,17 @@ namespace Masa.Lib.XNA
 			return new SectionTime(times.Length, time - times[times.Length - 1]);
 		}
 
+		PointCalcArgs GetArg(SectionTime sect)
+		{
+			Debug.Assert(sect.Section < times.Length);
+			var p1 = points[sect.Section];
+			var p2 = points[sect.Section + 1];
+			var v1 = (Velocitys[sect.Section]) * Lengths[sect.Section];
+			var v2 = (Velocitys[sect.Section + 1]) * Lengths[sect.Section];
+			var t = sect.Time * Speed / Lengths[sect.Section];
+			return new PointCalcArgs(t, p1, p2, v1, v2);
+		}
+
 		/// <summary>
 		/// スプライン曲線上の時刻timeにおける点を取得。points[0]のときtime == 0,曲線を走り終わっていたら終点からそのままの速度で直線運動した点を返す
 		/// </summary>
@@ -95,18 +106,39 @@ namespace Masa.Lib.XNA
 			var sect = GetSectionAndTime(time);
 			if (sect.Section < times.Length)
 			{
-				var p1 = points[sect.Section];
-				var p2 = points[sect.Section + 1];
-				var v1 = (Velocitys[sect.Section]) * Lengths[sect.Section];
-				var v2 = (Velocitys[sect.Section + 1]) * Lengths[sect.Section];
-				var t = sect.Time * Speed / Lengths[sect.Section];
-				return CalcPoint(t, p1, p2, v1, v2);
+				return CalcPoint(GetArg(sect));
 			}
 			else
 			{
-				return points[points.Length - 1] + Velocitys[Velocitys.Length - 1] * Speed * (sect.Time);
+				return points[points.Length - 1] + Velocitys[Velocitys.Length - 1] * Speed * sect.Time;
 			}
+		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="time"></param>
+		/// <param name="offset">正なら速度ベクトルに対して右側へずれる</param>
+		/// <returns></returns>
+		public Vector2 GetPositionOffset(float time, float offset)
+		{
+			Debug.Assert(time >= 0);
+			var sect = GetSectionAndTime(time);
+			Vector2 pos, vel;
+			if (sect.Section < times.Length)
+			{
+				var arg = GetArg(sect);
+				pos = CalcPoint(arg);
+				vel = CalcPointDifferent(arg) / Lengths[sect.Section];
+				//vel.Normalize();
+			}
+			else
+			{
+				pos = points[points.Length - 1] + Velocitys[Velocitys.Length - 1] * Speed * sect.Time;
+				vel = Velocitys[Velocitys.Length - 1];
+			}
+			vel = new Vector2(vel.Y, -vel.X);
+			return pos + vel * offset * Speed;
 		}
 
 		public Vector2 GetVelocity(float time)
@@ -114,12 +146,7 @@ namespace Masa.Lib.XNA
 			var sect = GetSectionAndTime(time);
 			if (sect.Section < times.Length)
 			{
-				var p1 = points[sect.Section];
-				var p2 = points[sect.Section + 1];
-				var v1 = Velocitys[sect.Section] * Lengths[sect.Section];
-				var v2 = Velocitys[sect.Section + 1] * Lengths[sect.Section];
-				var t = sect.Time * Speed / Lengths[sect.Section];
-				return Speed / Lengths[sect.Section] * CalcPointDifferent(t, p1, p2, v1, v2);
+				return Speed / Lengths[sect.Section] * CalcPointDifferent(GetArg(sect));
 			}
 			else
 			{
@@ -146,6 +173,23 @@ namespace Masa.Lib.XNA
 			return Vector2.Normalize(dir);
 		}
 
+		struct PointCalcArgs
+		{
+			public readonly float T;
+			public readonly Vector2 P1, P2, V1, V2;
+
+			public PointCalcArgs(float t, Vector2 p1, Vector2 p2, Vector2 v1, Vector2 v2)
+			{
+				T = t;
+				P1 = p1;
+				P2 = p2;
+				V1 = v1;
+				V2 = v2;
+			}
+		}
+
+
+
 		Vector2 CalcPoint(float t, Vector2 p1, Vector2 p2, Vector2 v1, Vector2 v2)
 		{
 			float t2 = t * t;
@@ -153,20 +197,27 @@ namespace Masa.Lib.XNA
 			return p1 * (2 * t3 + -3 * t2 + 1) + p2 * (-2 * t3 + 3 * t2) + v1 * (t3 + -2 * t2 + t) + v2 * (t3 - t2);
 		}
 
+		Vector2 CalcPoint(PointCalcArgs args)
+		{
+			return CalcPoint(args.T, args.P1, args.P2, args.V1, args.V2);
+		}
+
+
 		/// <summary>
 		/// CalcPointの微分
 		/// </summary>
-		/// <param name="t"></param>
-		/// <param name="p1"></param>
-		/// <param name="p2"></param>
-		/// <param name="v1"></param>
-		/// <param name="v2"></param>
 		/// <returns></returns>
 		Vector2 CalcPointDifferent(float t, Vector2 p1, Vector2 p2, Vector2 v1, Vector2 v2)
 		{
 			var t2 = t * t;
 			return p1 * (6 * t2 - 6 * t) + p2 * (-6 * t2 + 6 * t) + v1 * (3 * t2 - 4 * t + 1) + v2 * (3 * t2 - 2 * t);
 		}
+
+		Vector2 CalcPointDifferent(PointCalcArgs args)
+		{
+			return CalcPointDifferent(args.T, args.P1, args.P2, args.V1, args.V2);
+		}
+
 
 		float CalcTemporarySpeed(int index)
 		{
