@@ -154,6 +154,12 @@ namespace Masa.Lib.XNA
 			return new Vector2(v1.X * v2.X, v1.Y * v2.Y);
 		}
 
+		/// <summary>
+		/// 要素ごとのv1/v2
+		/// </summary>
+		/// <param name="v1"></param>
+		/// <param name="v2"></param>
+		/// <returns></returns>
 		public static Vector2 ElementDiv(this Vector2 v1, Vector2 v2)
 		{
 			return new Vector2(v1.X / v2.X, v1.Y / v2.Y);
