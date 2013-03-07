@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace Masa.Lib
 {
@@ -16,7 +17,8 @@ namespace Masa.Lib
 		/// <returns></returns>
 		public static int NextPN(this Random rand)
 		{
-			return rand.Next(2) * 2 - 1;
+			return ((rand.Next() & 1) == 0) ? 1 : -1;
+			//return rand.Next(2) * 2 - 1;
 		}
 
 		/// <summary>
@@ -31,6 +33,36 @@ namespace Masa.Lib
 			return (float)((1d - Math.Pow(rand.NextDouble(), a)) * max);
 			//return (float)((Math.Pow(rand.NextDouble() + 1, a)) / (Math.Pow(2, a)) * max);
 		}
+
+		/// <summary>
+		/// min~maxまでのfloatの一様乱数を返す
+		/// </summary>
+		/// <param name="rand"></param>
+		/// <param name="min"></param>
+		/// <param name="max"></param>
+		/// <returns></returns>
+		public static float NextFloat(this Random rand, float min, float max)
+		{
+			Debug.Assert(!min.IsNan() && !max.IsNan());
+			return (float)rand.NextDouble() * (max - min) + min;
+		}
+
+		/// <summary>
+		/// bias中心に+-rangeまで広がる三角分布の乱数
+		/// </summary>
+		/// <param name="rand"></param>
+		/// <param name="bias">中心値(最も出現率が高い)</param>
+		/// <param name="range">広がり(+range~-rangeまで)</param>
+		/// <returns></returns>
+		public static float NextTriangular(this Random rand, float bias, float range)
+		{
+			Debug.Assert(!range.IsNan());
+			var tri = 1f - (float)Math.Sqrt(1.0 - rand.NextDouble());
+			int sign = NextPN(rand);
+			return tri * range * sign + bias;
+		}
+
+
 
 		/// <summary>
 		/// 擬似的・簡易的な正規乱数 N(μ, σ^2) (μ前後)
