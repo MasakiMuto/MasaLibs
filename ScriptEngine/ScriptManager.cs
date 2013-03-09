@@ -161,11 +161,12 @@ namespace Masa.ScriptEngine
 		/// <param name="dir"></param>
 		/// <param name="target"></param>
 		/// <param name="table"></param>
-		/// <param name="labels"></param>
+		/// <param name="labels">init以外のlabelをActionとして使う場合は指定すること推奨.initは標準で読み込まれる</param>
 		public void LoadFromDirectory(string dir, Type target, string[] table = null, string[] labels = null)
 		{
-			IEnumerable<string> src = EnumrateDirectoryScript(dir);
-			dir = dir.ToLower();
+			var src = EnumrateDirectoryScript(dir);
+
+			//dir = dir.ToLower();
 			//if (UsePackedData)
 			//{
 			//    var d = dir.Split('\\');
@@ -179,6 +180,7 @@ namespace Masa.ScriptEngine
 			//{
 			//    src = EnumrateDirectoryScript(dir);
 			//}
+	
 			foreach (var item in src)
 			{
 				Load(item, target, table, labels);

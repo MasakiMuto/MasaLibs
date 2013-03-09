@@ -128,7 +128,8 @@ namespace Masa.ScriptEngine
 			{
 				if (LabelDict.ContainsKey(label))
 				{
-					LabelStatementCashe.Add(label, Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, LabelDict[label], Expression.Label(ExitLabel)), Environment).Compile());
+					LabelStatementCashe[label] = Expression.Lambda<Action<ScriptEngine.Environment>>(
+						Expression.Block(VarDict.Values, LabelDict[label], Expression.Label(ExitLabel)), Environment).Compile();
 				}
 				else
 				{
