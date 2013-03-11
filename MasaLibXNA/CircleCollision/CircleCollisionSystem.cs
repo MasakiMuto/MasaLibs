@@ -63,9 +63,14 @@ namespace Masa.Lib.XNA.CircleCollision
 	{
 		public float PredictateRadius { get; set; }
 		public Vector2 Position { get; set; }
+
 		public float Radius { get; set; }
+		/// <summary>
+		/// 向いている角。CollisionPartの位置を計算するのに使う
+		/// </summary>
 		public float Angle { get; set; }
-		public List<CollisionPart> Collisions;
+		
+		public List<CollisionPart> Collisions { get; private set; }
 		
 		CollisionTarget GetCollisionTarget()
 		{
@@ -77,6 +82,9 @@ namespace Masa.Lib.XNA.CircleCollision
 			return new CollisionTarget(Position, PredictateRadius);
 		}
 
+		/// <summary>
+		/// 初期化する
+		/// </summary>
 		public void Set()
 		{
 			if (Collisions != null)
@@ -87,8 +95,14 @@ namespace Masa.Lib.XNA.CircleCollision
 			
 		}
 
-
-		public float AddCollision(float dist, float angle, float radius)
+		/// <summary>
+		/// 円の判定を追加する
+		/// </summary>
+		/// <param name="dist">Positionからの距離</param>
+		/// <param name="angle">Positionからの偏角</param>
+		/// <param name="radius">円の半径</param>
+		/// <returns>CollisionsでのIndex</returns>
+		public int AddCollision(float dist, float angle, float radius)
 		{
 			if (Collisions == null)
 			{
@@ -98,9 +112,16 @@ namespace Masa.Lib.XNA.CircleCollision
 			return Collisions.Count - 1;
 		}
 
-		public void UpdateCollision(float index, float dist, float angle, float radius)
+		/// <summary>
+		/// CollisionPartの状態を更新する
+		/// </summary>
+		/// <param name="index">設定するもののIndex(AddCollisionでの返り値)</param>
+		/// <param name="dist">NaNなら更新しない</param>
+		/// <param name="angle">NaNなら更新しない</param>
+		/// <param name="radius">NaNなら更新しない</param>
+		public void UpdateCollision(int index, float dist, float angle, float radius)
 		{
-			var item = Collisions[(int)index];
+			var item = Collisions[index];
 			if (!dist.IsNan())
 			{
 				item.Distance = dist;
@@ -226,6 +247,12 @@ namespace Masa.Lib.XNA.CircleCollision
 			return Collisions != null && Collisions.Count > 0;
 		}
 
+		/// <summary>
+		/// 円と円との判定部分
+		/// </summary>
+		/// <param name="t1"></param>
+		/// <param name="t2"></param>
+		/// <returns></returns>
 		protected virtual bool IsCollision(CollisionTarget t1, CollisionTarget t2)
 		{
 			return t1.GetDistanceVector(t2).LengthSquared() < t1.GetSquareRadius(t2);

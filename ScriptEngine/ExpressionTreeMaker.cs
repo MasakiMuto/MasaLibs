@@ -360,6 +360,17 @@ namespace Masa.ScriptEngine
 			ParameterExpression v;
 			string name = (string)line.Tokens[1];
 			Type type = typeof(Value);
+			
+			Expression target = null;
+			if (line.Tokens.Length >= 4)// var hoge = 1
+			{
+				int rightPos = Array.FindIndex(line.Tokens, x => x.Equals(Marks.Sub));
+				if (rightPos != -1)
+				{
+					target = ParsePareBlock(new PareBlock(line.Tokens.Skip(rightPos + 1).ToArray()));
+					type = target.Type;//右辺値からの型推論
+				}
+			}
 			if (line.Tokens.Length >= 4 && line.Tokens[2].Equals(Marks.Dollar))// var hoge $ float2
 			{
 				type = TypeNameDictionary[line.Tokens[3] as string];
@@ -367,19 +378,15 @@ namespace Masa.ScriptEngine
 
 			v = Expression.Parameter(type, name);
 			VarDict.Add(name, v);
-			if (line.Tokens.Length >= 4)// var hoge = 1
+			if (target != null)
 			{
-				int rightPos = Array.FindIndex(line.Tokens, x => x.Equals(Marks.Sub));
-				if (rightPos == -1)
-				{
-					return null;//初期化なし
-				}
-				return Expression.Assign(v, ParsePareBlock(new PareBlock(line.Tokens.Skip(rightPos + 1).ToArray())));
+				return Expression.Assign(v,target);
 			}
 			else
 			{
-				return null; //初期化なし
+				return null;
 			}
+			
 		}
 
 		/// <summary>
