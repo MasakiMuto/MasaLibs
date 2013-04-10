@@ -161,6 +161,13 @@ namespace Masa.Lib
 			return info.GetCustomAttributes(typeof(T), inherit).OfType<T>();
 		}
 
+		public static Version GetAssemblyVersion()
+		{
+			var asm = System.Reflection.Assembly.GetEntryAssembly();
+			//asm = System.Reflection.Assembly.GetExecutingAssembly();
+			return	new System.Reflection.AssemblyName(asm.FullName).Version;
+		}
+
 		#region MathUtils
 
 
@@ -225,7 +232,7 @@ namespace Masa.Lib
 		{
 			return (float)Math.Sin(count / time * Math.PI * 2) * a;
 		}
-		
+
 		/// <summary>
 		/// 最大の変化量を指定して値を変化させる
 		/// </summary>

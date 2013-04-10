@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StreamReverseReader.cs" />
     <Compile Include="LinkedPoolObjectBaseManager.cs" />
     <Compile Include="MathUtil.cs" />
     <Compile Include="Maybe.cs" />
