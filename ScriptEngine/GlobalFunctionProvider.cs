@@ -65,6 +65,11 @@ namespace Masa.ScriptEngine
 			return vector.Y;
 		}
 
+		public static float InRange(float under, float value, float over)
+		{
+			return ((under <= value) && (value <= over)) ? 1 : 0;
+		}
+
 		/// <summary>
 		/// 用意されたメソッドの定義
 		/// </summary>
@@ -101,6 +106,7 @@ namespace Masa.ScriptEngine
 			ret["float2len2"] = vals.GetMethod("GetVectorLengthSquared", vecs);
 			ret["f2x"] = vals.GetMethod("GetVectorX", vecs);
 			ret["f2y"] = vals.GetMethod("GetVectorY", vecs);
+			ret["in"] = vals.GetMethod("InRange", args[3]);
 			return ret;
 		}
 
@@ -110,6 +116,7 @@ namespace Masa.ScriptEngine
 			{
 				{"PI2", Expression.Constant((Value)Math.PI * 2f, ValueType)},
 				{"PI", Expression.Constant((Value)Math.PI, ValueType)},
+				{"PI_2", Expression.Constant((Value)MathHelper.PiOver2, ValueType)},
 				{"true", Expression.Constant(true)},
 				{"false", Expression.Constant(false)},
 				{"NAN", Expression.Constant(Value.NaN)}
