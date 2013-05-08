@@ -107,6 +107,7 @@ namespace Masa.ScriptEngine
 			ret["f2x"] = vals.GetMethod("GetVectorX", vecs);
 			ret["f2y"] = vals.GetMethod("GetVectorY", vecs);
 			ret["in"] = vals.GetMethod("InRange", args[3]);
+			ret["log"] = mu.GetMethod("Log", args[2]);
 			return ret;
 		}
 

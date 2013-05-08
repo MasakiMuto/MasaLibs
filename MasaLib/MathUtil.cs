@@ -208,6 +208,17 @@ namespace Masa.Lib
 			return x * x;
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="x"></param>
+		/// <param name="a">底</param>
+		/// <returns></returns>
+		public static float Log(float x, float a)
+		{
+			return (float)Math.Log(x, a);
+		}
+
 		#endregion
 
 		#region Utils
