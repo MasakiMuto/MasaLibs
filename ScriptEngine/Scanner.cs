@@ -69,7 +69,7 @@ namespace Masa.ScriptEngine
 		readonly Dictionary<string, string> headerDictionary;
 
 		static readonly Dictionary<string, Marks> MarkNameDict;
-		public const char StringLiteralMark = '@';
+		public const char StringLiteralMark = '"';
 
 
 		static Scanner()
