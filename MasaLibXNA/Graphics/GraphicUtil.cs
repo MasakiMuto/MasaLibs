@@ -36,8 +36,13 @@ namespace Masa.Lib.XNA
 		/// <param name="col"></param>
 		public static void DrawStringXCenter(this SpriteBatch batch, SpriteFont font, string text, Vector2 pos, Color col)
 		{
-			Vector2 size = font.MeasureString(text);
-			batch.DrawString(font, text, new Vector2(pos.X - size.X * .5f, pos.Y), col);
+			float y = 0;
+			foreach (var line in text.Split('\n'))
+			{
+				Vector2 size = font.MeasureString(text);
+				batch.DrawString(font, text, new Vector2(pos.X - size.X * .5f, pos.Y + y), col);
+				y += pos.Y;
+			}
 		}
 
 		/// <summary>
@@ -50,8 +55,14 @@ namespace Masa.Lib.XNA
 		/// <param name="col"></param>
 		public static void DrawStringRight(this SpriteBatch batch, SpriteFont font, string text, Vector2 pos, Color col)
 		{
-			Vector2 size = font.MeasureString(text);
-			batch.DrawString(font, text, pos - new Vector2(size.X, 0), col);
+			float y = 0;
+			foreach (var line in text.Split('\n'))
+			{
+				Vector2 size = font.MeasureString(line);
+				batch.DrawString(font, line, pos - new Vector2(size.X, -y), col);
+				y += size.Y;
+			}
+			
 		}
 
 		public static void DrawStringRotate(this SpriteBatch batch, SpriteFont font, string text, Vector2 position, float angle, Color color)
