@@ -39,9 +39,9 @@ namespace Masa.Lib.XNA
 			float y = 0;
 			foreach (var line in text.Split('\n'))
 			{
-				Vector2 size = font.MeasureString(text);
-				batch.DrawString(font, text, new Vector2(pos.X - size.X * .5f, pos.Y + y), col);
-				y += pos.Y;
+				Vector2 size = font.MeasureString(line);
+				batch.DrawString(font, line, new Vector2(pos.X - size.X * .5f, pos.Y + y), col);
+				y += size.Y;
 			}
 		}
 
