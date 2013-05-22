@@ -27,6 +27,11 @@ namespace Masa.ParticleEngine
 			Layer = layer;
 		}
 
+		public PMIData Clone()
+		{
+			return new PMIData(String.Copy(TextureName), String.Copy(Name), Mass, Color, Blend, Layer);
+		}
+
 		public ParticleManagerInitializer CreatePMI(TextureFunc texFunc)
 		{
 			return new ParticleManagerInitializer(texFunc(TextureName), Name, Mass, Color, Blend, Layer);
@@ -35,6 +40,21 @@ namespace Masa.ParticleEngine
 		public override string ToString()
 		{
 			return Name;
+		}
+
+		public override bool Equals(object obj)
+		{
+			var a = obj as PMIData;
+			if (a == null)
+			{
+				return false;
+			}
+			return a.TextureName == TextureName 
+				&& a.Name == Name
+				&& a.Mass == Mass
+				&& a.Color == Color
+				&& a.Blend == Blend
+				&& a.Layer == Layer;
 		}
 	}
 
