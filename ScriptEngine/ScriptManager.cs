@@ -123,7 +123,6 @@ namespace Masa.ScriptEngine
 				else
 				{
 					string p = Path.Combine(RootDirectory, fileName);
-					p = RootDirectory + fileName;
 					data = new FileScriptData(p, target, CodeMapper, table, labels)
 					{
 						HeaderDictionary = this.HeaderDictionary
