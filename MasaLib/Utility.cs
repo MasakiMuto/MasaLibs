@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace Masa.Lib
 {
 	public static class Utility
 	{
+		#region Supress Sleep
+
 		[DllImport("kernel32.dll")]
 		extern static ExecutionState SetThreadExecutionState(ExecutionState esFlags);
 
@@ -29,6 +32,10 @@ namespace Masa.Lib
 		{
 			SetThreadExecutionState(ExecutionState.Continuous | ExecutionState.DisplayRequired);
 		}
+
+		#endregion
+
+		#region Collections
 
 		/// <summary>
 		/// fromからlength個の配列を返す (fromを含む)
@@ -129,6 +136,34 @@ namespace Masa.Lib
 					delete = null;
 				}
 			}
+		}
+
+		#endregion
+
+		/// <summary>
+		/// 絶対パスを、あるディレクトリを基準とする相対パスに変換する
+		/// </summary>
+		/// <param name="basePath">基準となるパス。パスの末尾はファイル名またはディレクトリ区切り文字(\)</param>
+		/// <param name="absolutePath">変換する絶対パス</param>
+		/// <returns></returns>
+		public static string ConvertRelativePath(string basePath, string absolutePath)
+		{
+			var from = new Uri(Path.GetDirectoryName(basePath) + Path.DirectorySeparatorChar);
+			var uri = new Uri(from, absolutePath);
+			var rel = from.MakeRelativeUri(uri).ToString();
+			rel = System.Uri.UnescapeDataString(rel).Replace('/', '\\');
+			return rel;
+		}
+
+		/// <summary>
+		/// 相対パスを、あるディレクトリを基準としたときの絶対パスに変換する
+		/// </summary>
+		/// <param name="basePath">基準となるディレクトリ</param>
+		/// <param name="relativePath">相対パス</param>
+		/// <returns></returns>
+		public static string ConvertAbsolutePath(string basePath, string relativePath)
+		{
+			return Path.GetFullPath(Path.Combine(basePath, relativePath));
 		}
 
 		/// <summary>
