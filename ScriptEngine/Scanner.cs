@@ -194,6 +194,36 @@ namespace Masa.ScriptEngine
 						isLiteral = true;
 						builder.Append(StringLiteralMark);
 						break;
+					case ':':
+						enter();
+						builder.Append(code[i].ToString());
+						enter();
+						break;
+					case '+':
+					case '-':
+					case '*':
+					case '/':
+					case '%':
+					case '!':
+					case '&':
+					case '|':
+					case '>':
+					case '<':
+					case '=':
+
+						var next = code[i + 1];
+						if (char.IsUpper(next) || char.IsLower(next))
+						{
+							enter();
+							builder.Append(code[i].ToString());
+							enter();
+						}
+						else
+						{
+							goto default;
+						}
+						break;
+						
 					default:
 						builder.Append(code[i].ToString());
 						break;
@@ -315,30 +345,30 @@ namespace Masa.ScriptEngine
 			}
 		}
 
-		void ProcessDefine()
-		{
-			var definition = new Dictionary<string, List<object>>();
-			for (int i = 0; i < Tokens.Count; i++)
-			{
-				if (Tokens[i].Equals(Marks.Define))
-				{
-					var list = new List<object>();
-					for (int j = i + 2; true; j++)
-					{
-						if (Tokens[j].Equals(Marks.Return))
-						{
-							break;
-						}
-						else
-						{
-							list.Add(Tokens[j]);
-						}
-					}
-					definition[Tokens[i + 1] as string] = list;
-				}
-			}
+		//void ProcessDefine()
+		//{
+		//	var definition = new Dictionary<string, List<object>>();
+		//	for (int i = 0; i < Tokens.Count; i++)
+		//	{
+		//		if (Tokens[i].Equals(Marks.Define))
+		//		{
+		//			var list = new List<object>();
+		//			for (int j = i + 2; true; j++)
+		//			{
+		//				if (Tokens[j].Equals(Marks.Return))
+		//				{
+		//					break;
+		//				}
+		//				else
+		//				{
+		//					list.Add(Tokens[j]);
+		//				}
+		//			}
+		//			definition[Tokens[i + 1] as string] = list;
+		//		}
+		//	}
 
-		}
+		//}
 
 		/// <summary>
 		/// 単項演算子か
