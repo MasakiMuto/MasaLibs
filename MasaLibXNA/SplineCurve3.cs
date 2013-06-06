@@ -1,31 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Masa.Lib;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
 
 namespace Masa.Lib.XNA
 {
-	public class SplineCurve
+	class SplineCurve3
 	{
-		Vector2[] points;
+		Vector3[] points;
 		float[] times;//ある区間iが終了するときの全体時刻
 		readonly float Speed;
-		readonly Vector2 LastVelocity;
-		readonly Vector2[] Velocitys;
+		readonly Vector3 LastVelocity;
+		readonly Vector3[] Velocitys;
 		readonly float[] Lengths;
 
 
-		public SplineCurve(IEnumerable<Vector2> points, float speed, Vector2 lastVelDir)
+		public SplineCurve3(IEnumerable<Vector3> points, float speed, Vector3 lastVelDir)
 		{
 			Debug.Assert(points.Count() >= 2);
 			this.points = points.ToArray();
 
 			Speed = speed;
-			LastVelocity = Vector2.Normalize(lastVelDir);
+			LastVelocity = Vector3.Normalize(lastVelDir);
 			Velocitys = Enumerable.Range(0, this.points.Length).Select(x => CalcVelocity(x)).ToArray();
 			Lengths = Enumerable.Range(0, this.points.Length - 1).Select(x => CalcLength(x)).ToArray();
 
@@ -45,7 +44,7 @@ namespace Masa.Lib.XNA
 		/// </summary>
 		/// <param name="points"></param>
 		/// <param name="speed"></param>
-		public SplineCurve(IEnumerable<Vector2> points, float speed)
+		public SplineCurve3(IEnumerable<Vector3> points, float speed)
 			: this(points, speed, points.Last() - points.ElementAt(points.Count() - 2))
 		{
 		}
@@ -100,7 +99,7 @@ namespace Masa.Lib.XNA
 		/// </summary>
 		/// <param name="time">0以上</param>
 		/// <returns></returns>
-		public Vector2 GetPosition(float time)
+		public Vector3 GetPosition(float time)
 		{
 			Debug.Assert(time >= 0);
 			var sect = GetSectionAndTime(time);
@@ -132,34 +131,7 @@ namespace Masa.Lib.XNA
 			return times[times.Length - 1];
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="time"></param>
-		/// <param name="offset">正なら速度ベクトルに対して右側へずれる</param>
-		/// <returns></returns>
-		public Vector2 GetPositionOffset(float time, float offset)
-		{
-			Debug.Assert(time >= 0);
-			var sect = GetSectionAndTime(time);
-			Vector2 pos, vel;
-			if (sect.Section < times.Length)
-			{
-				var arg = GetArg(sect);
-				pos = CalcPoint(arg);
-				vel = CalcPointDifferent(arg) / Lengths[sect.Section];
-				//vel.Normalize();
-			}
-			else
-			{
-				pos = points[points.Length - 1] + Velocitys[Velocitys.Length - 1] * Speed * sect.Time;
-				vel = Velocitys[Velocitys.Length - 1];
-			}
-			vel = new Vector2(vel.Y, -vel.X);
-			return pos + vel * offset * Speed;
-		}
-
-		public Vector2 GetVelocity(float time)
+		public Vector3 GetVelocity(float time)
 		{
 			var sect = GetSectionAndTime(time);
 			if (sect.Section < times.Length)
@@ -172,9 +144,9 @@ namespace Masa.Lib.XNA
 			}
 		}
 
-		Vector2 CalcVelocity(int index)
+		Vector3 CalcVelocity(int index)
 		{
-			Vector2 dir;
+			Vector3 dir;
 			if (index == points.Length - 1)
 			{
 				dir = LastVelocity;
@@ -188,15 +160,15 @@ namespace Masa.Lib.XNA
 			{
 				dir = points[index + 1] - points[index - 1];
 			}
-			return Vector2.Normalize(dir);
+			return Vector3.Normalize(dir);
 		}
 
 		struct PointCalcArgs
 		{
 			public readonly float T;
-			public readonly Vector2 P1, P2, V1, V2;
+			public readonly Vector3 P1, P2, V1, V2;
 
-			public PointCalcArgs(float t, Vector2 p1, Vector2 p2, Vector2 v1, Vector2 v2)
+			public PointCalcArgs(float t, Vector3 p1, Vector3 p2, Vector3 v1, Vector3 v2)
 			{
 				T = t;
 				P1 = p1;
@@ -208,14 +180,14 @@ namespace Masa.Lib.XNA
 
 
 
-		Vector2 CalcPoint(float t, Vector2 p1, Vector2 p2, Vector2 v1, Vector2 v2)
+		Vector3 CalcPoint(float t, Vector3 p1, Vector3 p2, Vector3 v1, Vector3 v2)
 		{
 			float t2 = t * t;
 			float t3 = t * t * t;
 			return p1 * (2 * t3 + -3 * t2 + 1) + p2 * (-2 * t3 + 3 * t2) + v1 * (t3 + -2 * t2 + t) + v2 * (t3 - t2);
 		}
 
-		Vector2 CalcPoint(PointCalcArgs args)
+		Vector3 CalcPoint(PointCalcArgs args)
 		{
 			return CalcPoint(args.T, args.P1, args.P2, args.V1, args.V2);
 		}
@@ -225,13 +197,13 @@ namespace Masa.Lib.XNA
 		/// CalcPointの微分
 		/// </summary>
 		/// <returns></returns>
-		Vector2 CalcPointDifferent(float t, Vector2 p1, Vector2 p2, Vector2 v1, Vector2 v2)
+		Vector3 CalcPointDifferent(float t, Vector3 p1, Vector3 p2, Vector3 v1, Vector3 v2)
 		{
 			var t2 = t * t;
 			return p1 * (6 * t2 - 6 * t) + p2 * (-6 * t2 + 6 * t) + v1 * (3 * t2 - 4 * t + 1) + v2 * (3 * t2 - 2 * t);
 		}
 
-		Vector2 CalcPointDifferent(PointCalcArgs args)
+		Vector3 CalcPointDifferent(PointCalcArgs args)
 		{
 			return CalcPointDifferent(args.T, args.P1, args.P2, args.V1, args.V2);
 		}
@@ -276,7 +248,5 @@ namespace Masa.Lib.XNA
 			length += (p2 - p).Length();
 			return length;
 		}
-
 	}
-
 }

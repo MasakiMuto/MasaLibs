@@ -85,6 +85,7 @@
     <Compile Include="Graphics\TextureColorConverter.cs" />
     <Compile Include="Graphics\WritableVertexBuffer.cs" />
     <Compile Include="SplineCurve.cs" />
+    <Compile Include="SplineCurve3.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MasaLib\MasaLib.csproj">
