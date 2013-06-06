@@ -12,7 +12,7 @@ namespace Masa.Lib.XNA
 	public class SplineCurve
 	{
 		Vector2[] points;
-		float[] times;
+		float[] times;//ある区間iが終了するときの全体時刻
 		readonly float Speed;
 		readonly Vector2 LastVelocity;
 		readonly Vector2[] Velocitys;
@@ -112,6 +112,24 @@ namespace Masa.Lib.XNA
 			{
 				return points[points.Length - 1] + Velocitys[Velocitys.Length - 1] * Speed * sect.Time;
 			}
+		}
+		
+		/// <summary>
+		/// スプライン曲線の範囲内か(始点以前か終点以降ならfalse)
+		/// </summary>
+		/// <param name="time"></param>
+		/// <returns></returns>
+		public bool IsInCurve(float time)
+		{
+			return time >= 0 && times[times.Length - 1] > time;
+		}
+		
+		/// <summary>
+		/// カーブを走り切るのにかかる時間
+		/// </summary>
+		public float GetTotalTimeLength()
+		{
+			return time[time.Length - 1];
 		}
 
 		/// <summary>
