@@ -129,7 +129,7 @@ namespace Masa.Lib.XNA
 		/// </summary>
 		public float GetTotalTimeLength()
 		{
-			return time[time.Length - 1];
+			return time[times.Length - 1];
 		}
 
 		/// <summary>
