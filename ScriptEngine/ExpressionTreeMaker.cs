@@ -26,6 +26,7 @@ namespace Masa.ScriptEngine
 		Dictionary<string, Action<Environment>> LabelStatementCashe;
 		Expression[] TotalBlock;
 		List<string> GlobalVarList;
+		List<string> TypeUndefinedVarList;
 		Dictionary<string, ParameterExpression> VarDict;
 		Dictionary<string, Expression> LabelDict;
 		Dictionary<string, ScriptMethodInfo> MethodDict;
@@ -69,6 +70,7 @@ namespace Masa.ScriptEngine
 			LabelDict = new Dictionary<string, Expression>();
 			Environment = Expression.Parameter(typeof(ScriptEngine.Environment));
 			GlobalVarList = new List<string>();
+			TypeUndefinedVarList = new List<string>();
 			//MethodDict = new Dictionary<string, ScriptMethodInfo>();
 			//PropertyDict = new Dictionary<string, PropertyInfo>();
 			GetTargetInfo();
@@ -218,6 +220,7 @@ namespace Masa.ScriptEngine
 			InitStatement = GetLabelStatement("init");
 		}
 
+		
 
 		/// <summary>
 		/// 文字列を変数(内部変数、Global変数、外部変数、列挙文字列すべて)としてパース。
@@ -375,12 +378,21 @@ namespace Masa.ScriptEngine
 			{
 				type = TypeNameDictionary[line.Tokens[3] as string];
 			}
-
+			else
+			{
+				if (target == null)//型の明示なし、初期化なし
+				{
+					TypeUndefinedVarList.Add(name);
+					return null;
+				}
+			}
+			
 			v = Expression.Parameter(type, name);
 			VarDict.Add(name, v);
+			
 			if (target != null)
 			{
-				return Expression.Assign(v,target);
+				return Expression.Assign(v, target);
 			}
 			else
 			{
@@ -397,35 +409,28 @@ namespace Masa.ScriptEngine
 		Expression ProcessAssign(Line line)
 		{
 			Marks m = (Marks)line.Tokens[1];
-			Expression target = ParseVariable((string)line.Tokens[0]);//代入先の変数/プロパティ
+			var name = line.Tokens[0] as string;
 			if (m == Marks.Inc)
 			{
 				//return Expression.Assign(target, Expression.Increment(target));
-				return Expression.PostIncrementAssign(target);
+				return Expression.PostIncrementAssign(ParseVariable(name));
 			}
 			else if (m == Marks.Dec)
 			{
 				//return Expression.Assign(target, Expression.Decrement(target));
-				return Expression.PostDecrementAssign(target);
+				return Expression.PostDecrementAssign(ParseVariable(name));
 			}
 			else
 			{
 				Expression r = ParsePareBlock(new PareBlock(line.Tokens.Skip(2).ToArray()));//代入される値
+				if (TypeUndefinedVarList.Contains(name))
+				{
+					VarDict.Add(name, Expression.Parameter(r.Type, name));
+					TypeUndefinedVarList.Remove(name);
+				}
+				Expression target = ParseVariable(name);//代入先の変数/プロパティ
+			
 				
-				//switch (m)
-				//{
-				//	case Marks.Sub:
-				//		return Expression.Assign(target, r);
-				//	case Marks.SubPos:
-				//		return Expression.AddAssign(target, r);
-				//	case Marks.SubNeg:
-				//		return Expression.SubtractAssign(target, r);
-				//	case Marks.SubMul:
-				//		return Expression.MultiplyAssign(target, r);
-				//	case Marks.SubDiv:
-				//		return Expression.DivideAssign(target, r);
-				//}
-
 				return Assign(m, target, r);
 
 			}
