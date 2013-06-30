@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework;
 
 namespace Masa.Lib.XNA
 {
-	class SplineCurve3
+	public class SplineCurve3
 	{
 		Vector3[] points;
 		float[] times;//ある区間iが終了するときの全体時刻

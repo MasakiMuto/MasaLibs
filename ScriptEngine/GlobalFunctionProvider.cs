@@ -95,8 +95,8 @@ namespace Masa.ScriptEngine
 			ret.Add("max", math.GetMethod("Max", new[] { ValueType, ValueType }));
 			ret.Add("min", math.GetMethod("Min", new[] { ValueType, ValueType }));
 			ret["sign"] = math.GetMethod("Sign", args[1]);
-			ret["float2"] = vals.GetMethod("MakeVector2", args[2]);
-			ret["float3"] = vals.GetMethod("MakeVector3", args[3]);
+			ret["f2"] = ret["float2"] = vals.GetMethod("MakeVector2", args[2]);
+			ret["f3"] = ret["float3"] = vals.GetMethod("MakeVector3", args[3]);
 			ret["float"] = vals.GetMethod("MakeFloat", args[1]);
 			ret["double"] = vals.GetMethod("MakeDouble", args[1]);
 			ret["int"] = vals.GetMethod("MakeInteger", args[1]);
