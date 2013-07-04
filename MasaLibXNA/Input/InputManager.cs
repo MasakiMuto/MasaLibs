@@ -49,9 +49,9 @@ namespace Masa.Lib.XNA.Input
 
 		public MouseState()
 		{
-			Left = new Button();
-			Right = new Button();
-			Middle = new Button();
+			Left = new Button(ButtonTag.MouseLeft);
+			Right = new Button(ButtonTag.MouseRight);
+			Middle = new Button(ButtonTag.MouseMiddle);
 		}
 
 		public Vector2 Delta
@@ -69,6 +69,7 @@ namespace Masa.Lib.XNA.Input
 	public class Button
 	{
 		int state;
+		public readonly ButtonTag Tag;
 
 		public bool JustPush { get { return (state == 1); } }
 		public bool Push { get { return state > 0; } }
@@ -76,8 +77,9 @@ namespace Masa.Lib.XNA.Input
 		public bool Release { get { return state <= 0; } }
 		public int PushTime { get { return state; } }
 
-		public Button()
+		public Button(ButtonTag tag)
 		{
+			Tag = tag;
 		}
 
 		/// <summary>

@@ -6,6 +6,14 @@ using Microsoft.Xna.Framework;
 
 namespace Masa.Lib.XNA.Input
 {
+	public enum ButtonTag
+	{
+		A, B, X, Y,
+		Start, Esc, Debug,
+		Up, Down, Left, Right,
+		MouseLeft, MouseRight, MouseMiddle,
+	}
+
 	/// <summary>
 	/// コントローラー・キーボードからの入力情報集合体
 	/// </summary>
@@ -92,17 +100,17 @@ namespace Masa.Lib.XNA.Input
 
 		public ControlState()
 		{
-			A = new Button();
-			B = new Button();
-			X = new Button();
-			Y = new Button();
-			Start = new Button();
-			Esc = new Button();
-			Debug = new Button();
-			Up = new Button();
-			Down = new Button();
-			Left = new Button();
-			Right = new Button();
+			A = new Button(ButtonTag.A);
+			B = new Button(ButtonTag.B);
+			X = new Button(ButtonTag.X);
+			Y = new Button(ButtonTag.Y);
+			Start = new Button(ButtonTag.Start);
+			Esc = new Button(ButtonTag.Esc);
+			Debug = new Button(ButtonTag.Debug);
+			Up = new Button(ButtonTag.Up);
+			Down = new Button(ButtonTag.Down);
+			Left = new Button(ButtonTag.Left);
+			Right = new Button(ButtonTag.Right);
 		}
 	}
 }
