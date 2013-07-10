@@ -33,7 +33,7 @@ namespace Masa.Lib
 
 	public abstract class PoolObjectManagerBase<T> where T : PoolObjectBase, new()
 	{
-		List<T> items;
+		protected List<T> Items { get; private set; }
 		int headIndex;
 		readonly int DefaultSize;
 
@@ -44,7 +44,7 @@ namespace Masa.Lib
 		public PoolObjectManagerBase(int defaultSize)
 		{
 			DefaultSize = defaultSize;
-			items = Enumerable.Range(0, defaultSize).Select(i => new T() {ListIndex = i }).ToList();
+			Items = Enumerable.Range(0, defaultSize).Select(i => new T() {ListIndex = i }).ToList();
 		}
 
 		/// <summary>
@@ -60,7 +60,7 @@ namespace Masa.Lib
 			}
 			else
 			{
-				return items[ind];
+				return Items[ind];
 			}
 			//for (int i = 0; i < items.Count; i++)
 			//{
@@ -81,15 +81,15 @@ namespace Masa.Lib
 		/// <returns>正規化された配列のインデックス、存在しなければ-1</returns>
 		protected int GetFirstUnusedIndex()
 		{
-			for (int i = 0; i < items.Count; i++)
+			for (int i = 0; i < Items.Count; i++)
 			{
-				if (!items[(i + headIndex) % items.Count].IsUsed)
+				if (!Items[(i + headIndex) % Items.Count].IsUsed)
 				{
 					headIndex += i + 1;
-					return (headIndex - 1) % items.Count;
+					return (headIndex - 1) % Items.Count;
 				}
 			}
-			headIndex = items.Count;
+			headIndex = Items.Count;
 			return -1;
 		}
 
@@ -112,13 +112,13 @@ namespace Masa.Lib
 		/// <param name="extraSize"></param>
 		protected void Extend(int extraSize)
 		{
-			int count = items.Count;
-			items.AddRange(Enumerable.Repeat(0, extraSize).Select(i => new T() { ListIndex = i + count }));
+			int count = Items.Count;
+			Items.AddRange(Enumerable.Repeat(0, extraSize).Select(i => new T() { ListIndex = i + count }));
 		}
 
 		public IEnumerable<T> ActiveItems()
 		{
-			return items.Where(i => i.Flag);
+			return Items.Where(i => i.Flag);
 		}
 
 		/// <summary>
@@ -126,7 +126,7 @@ namespace Masa.Lib
 		/// </summary>
 		public void DeleteAll()
 		{
-			foreach (var item in items)
+			foreach (var item in Items)
 			{
 				item.Delete();
 			}
