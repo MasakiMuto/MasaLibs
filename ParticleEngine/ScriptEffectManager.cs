@@ -114,7 +114,7 @@ namespace Masa.ParticleEngine
 		/// <param name="width">画面幅(レンダリングターゲットの幅)</param>
 		/// <param name="height">画面高さ(レンダリングターゲットの高さ)</param>
 		/// <param name="particle">使用する各パーティクルエンジンの設定</param>
-		/// <param name="rnd">エフェクトから乱数を使うときの乱数発生器。使わなければnullでよい</param>
+		/// <param name="rnd">エフェクトから乱数を使うときの乱数発生器。特に指定しないならnull</param>
 		public ScriptEffectManager(ScriptEngine.ScriptManager script, GraphicsDevice device, Effect effect,
 			ParticleMode mode, float width, float height, IEnumerable<ParticleManagerInitializer> particle, Random rnd)
 			: this(script, device, effect, mode, GetDefault2DProjection(width, height), new Vector2(width, height), particle, rnd)

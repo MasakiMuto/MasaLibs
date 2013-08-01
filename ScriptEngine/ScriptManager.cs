@@ -37,7 +37,15 @@ namespace Masa.ScriptEngine
 			get { return rootDirectory; }
 			set
 			{
-				rootDirectory = Path.Combine(value, "");
+				//rootDirectory = Path.Combine(value, "");
+				if (!(value.LastOrDefault() == Path.DirectorySeparatorChar || value.LastOrDefault() == Path.AltDirectorySeparatorChar))
+				{
+					rootDirectory = value + Path.DirectorySeparatorChar;
+				}
+				else
+				{
+					rootDirectory = value;
+				}
 			}
 		}
 		string FullRoot
@@ -225,7 +233,7 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		/// <param name="directory"></param>
 		/// <param name="option"></param>
-		/// <returns></returns>
+		/// <returns>hoge\file.mss</returns>
 		public IEnumerable<string> EnumrateDirectoryScript(string directory)
 		{
 			directory = directory.ToLower();
