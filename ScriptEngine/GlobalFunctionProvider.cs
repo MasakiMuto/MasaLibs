@@ -30,6 +30,11 @@ namespace Masa.ScriptEngine
 			return new Vector3(x, y, z);
 		}
 
+		public static Vector4 MakeVector4(Value x, Value y, Value z, Value w)
+		{
+			return new Vector4(x, y, z, w);
+		}
+
 		public static int MakeInteger(Value x)
 		{
 			return (int)x;
@@ -85,7 +90,7 @@ namespace Masa.ScriptEngine
 			Type vec = typeof(Vector2);
 			Type[] vecs = new[] { vec };
 			
-			Type[][] args = Enumerable.Range(0, 4).Select(x => Enumerable.Repeat(ValueType, x).ToArray()).ToArray();
+			Type[][] args = Enumerable.Range(0, 6).Select(x => Enumerable.Repeat(ValueType, x).ToArray()).ToArray();
 			ret.Add("cos", mu.GetMethod("Cos"));
 			ret.Add("sin", mu.GetMethod("Sin"));
 			ret.Add("tan", mu.GetMethod("Tan"));
@@ -97,6 +102,7 @@ namespace Masa.ScriptEngine
 			ret["sign"] = math.GetMethod("Sign", args[1]);
 			ret["f2"] = ret["float2"] = vals.GetMethod("MakeVector2", args[2]);
 			ret["f3"] = ret["float3"] = vals.GetMethod("MakeVector3", args[3]);
+			ret["f4"] = ret["float4"] = vals.GetMethod("MakeVector4", args[4]);
 			ret["float"] = vals.GetMethod("MakeFloat", args[1]);
 			ret["double"] = vals.GetMethod("MakeDouble", args[1]);
 			ret["int"] = vals.GetMethod("MakeInteger", args[1]);
