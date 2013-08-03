@@ -79,6 +79,16 @@ namespace Masa.ParticleEngine
 			return (float)rand.NextNormal(average, dis);
 		}
 
+		/// <summary>
+		/// 0-1の実数乱数
+		/// </summary>
+		/// <returns></returns>
+		[ScriptMember("rand1")]
+		protected float Rand1()
+		{
+			return (float)rand.NextDouble();
+		}
+
 		protected float[] Args;
 		[ScriptMember("arg0")]
 		protected float Arg0
