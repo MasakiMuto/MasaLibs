@@ -444,6 +444,10 @@ namespace Masa.ScriptEngine
 		{
 			if (!target.Type.IsAssignableFrom(value.Type))
 			{
+				if(target.Type == typeof(bool))
+				{
+					value = ExpressionTreeMakerHelper.ExpressionToBool(value);
+				}
 				value = Expression.Convert(value, target.Type);
 			}
 			switch (mark)

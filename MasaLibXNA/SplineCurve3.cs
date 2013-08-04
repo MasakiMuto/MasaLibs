@@ -112,6 +112,34 @@ namespace Masa.Lib.XNA
 				return points[points.Length - 1] + Velocitys[Velocitys.Length - 1] * Speed * sect.Time;
 			}
 		}
+
+		/// <summary>
+		/// 速度方向を軸にする円盤上の位置ベクトルを返す
+		/// </summary>
+		/// <param name="time"></param>
+		/// <param name="radius">カーブ点からの距離</param>
+		/// <param name="angle"></param>
+		/// <returns></returns>
+		public Vector3 GetPositionOffset(float time, float radius, float angle)
+		{
+			Debug.Assert(time >= 0);
+			var sect = GetSectionAndTime(time);
+			Vector3 pos, vel;
+			if (sect.Section < times.Length)
+			{
+				var arg = GetArg(sect);
+				pos = CalcPoint(arg);
+				vel = CalcPointDifferent(arg);
+			}
+			else
+			{
+				pos = points[points.Length - 1] + Velocitys[Velocitys.Length - 1] * Speed * sect.Time;
+				vel = Velocitys[Velocitys.Length - 1];
+			}
+			var n = Vector3.Cross(vel, MathUtilXNA.GetVector(1, angle, 0));
+			n.Normalize();
+			return pos + n * radius;
+		}
 		
 		/// <summary>
 		/// スプライン曲線の範囲内か(始点以前か終点以降ならfalse)

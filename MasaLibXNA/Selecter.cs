@@ -104,7 +104,7 @@ namespace Masa.Lib.XNA
 		/// </summary>
 		/// <param name="input">使用する入力State 普通はキー入力そのままの</param>
 		/// <param name="max">要素数</param>
-		/// <param name="freq">押しっぱなし自動移動の速度</param>
+		/// <param name="freq">押しっぱなし自動移動の速度、負ならループしない</param>
 		/// <param name="dir">縦か横か</param>
 		public LinearSelecter(ControlState input, int max, int freq, SelectDirection dir)
 			: this(input, max, freq, freq, dir)
@@ -160,7 +160,7 @@ namespace Masa.Lib.XNA
 		/// </summary>
 		/// <param name="input"></param>
 		/// <param name="max">全要素数</param>
-		/// <param name="freq"></param>
+		/// <param name="freq">負ならループしない</param>
 		/// <param name="length">一行(列)の長さ</param>
 		/// <param name="dir">行方向だと+1か、列方向だとか</param>
 		public PlaneSelecter(ControlState input, int max, int freq, int length, SelectDirection dir)
