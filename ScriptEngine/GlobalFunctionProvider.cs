@@ -50,6 +50,11 @@ namespace Masa.ScriptEngine
 			return (float)x;
 		}
 
+		public static bool MakeBool(Value x)
+		{
+			return x != 0;
+		}
+
 		public static float GetVectorLength(Vector2 vector)
 		{
 			return vector.Length();
@@ -106,6 +111,7 @@ namespace Masa.ScriptEngine
 			ret["float"] = vals.GetMethod("MakeFloat", args[1]);
 			ret["double"] = vals.GetMethod("MakeDouble", args[1]);
 			ret["int"] = vals.GetMethod("MakeInteger", args[1]);
+			ret["bool"] = vals.GetMethod("MakeBool", args[1]);
 			ret["float2arc"] = xmath.GetMethod("GetVector", args[2]);
 			ret["float2ang"] = xmath.GetMethod("Angle", vecs);
 			ret["float2len"] = vals.GetMethod("GetVectorLength", vecs);

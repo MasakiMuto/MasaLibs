@@ -51,7 +51,8 @@ namespace Masa.ScriptEngine
 								l.Add(Expression.Negate(e));
 								continue;
 							case Marks.Not:
-								l.Add(BoolToFloat(Expression.Equal(e, ZeroExpression)));//val == 0 => 1, val != 0 => 0
+								//l.Add(BoolToFloat(Expression.Equal(e, ZeroExpression)));//val == 0 => 1, val != 0 => 0
+								l.Add(BoolToFloat(Expression.Not( ExpressionTreeMakerHelper.ExpressionToBool(e))));
 								continue;
 						}
 					}
