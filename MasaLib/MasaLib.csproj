@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Scene\SceneBase.cs" />
+    <Compile Include="Scene\SceneManager.cs" />
     <Compile Include="StreamReverseReader.cs" />
     <Compile Include="LinkedPoolObjectBaseManager.cs" />
     <Compile Include="MathUtil.cs" />
