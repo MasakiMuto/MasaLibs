@@ -17,6 +17,11 @@ namespace Masa.ScriptEngine
 		{
 			tokens = Parser.ParseStatement(t);//再帰
 		}
+
+		public override string ToString()
+		{
+			return tokens.Aggregate("(", (s, x) => s + x.ToString() + " ") + ")";
+		}
 	}
 
 	/// <summary>

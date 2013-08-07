@@ -119,7 +119,7 @@ namespace Masa.ScriptEngine
 		{
 			ScriptData data;
 			string key = PathToKey(fileName);
-			try
+			//try
 			{
 				if (UsePackedData)
 				{
@@ -139,11 +139,12 @@ namespace Masa.ScriptEngine
 				data.Load();
 
 			}
-			catch (Exception e)
-			{
-				WriteLog(e.Message);
-				throw;
-			}
+			//catch (Exception e)
+			//{
+			//	WriteLog(e.Message);
+			//	throw;
+			//}
+
 			//if (items.ContainsKey(key))
 			//{
 			//	string msg = fileName + ":同じKeyのスクリプトがすでに読み込まれている";
