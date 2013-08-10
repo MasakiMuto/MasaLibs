@@ -64,6 +64,7 @@
     <Compile Include="Graphics\BlendStateManager.cs" />
     <Compile Include="Graphics\AnimeTexture.cs" />
     <Compile Include="Graphics\DividedTexture.cs" />
+    <Compile Include="Graphics\GlowEffectDrawer.cs" />
     <Compile Include="Graphics\GraphicUtil.cs" />
     <Compile Include="Graphics\HSVColor.cs" />
     <Compile Include="Graphics\PostEffectCreater.cs" />
