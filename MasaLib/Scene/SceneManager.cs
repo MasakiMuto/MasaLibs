@@ -20,6 +20,9 @@ namespace Masa.Lib.Scene
 
 		}
 
+		/// <summary>
+		/// remove-resume-suspend-addd-update
+		/// </summary>
 		public void Update()
 		{
 			while (removeQueue.Any())
@@ -71,7 +74,13 @@ namespace Masa.Lib.Scene
 		}
 
 
-		
+		public void RemoveAll()
+		{
+			foreach (var item in scenes)
+			{
+				item.Exit();
+			}
+		}
 
 		public void Add(SceneBase scene)
 		{
