@@ -717,10 +717,14 @@ namespace Masa.ScriptEngine
 			List<Expression> args = GetArgs(l);
 			Option[] options = GetOptions(l);
 			var atrribute = method.Attribute;
+			var param = method.MethodInfo.GetParameters();
+			int index = 0;
+
 			if (args.Count != method.DefaultParameterCount)
 			{
 				throw new ParseException("外部メソッド呼び出しで必須引数の数が不一致" + method.ToString() + String.Format(" need {0} params but {1} args.", method.DefaultParameterCount, args.Count));
 			}
+			index += args.Count;
 		
 			if (atrribute.OptionName != null)//オプションが定義されていれば
 			{
@@ -731,25 +735,32 @@ namespace Masa.ScriptEngine
 				{
 					throw new ParseException(id + "メソッド呼び出しに無効なオプション指定 : " + less.Aggregate((src, dst) => dst + ", " + src));
 				}
+
 				for (int i = 0; i < name.Length; i++)
 				{
 					Option op = options.FirstOrDefault(o => o.Name == name[i]);
-					if (op == null)//オプションが指定されていなければNaNで埋める
+					int argCount = num[i];
+					if (op != null)
 					{
-						args.AddRange(Enumerable.Repeat(NanExpression, num[i]));
+						args.AddRange(op.Args.ToArray());
+						index += op.Args.Count();
+						argCount -= op.Args.Count();
 					}
-					else
+					if(argCount > 0)
 					{
-						IEnumerable<Expression> addition = op.Args.ToArray();
-						if (op.Args.Count() < num[i])//不足はNaNで埋める
-						{
-							addition = addition.Concat(Enumerable.Repeat(NanExpression, num[i] - addition.Count()));
-						}
-						args.AddRange(addition.Take(num[i]));
+						//ValueならNaN, 引数のデフォルト値があればその値、参照型ならNull, それ以外ならValue型の0で埋める
+						args.AddRange(Enumerable.Range(index, argCount).Select(x=>
+							{
+								if (param[x].ParameterType == ValueType) return NanExpression;
+								if (param[x].DefaultValue != DBNull.Value) return Expression.Constant(param[x].DefaultValue);
+								if (param[x].ParameterType.IsClass) return Expression.Constant(null);
+								return ZeroExpression;
+							}));
+						index += argCount;
 					}
+					
 				}
 			}
-			var param = method.MethodInfo.GetParameters();
 			if (param.Length != args.Count)
 			{
 				throw new ParseException("外部メソッド呼び出しで引数とパラメータの数の不一致\n" + method.ToString() + String.Format(" need {0} params but {1} args.", param.Length, args.Count));

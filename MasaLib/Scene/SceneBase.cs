@@ -9,8 +9,6 @@ namespace Masa.Lib.Scene
 	public abstract class SceneBase : IDisposable
 	{
 
-		static protected readonly int Width;
-		static protected readonly int Height;
 		readonly int InputWaitTime = 5;
 
 		protected int Count { get; private set; }

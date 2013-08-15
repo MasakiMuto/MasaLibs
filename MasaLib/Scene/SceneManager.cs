@@ -8,7 +8,7 @@ namespace Masa.Lib.Scene
 {
 	public class SceneManager : IDisposable
 	{
-		LinkedList<SceneBase> scenes;
+		protected LinkedList<SceneBase> Scenes { get; private set; }
 		Queue<SceneBase> addQueue, removeQueue;
 		bool needSuspend, needResume;
 
@@ -16,7 +16,7 @@ namespace Masa.Lib.Scene
 		{
 			addQueue = new Queue<SceneBase>();
 			removeQueue = new Queue<SceneBase>();
-			scenes = new LinkedList<SceneBase>();
+			Scenes = new LinkedList<SceneBase>();
 
 		}
 
@@ -28,7 +28,7 @@ namespace Masa.Lib.Scene
 			while (removeQueue.Any())
 			{
 				var rem = removeQueue.Dequeue();
-				scenes.Remove(rem);
+				Scenes.Remove(rem);
 				rem.Dispose();
 			}
 			if (needResume)
@@ -41,10 +41,10 @@ namespace Masa.Lib.Scene
 			}
 			while (addQueue.Any())
 			{
-				scenes.AddFirst(addQueue.Dequeue());
+				Scenes.AddFirst(addQueue.Dequeue());
 			}
 			var first = true;
-			foreach (var item in scenes)
+			foreach (var item in Scenes)
 			{
 				if (!item.IsSuspended)
 				{
@@ -61,22 +61,22 @@ namespace Masa.Lib.Scene
 		/// <summary>
 		/// 下のレイヤーも描画する
 		/// </summary>
-		public void Draw()
+		public virtual void Draw()
 		{
-			foreach (var item in scenes.Skip(1).Reverse())
+			foreach (var item in Scenes.Skip(1).Reverse())
 			{
 				if (!item.IsSuspended)
 				{
 					item.Draw(false);
 				}
 			}
-			scenes.First().Draw(true);
+			Scenes.First().Draw(true);
 		}
 
 
 		public void RemoveAll()
 		{
-			foreach (var item in scenes)
+			foreach (var item in Scenes)
 			{
 				item.Exit();
 			}
@@ -94,7 +94,7 @@ namespace Masa.Lib.Scene
 
 		void SuspendAllInnner()
 		{
-			foreach (var item in scenes)
+			foreach (var item in Scenes)
 			{
 				item.Suspend();
 			}
@@ -108,7 +108,7 @@ namespace Masa.Lib.Scene
 
 		void ResumeAllInnner()
 		{
-			foreach (var item in scenes)
+			foreach (var item in Scenes)
 			{
 				item.Resume();
 			}
@@ -124,15 +124,15 @@ namespace Masa.Lib.Scene
 					item.Dispose();
 				}
 			}
-			if (scenes != null)
+			if (Scenes != null)
 			{
-				foreach (var item in scenes)
+				foreach (var item in Scenes)
 				{
 					item.Dispose();
 				}
 			}
 			addQueue = null;
-			scenes = null;
+			Scenes = null;
 			removeQueue = null;
 			GC.SuppressFinalize(this);
 		}
