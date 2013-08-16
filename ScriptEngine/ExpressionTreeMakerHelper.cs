@@ -7,6 +7,7 @@ using Masa.Lib;
 using Microsoft.Xna.Framework;
 using System.Linq.Expressions;
 using System.Reflection;
+using MoreLinq;
 
 namespace Masa.ScriptEngine
 {
@@ -122,8 +123,9 @@ namespace Masa.ScriptEngine
 				}
 				var head = item.Value
 					.Select(x => new { x = x, info = x.Item2.IsT() ? x.Item2.Value1.MethodInfo as MemberInfo : x.Item2.Value2 as MemberInfo })
-					.OrderByDescending(x => x, (x, y) => x.info.DeclaringType.GetBaseTypeTree().Count - y.info.DeclaringType.GetBaseTypeTree().Count)
-					.First().x;
+					.MaxBy(x => x.info.DeclaringType.GetBaseTypeTree().Count).x;//一番継承関係が深いもの
+				//	.OrderByDescending(x => x, (x, y) => x.info.DeclaringType.GetBaseTypeTree().Count - y.info.DeclaringType.GetBaseTypeTree().Count)
+				//	.First().x;
 				if (!head.Item1.IsOverride)
 				{
 					throw exception;
