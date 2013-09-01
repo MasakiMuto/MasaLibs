@@ -10,6 +10,7 @@ using Masa.Lib;
 
 namespace Masa.ScriptEngine
 {
+	using System.Diagnostics;
 	using Value = System.Single;
 	using Vector2 = Microsoft.Xna.Framework.Vector2;
 	using Vector3 = Microsoft.Xna.Framework.Vector3;
@@ -340,23 +341,39 @@ namespace Masa.ScriptEngine
 				return null;
 			}
 
-			if (line.Tokens.Length > 1 && line.Tokens[1] is Marks)
+			var assignMarks = new[]
 			{
-				Marks m = (Marks)line.Tokens[1];
-				if (m == Marks.Sub || m == Marks.SubNeg || m == Marks.SubPos || m == Marks.SubMul || m == Marks.SubDiv || m == Marks.Inc || m == Marks.Dec)
-				{
-					return ProcessAssign(line);
-				}
-				else if (m == Marks.Dot)
-				{
-
-				}
-				else//line[1]がMarkかつ代入系でない→ありえない
-				{
-					//throw new Exception("トークンの2番目が不正なマーク Line" + line.Number + ":" + m.ToString());
-					throw new ParseException("トークンの2番目が不正なマーク", line);
-				}
+				Marks.Sub,
+				Marks.SubNeg,
+				Marks.SubPos,
+				Marks.SubMul,
+				Marks.SubDiv,
+				Marks.Inc,
+				Marks.Dec
+			};
+			var mark = line.Tokens.OfType<Marks>().Intersect(assignMarks).SingleOrDefault();
+			if (mark != Marks.No)//代入系演算子が行に含まれている
+			{
+				return ProcessAssign(line, mark);
 			}
+
+			//if (line.Tokens.Length > 1 && line.Tokens[1] is Marks)
+			//{
+			//	Marks m = (Marks)line.Tokens[1];
+			//	if (m == Marks.Sub || m == Marks.SubNeg || m == Marks.SubPos || m == Marks.SubMul || m == Marks.SubDiv || m == Marks.Inc || m == Marks.Dec)
+			//	{
+			//		return ProcessAssign(line);
+			//	}
+			//	else if (m == Marks.Dot)
+			//	{
+			//		return ParseDotAccess(line.Tokens);
+			//	}
+			//	else//line[1]がMarkかつ代入系でない→ありえない
+			//	{
+			//		//throw new Exception("トークンの2番目が不正なマーク Line" + line.Number + ":" + m.ToString());
+			//		throw new ParseException("トークンの2番目が不正なマーク", line);
+			//	}
+			//}
 			//line[1]がMarkでない && var系でない
 			return ProcessNormalStatement(line);
 
@@ -405,44 +422,94 @@ namespace Masa.ScriptEngine
 			
 		}
 
+		Expression ProcessAssign(Line line, Marks mark)
+		{
+			var left = line.Tokens.TakeWhile(x => !x.Equals(mark)).ToArray();
+			var right = line.Tokens.Skip(left.Length + 1);
+			Expression target, value = null;
+			if (right.Any())
+			{
+				value = ParsePareBlock(new PareBlock(right.ToArray()));
+			}
+			if (left.Length == 1)
+			{
+				var name = left[0] as string;
+				Debug.Assert(name != null);
+				if (value != null)
+				{
+					ResolveTypeUndefinedVariable(name, value);
+				}
+				target = ParseVariable(name);
+			}
+			else
+			{
+				target = ParsePareBlock(new PareBlock(left));
+			}
+			if (mark == Marks.Inc || mark == Marks.Dec)
+			{
+				Debug.Assert(value == null);
+				if (mark == Marks.Inc)
+				{
+					return Expression.PostIncrementAssign(target);
+				}
+				else
+				{
+					return Expression.PostDecrementAssign(target);
+				}
+			}
+			else
+			{
+				return Assign(mark, target, value);
+			}
+		}
+
+		void ResolveTypeUndefinedVariable(string name, Expression value)
+		{
+			if (TypeUndefinedVarList.Contains(name))
+			{
+				VarDict.Add(name, Expression.Parameter(value.Type, name));
+				TypeUndefinedVarList.Remove(name);
+			}
+		}
+
 		/// <summary>
 		/// 代入処理
 		/// </summary>
 		/// <param name="line"></param>
 		/// <returns></returns>
-		Expression ProcessAssign(Line line)
-		{
-			Marks m = (Marks)line.Tokens[1];
-			var name = line.Tokens[0] as string;
-			if (m == Marks.Inc)
-			{
-				//return Expression.Assign(target, Expression.Increment(target));
-				return Expression.PostIncrementAssign(ParseVariable(name));
-			}
-			else if (m == Marks.Dec)
-			{
-				//return Expression.Assign(target, Expression.Decrement(target));
-				return Expression.PostDecrementAssign(ParseVariable(name));
-			}
-			else
-			{
-				Expression r = ParsePareBlock(new PareBlock(line.Tokens.Skip(2).ToArray()));//代入される値
-				if (TypeUndefinedVarList.Contains(name))
-				{
-					VarDict.Add(name, Expression.Parameter(r.Type, name));
-					TypeUndefinedVarList.Remove(name);
-				}
-				Expression target = ParseVariable(name);//代入先の変数/プロパティ
+		//Expression ProcessAssign(Line line)
+		//{
+		//	Marks m = (Marks)line.Tokens[1];
+		//	var name = line.Tokens[0] as string;
+		//	if (m == Marks.Inc)
+		//	{
+		//		//return Expression.Assign(target, Expression.Increment(target));
+		//		return Expression.PostIncrementAssign(ParseVariable(name));
+		//	}
+		//	else if (m == Marks.Dec)
+		//	{
+		//		//return Expression.Assign(target, Expression.Decrement(target));
+		//		return Expression.PostDecrementAssign(ParseVariable(name));
+		//	}
+		//	else
+		//	{
+		//		Expression r = ParsePareBlock(new PareBlock(line.Tokens.Skip(2).ToArray()));//代入される値
+		//		if (TypeUndefinedVarList.Contains(name))
+		//		{
+		//			VarDict.Add(name, Expression.Parameter(r.Type, name));
+		//			TypeUndefinedVarList.Remove(name);
+		//		}
+		//		Expression target = ParseVariable(name);//代入先の変数/プロパティ
 			
 				
-				return Assign(m, target, r);
+		//		return Assign(m, target, r);
 
-			}
-			//throw new Exception("Line " + line.Number + "がおかしい");
-			throw new ParseException("おかしい", line);
+		//	}
+		//	//throw new Exception("Line " + line.Number + "がおかしい");
+		//	throw new ParseException("おかしい", line);
 
 
-		}
+		//}
 
 		Expression Assign(Marks mark, Expression target, Expression value)
 		{
