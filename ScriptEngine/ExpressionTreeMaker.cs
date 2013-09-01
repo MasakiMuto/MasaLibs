@@ -583,7 +583,7 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		Expression ProcessNormalStatement(Line line)
 		{
-			string id = (string)line.Tokens[0];
+			string id = line.Tokens[0] as string;
 			Func<Expression[]> args = () => GetArgs(line.Tokens.Skip(1)).ToArray();
 			switch (id)
 			{
@@ -623,13 +623,20 @@ namespace Masa.ScriptEngine
 					//return null;
 					return Expression.Empty();
 				default:
-					if (StaticMethodDict.ContainsKey(id))//オプション無しの前提
+					if (id != null)
 					{
-						return Expression.Call(StaticMethodDict[id], args());
+						if (StaticMethodDict.ContainsKey(id))//オプション無しの前提
+						{
+							return Expression.Call(StaticMethodDict[id], args());
+						}
+						if (MethodDict.ContainsKey(id))
+						{
+							return CallExternalMethod(id, line.Tokens.Slice(1, line.Tokens.Length - 1));
+						}
 					}
-					if (MethodDict.ContainsKey(id))
+					if (line.Tokens[1].Equals(Marks.Dot))
 					{
-						return CallExternalMethod(id, line.Tokens.Slice(1, line.Tokens.Length - 1));
+						return ParseDotAccess(line.Tokens);
 					}
 					throw new ParseException(": 未定義のステートメント " + id, line);
 			}
