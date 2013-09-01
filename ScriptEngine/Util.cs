@@ -85,7 +85,7 @@ namespace Masa.ScriptEngine
 		}
 	}
 
-	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
 	public class ScriptMemberAttribute : Attribute
 	{
 		string name;
@@ -123,6 +123,7 @@ namespace Masa.ScriptEngine
 
 	internal class ScriptMethodInfo
 	{
+		public readonly string Name;
 		public readonly MethodInfo MethodInfo;
 		public readonly ScriptMemberAttribute Attribute;
 		public readonly int DefaultParameterCount;
@@ -147,6 +148,7 @@ namespace Masa.ScriptEngine
 			{
 				DefaultParameterCount = paramNum - atr.OptionArgNum.Sum();
 			}
+			Name = atr.Name;
 		}
 	}
 

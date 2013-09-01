@@ -42,6 +42,8 @@ namespace Masa.ScriptEngine
 
 		Colon, /// : オプション文マーカー
 
+		Dot, /// . メンバ呼び出し
+
 		Dollar, /// $ varでの型指定
 
 		Tab,
@@ -104,6 +106,7 @@ namespace Masa.ScriptEngine
 			MarkNameDict["#define"] = Marks.Define;
 			MarkNameDict["#include"] = Marks.Include;
 			MarkNameDict["$"] = Marks.Dollar;
+			MarkNameDict["."] = Marks.Dot;
 		}
 
 		//TODO 例外が出たところのファイル名や行を表示できるようにする
@@ -179,6 +182,12 @@ namespace Masa.ScriptEngine
 						enter();
 						isComment = true;
 						break;
+					case '.':
+						if(Char.IsDigit(code[i+1]) && Char.IsDigit(code[i-1]))//前後の文字が数字なら小数点
+						{
+							goto default;
+						}
+						goto case ')';
 					case '\n':
 						goto case ')';
 					case '\t':
@@ -212,7 +221,7 @@ namespace Masa.ScriptEngine
 					case '=':
 
 						var next = code[i + 1];
-						if (char.IsUpper(next) || char.IsLower(next))
+						if (char.IsUpper(next) || char.IsLower(next))//次に続く文字がアルファベット、つまり次の単語が識別子ならば空白を入れた扱いにする
 						{
 							enter();
 							builder.Append(code[i].ToString());
