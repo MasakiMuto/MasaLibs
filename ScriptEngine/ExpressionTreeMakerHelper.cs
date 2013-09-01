@@ -65,6 +65,7 @@ namespace Masa.ScriptEngine
 
 			var md = new Dictionary<string, ScriptMethodInfo>();
 			var pd = new Dictionary<string, PropertyInfo>();
+			var fd = new Dictionary<string, FieldInfo>();
 			var overrideItems = new Dictionary<string, List<Tuple<ScriptMemberAttribute, Maybe<ScriptMethodInfo, PropertyInfo>>>>();
 			foreach (var item in target.GetMembers(BindingFlags.NonPublic | BindingFlags.Public
 				| BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy))
@@ -106,7 +107,11 @@ namespace Masa.ScriptEngine
 					md[attribute.Name] = info;
 					maybe = new Maybe<ScriptMethodInfo, PropertyInfo>(info);
 				}
-				if (item.MemberType == MemberTypes.Property)
+				else if (item.MemberType == MemberTypes.Field)
+				{
+					fd[attribute.Name] = item as FieldInfo;//no override
+				}
+				else if (item.MemberType == MemberTypes.Property)
 				{
 					pd[attribute.Name] = item as PropertyInfo;
 					maybe = new Maybe<ScriptMethodInfo, PropertyInfo>(item as PropertyInfo);
@@ -146,7 +151,7 @@ namespace Masa.ScriptEngine
 			}
 
 
-			return new ClassReflectionInfo(md, pd);
+			return new ClassReflectionInfo(md, pd, fd);
 		}
 
 

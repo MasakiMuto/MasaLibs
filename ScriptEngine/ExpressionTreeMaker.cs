@@ -32,6 +32,7 @@ namespace Masa.ScriptEngine
 		Dictionary<string, Expression> LabelDict;
 		Dictionary<string, ScriptMethodInfo> MethodDict;
 		Dictionary<string, PropertyInfo> PropertyDict;
+		Dictionary<string, FieldInfo> FieldDict;
 		ParameterExpression Environment;
 		string[] NameValueTable;
 		Line[] Lines;
@@ -47,7 +48,7 @@ namespace Masa.ScriptEngine
 		//static readonly Dictionary<string, FieldInfo> EnvironmentField = ExpressionTreeMakerHelper.GetEnvironmentFieldInfo();
 		static readonly Dictionary<string, PropertyInfo> EnvironmentProperty = ExpressionTreeMakerHelper.GetEnvironmentPropertyInfo();
 		static readonly Dictionary<string, MethodInfo> StaticMethodDict = GlobalFunctionProvider.GetStaticMethodInfo();
-		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = new Dictionary<Type, ClassReflectionInfo>();
+		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = GlobalFunctionProvider.GetLibraryClassScriptInfo();
 		static readonly Dictionary<string, Expression> ConstantValueDict = GlobalFunctionProvider.GetConstantValueDictionary();
 		static readonly Dictionary<string, Type> TypeNameDictionary = GlobalFunctionProvider.GetTypeNameDictionary();//組み込み型のスクリプト内名称
 
@@ -97,6 +98,7 @@ namespace Masa.ScriptEngine
 			}
 			MethodDict = ReflectionCashe[TargetType].MethodDict;
 			PropertyDict = ReflectionCashe[TargetType].PropertyDict;
+			FieldDict = ReflectionCashe[TargetType].FieldDict;
 		}
 
 		public string OutputClassInformation()
@@ -246,6 +248,11 @@ namespace Masa.ScriptEngine
 			{
 				return Expression.Property(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), prp);
 			}
+			FieldInfo fld;
+			if(FieldDict.TryGetValue(id, out fld))
+			{
+				return Expression.Field(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), fld);
+			}
 
 			//if (EnvironmentField.ContainsKey(id))
 			//{
@@ -325,7 +332,12 @@ namespace Masa.ScriptEngine
 		Expression ProcessStatement(Line line)
 		{
 			//line.Tokens = ParseLine(line.Tokens);//括弧やオプションをまとめる
-			string id = (string)line.Tokens[0];
+			//string id = (string)line.Tokens[0];
+			var id = line.Tokens[0] as string;
+			if (id == null)//pare
+			{
+				line.Tokens[0] = ParsePareBlock((PareBlock)line.Tokens[0]);
+			}
 			if (id == "var")
 			{
 				return DefineVariable(line);
@@ -356,6 +368,8 @@ namespace Masa.ScriptEngine
 			{
 				return ProcessAssign(line, mark);
 			}
+
+			
 
 			//if (line.Tokens.Length > 1 && line.Tokens[1] is Marks)
 			//{
@@ -433,13 +447,20 @@ namespace Masa.ScriptEngine
 			}
 			if (left.Length == 1)
 			{
-				var name = left[0] as string;
-				Debug.Assert(name != null);
-				if (value != null)
+				if (left[0] is Expression)
 				{
-					ResolveTypeUndefinedVariable(name, value);
+					target = left[0] as Expression;
 				}
-				target = ParseVariable(name);
+				else
+				{
+					var name = left[0] as string;
+					Debug.Assert(name != null);
+					if (value != null)
+					{
+						ResolveTypeUndefinedVariable(name, value);
+					}
+					target = ParseVariable(name);
+				}
 			}
 			else
 			{
@@ -1027,6 +1048,10 @@ namespace Masa.ScriptEngine
 			if (info.MethodDict.ContainsKey(call))
 			{
 				return CallExternalMethodInner(info.MethodDict[call], tokens.Skip(3).ToArray(), obj);
+			}
+			if (info.FieldDict.ContainsKey(call))
+			{
+				return Expression.Field(obj, info.FieldDict[call]);
 			}
 
 			throw new ParseException("ドット後にあるトークンが不正");

@@ -85,7 +85,7 @@ namespace Masa.ScriptEngine
 		}
 	}
 
-	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
 	public class ScriptMemberAttribute : Attribute
 	{
 		string name;
@@ -119,6 +119,8 @@ namespace Masa.ScriptEngine
 		/// 基底クラスで宣言された同名のスクリプト要素を上書きするか
 		/// </summary>
 		public bool IsOverride { get; set; }
+
+		public Type TargetType { get; set; }
 	}
 
 	internal class ScriptMethodInfo
@@ -132,6 +134,14 @@ namespace Masa.ScriptEngine
 			: this(method, method.GetCustomAttributes<ScriptMemberAttribute>(true).First())
 		{
 			
+		}
+
+		internal ScriptMethodInfo(MethodInfo method, string name)
+		{
+			MethodInfo = method;
+			Name = name;
+			DefaultParameterCount = 0;
+			Attribute = null;
 		}
 
 		internal ScriptMethodInfo(MethodInfo method, ScriptMemberAttribute atr)
@@ -156,10 +166,12 @@ namespace Masa.ScriptEngine
 	{
 		public readonly Dictionary<string, ScriptMethodInfo> MethodDict;
 		public readonly Dictionary<string, PropertyInfo> PropertyDict;
-		public ClassReflectionInfo(Dictionary<string, ScriptMethodInfo> md, Dictionary<string, PropertyInfo> pd)
+		public readonly Dictionary<string, FieldInfo> FieldDict;
+		public ClassReflectionInfo(Dictionary<string, ScriptMethodInfo> md, Dictionary<string, PropertyInfo> pd, Dictionary<string, FieldInfo> fd)
 		{
 			MethodDict = md;
 			PropertyDict = pd;
+			FieldDict = fd;
 		}
 	}
 
