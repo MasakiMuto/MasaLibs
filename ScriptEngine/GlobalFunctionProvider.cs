@@ -123,6 +123,45 @@ namespace Masa.ScriptEngine
 			return ret;
 		}
 
+		public static Dictionary<Type, ClassReflectionInfo> GetLibraryClassScriptInfo()
+		{
+			var ret = new Dictionary<Type, ClassReflectionInfo>();
+			var v2 = typeof(Vector2);
+			var v3 = typeof(Vector3);
+			ret[v2] = new ClassReflectionInfo(
+				new Dictionary<string, ScriptMethodInfo>()
+				{
+					{ "len", new ScriptMethodInfo(v2.GetMethod("Length"), "len")},
+					{ "len2", new ScriptMethodInfo(v2.GetMethod("LengthSquared"), "len2")},
+				},
+				new Dictionary<string, PropertyInfo>()
+				{
+
+				},
+				new Dictionary<string, FieldInfo>()
+				{
+					{"x", v2.GetField("X")},
+					{"y", v2.GetField("Y")},
+				});
+			ret[v3] = new ClassReflectionInfo(
+				new Dictionary<string, ScriptMethodInfo>()
+				{
+					{ "len", new ScriptMethodInfo(v3.GetMethod("Length"), "len")},
+					{ "len2", new ScriptMethodInfo(v3.GetMethod("LengthSquared"), "len2")},
+				},
+				new Dictionary<string, PropertyInfo>()
+				{
+
+				},
+				new Dictionary<string, FieldInfo>()
+				{
+					{"x", v3.GetField("X")},
+					{"y", v3.GetField("Y")},
+					{"z", v3.GetField("Z")},
+				});
+			return ret;
+		}
+
 		public static Dictionary<string, Expression> GetConstantValueDictionary()
 		{
 			return new Dictionary<string, Expression>()

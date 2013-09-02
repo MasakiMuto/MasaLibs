@@ -57,10 +57,10 @@ namespace Masa.ScriptEngine
 			var lines = SplitTokensToLine(tokens).Where(l=>!l.IsEmpty);
 			foreach (Line item in lines)
 			{
-				if (!(item.Tokens[0] is string))
-				{
-					throw new ParseException("行頭が無効な字です。", item);
-				}
+				//if (!(item.Tokens[0] is string))
+				//{
+				//	throw new ParseException("行頭が無効な字です。", item);
+				//}
 				item.Tokens = ParseStatement(item.Tokens);
 			}
 			tokens = null;//不要

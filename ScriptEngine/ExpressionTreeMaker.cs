@@ -10,6 +10,7 @@ using Masa.Lib;
 
 namespace Masa.ScriptEngine
 {
+	using System.Diagnostics;
 	using Value = System.Single;
 	using Vector2 = Microsoft.Xna.Framework.Vector2;
 	using Vector3 = Microsoft.Xna.Framework.Vector3;
@@ -31,6 +32,7 @@ namespace Masa.ScriptEngine
 		Dictionary<string, Expression> LabelDict;
 		Dictionary<string, ScriptMethodInfo> MethodDict;
 		Dictionary<string, PropertyInfo> PropertyDict;
+		Dictionary<string, FieldInfo> FieldDict;
 		ParameterExpression Environment;
 		string[] NameValueTable;
 		Line[] Lines;
@@ -43,12 +45,12 @@ namespace Masa.ScriptEngine
 		internal static readonly Expression OneExpression = Expression.Constant(1f, ValueType);
 		static readonly Expression NanExpression = Expression.Constant(Value.NaN, ValueType);
 		//static readonly LabelTarget LOOPEND = Expression.Label("EndLoop");
-		static readonly Dictionary<string, FieldInfo> EnvironmentField = ExpressionTreeMakerHelper.GetEnvironmentFieldInfo();
+		//static readonly Dictionary<string, FieldInfo> EnvironmentField = ExpressionTreeMakerHelper.GetEnvironmentFieldInfo();
 		static readonly Dictionary<string, PropertyInfo> EnvironmentProperty = ExpressionTreeMakerHelper.GetEnvironmentPropertyInfo();
 		static readonly Dictionary<string, MethodInfo> StaticMethodDict = GlobalFunctionProvider.GetStaticMethodInfo();
-		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = new Dictionary<Type, ClassReflectionInfo>();
+		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = GlobalFunctionProvider.GetLibraryClassScriptInfo();
 		static readonly Dictionary<string, Expression> ConstantValueDict = GlobalFunctionProvider.GetConstantValueDictionary();
-		static readonly Dictionary<string, Type> TypeNameDictionary = GlobalFunctionProvider.GetTypeNameDictionary();
+		static readonly Dictionary<string, Type> TypeNameDictionary = GlobalFunctionProvider.GetTypeNameDictionary();//組み込み型のスクリプト内名称
 
 		public ExpressionTreeMaker(object[] token, Type targetType)
 			: this(token, targetType, null)
@@ -96,6 +98,7 @@ namespace Masa.ScriptEngine
 			}
 			MethodDict = ReflectionCashe[TargetType].MethodDict;
 			PropertyDict = ReflectionCashe[TargetType].PropertyDict;
+			FieldDict = ReflectionCashe[TargetType].FieldDict;
 		}
 
 		public string OutputClassInformation()
@@ -245,11 +248,16 @@ namespace Masa.ScriptEngine
 			{
 				return Expression.Property(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), prp);
 			}
-
-			if (EnvironmentField.ContainsKey(id))
+			FieldInfo fld;
+			if(FieldDict.TryGetValue(id, out fld))
 			{
-				return Expression.Field(Environment, EnvironmentField[id]);
+				return Expression.Field(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), fld);
 			}
+
+			//if (EnvironmentField.ContainsKey(id))
+			//{
+			//	return Expression.Field(Environment, EnvironmentField[id]);
+			//}
 			if (EnvironmentProperty.ContainsKey(id))
 			{
 				return Expression.Property(Environment, EnvironmentProperty[id]);
@@ -324,7 +332,12 @@ namespace Masa.ScriptEngine
 		Expression ProcessStatement(Line line)
 		{
 			//line.Tokens = ParseLine(line.Tokens);//括弧やオプションをまとめる
-			string id = (string)line.Tokens[0];
+			//string id = (string)line.Tokens[0];
+			var id = line.Tokens[0] as string;
+			if (id == null)//pare
+			{
+				line.Tokens[0] = ParsePareBlock((PareBlock)line.Tokens[0]);
+			}
 			if (id == "var")
 			{
 				return DefineVariable(line);
@@ -340,19 +353,41 @@ namespace Masa.ScriptEngine
 				return null;
 			}
 
-			if (line.Tokens.Length > 1 && line.Tokens[1] is Marks)
+			var assignMarks = new[]
 			{
-				Marks m = (Marks)line.Tokens[1];
-				if (m == Marks.Sub || m == Marks.SubNeg || m == Marks.SubPos || m == Marks.SubMul || m == Marks.SubDiv || m == Marks.Inc || m == Marks.Dec)
-				{
-					return ProcessAssign(line);
-				}
-				else//line[1]がMarkかつ代入系でない→ありえない
-				{
-					//throw new Exception("トークンの2番目が不正なマーク Line" + line.Number + ":" + m.ToString());
-					throw new ParseException("トークンの2番目が不正なマーク", line);
-				}
+				Marks.Sub,
+				Marks.SubNeg,
+				Marks.SubPos,
+				Marks.SubMul,
+				Marks.SubDiv,
+				Marks.Inc,
+				Marks.Dec
+			};
+			var mark = line.Tokens.OfType<Marks>().Intersect(assignMarks).SingleOrDefault();
+			if (mark != Marks.No)//代入系演算子が行に含まれている
+			{
+				return ProcessAssign(line, mark);
 			}
+
+			
+
+			//if (line.Tokens.Length > 1 && line.Tokens[1] is Marks)
+			//{
+			//	Marks m = (Marks)line.Tokens[1];
+			//	if (m == Marks.Sub || m == Marks.SubNeg || m == Marks.SubPos || m == Marks.SubMul || m == Marks.SubDiv || m == Marks.Inc || m == Marks.Dec)
+			//	{
+			//		return ProcessAssign(line);
+			//	}
+			//	else if (m == Marks.Dot)
+			//	{
+			//		return ParseDotAccess(line.Tokens);
+			//	}
+			//	else//line[1]がMarkかつ代入系でない→ありえない
+			//	{
+			//		//throw new Exception("トークンの2番目が不正なマーク Line" + line.Number + ":" + m.ToString());
+			//		throw new ParseException("トークンの2番目が不正なマーク", line);
+			//	}
+			//}
 			//line[1]がMarkでない && var系でない
 			return ProcessNormalStatement(line);
 
@@ -401,44 +436,101 @@ namespace Masa.ScriptEngine
 			
 		}
 
+		Expression ProcessAssign(Line line, Marks mark)
+		{
+			var left = line.Tokens.TakeWhile(x => !x.Equals(mark)).ToArray();
+			var right = line.Tokens.Skip(left.Length + 1);
+			Expression target, value = null;
+			if (right.Any())
+			{
+				value = ParsePareBlock(new PareBlock(right.ToArray()));
+			}
+			if (left.Length == 1)
+			{
+				if (left[0] is Expression)
+				{
+					target = left[0] as Expression;
+				}
+				else
+				{
+					var name = left[0] as string;
+					Debug.Assert(name != null);
+					if (value != null)
+					{
+						ResolveTypeUndefinedVariable(name, value);
+					}
+					target = ParseVariable(name);
+				}
+			}
+			else
+			{
+				target = ParsePareBlock(new PareBlock(left));
+			}
+			if (mark == Marks.Inc || mark == Marks.Dec)
+			{
+				Debug.Assert(value == null);
+				if (mark == Marks.Inc)
+				{
+					return Expression.PostIncrementAssign(target);
+				}
+				else
+				{
+					return Expression.PostDecrementAssign(target);
+				}
+			}
+			else
+			{
+				return Assign(mark, target, value);
+			}
+		}
+
+		void ResolveTypeUndefinedVariable(string name, Expression value)
+		{
+			if (TypeUndefinedVarList.Contains(name))
+			{
+				VarDict.Add(name, Expression.Parameter(value.Type, name));
+				TypeUndefinedVarList.Remove(name);
+			}
+		}
+
 		/// <summary>
 		/// 代入処理
 		/// </summary>
 		/// <param name="line"></param>
 		/// <returns></returns>
-		Expression ProcessAssign(Line line)
-		{
-			Marks m = (Marks)line.Tokens[1];
-			var name = line.Tokens[0] as string;
-			if (m == Marks.Inc)
-			{
-				//return Expression.Assign(target, Expression.Increment(target));
-				return Expression.PostIncrementAssign(ParseVariable(name));
-			}
-			else if (m == Marks.Dec)
-			{
-				//return Expression.Assign(target, Expression.Decrement(target));
-				return Expression.PostDecrementAssign(ParseVariable(name));
-			}
-			else
-			{
-				Expression r = ParsePareBlock(new PareBlock(line.Tokens.Skip(2).ToArray()));//代入される値
-				if (TypeUndefinedVarList.Contains(name))
-				{
-					VarDict.Add(name, Expression.Parameter(r.Type, name));
-					TypeUndefinedVarList.Remove(name);
-				}
-				Expression target = ParseVariable(name);//代入先の変数/プロパティ
+		//Expression ProcessAssign(Line line)
+		//{
+		//	Marks m = (Marks)line.Tokens[1];
+		//	var name = line.Tokens[0] as string;
+		//	if (m == Marks.Inc)
+		//	{
+		//		//return Expression.Assign(target, Expression.Increment(target));
+		//		return Expression.PostIncrementAssign(ParseVariable(name));
+		//	}
+		//	else if (m == Marks.Dec)
+		//	{
+		//		//return Expression.Assign(target, Expression.Decrement(target));
+		//		return Expression.PostDecrementAssign(ParseVariable(name));
+		//	}
+		//	else
+		//	{
+		//		Expression r = ParsePareBlock(new PareBlock(line.Tokens.Skip(2).ToArray()));//代入される値
+		//		if (TypeUndefinedVarList.Contains(name))
+		//		{
+		//			VarDict.Add(name, Expression.Parameter(r.Type, name));
+		//			TypeUndefinedVarList.Remove(name);
+		//		}
+		//		Expression target = ParseVariable(name);//代入先の変数/プロパティ
 			
 				
-				return Assign(m, target, r);
+		//		return Assign(m, target, r);
 
-			}
-			//throw new Exception("Line " + line.Number + "がおかしい");
-			throw new ParseException("おかしい", line);
+		//	}
+		//	//throw new Exception("Line " + line.Number + "がおかしい");
+		//	throw new ParseException("おかしい", line);
 
 
-		}
+		//}
 
 		Expression Assign(Marks mark, Expression target, Expression value)
 		{
@@ -482,6 +574,7 @@ namespace Masa.ScriptEngine
 		//	return Expression.Property(Environment, ScriptEngine.Environment.Info_Item, Expression.Constant(i, typeof(int)));
 		//}
 
+
 		/// <summary>
 		/// if ループ stateなどの制御文や、fireなどの外部命令を処理
 		/// 一般文、つまり代入文や宣言文以外の、「識別子 引数リスト・・・」となる文
@@ -490,7 +583,7 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		Expression ProcessNormalStatement(Line line)
 		{
-			string id = (string)line.Tokens[0];
+			string id = line.Tokens[0] as string;
 			Func<Expression[]> args = () => GetArgs(line.Tokens.Skip(1)).ToArray();
 			switch (id)
 			{
@@ -530,13 +623,20 @@ namespace Masa.ScriptEngine
 					//return null;
 					return Expression.Empty();
 				default:
-					if (StaticMethodDict.ContainsKey(id))//オプション無しの前提
+					if (id != null)
 					{
-						return Expression.Call(StaticMethodDict[id], args());
+						if (StaticMethodDict.ContainsKey(id))//オプション無しの前提
+						{
+							return Expression.Call(StaticMethodDict[id], args());
+						}
+						if (MethodDict.ContainsKey(id))
+						{
+							return CallExternalMethod(id, line.Tokens.Slice(1, line.Tokens.Length - 1));
+						}
 					}
-					if (MethodDict.ContainsKey(id))
+					if (line.Tokens[1].Equals(Marks.Dot))
 					{
-						return CallExternalMethod(id, line.Tokens.Slice(1, line.Tokens.Length - 1));
+						return ParseDotAccess(line.Tokens);
 					}
 					throw new ParseException(": 未定義のステートメント " + id, line);
 			}
@@ -576,7 +676,7 @@ namespace Masa.ScriptEngine
 
 			if (opt.Length == 0)
 			{
-				frame = Expression.Field(Environment, ScriptEngine.Environment.Info_StateFrame);
+				frame = Expression.Property(Environment, ScriptEngine.Environment.Info_StateFrame);
 			}
 			else
 			{
@@ -712,8 +812,12 @@ namespace Masa.ScriptEngine
 		Expression CallExternalMethod(string id, object[] l)
 		{
 			//object[] l = line.Tokens.Slice(1, line.Tokens.Length - 1);
-			
-			var method = MethodDict[id];
+			return CallExternalMethodInner(MethodDict[id], l, Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType));
+		
+		}
+
+		Expression CallExternalMethodInner(ScriptMethodInfo method, object[] l, Expression caller)
+		{
 			List<Expression> args = GetArgs(l);
 			Option[] options = GetOptions(l);
 			var atrribute = method.Attribute;
@@ -725,7 +829,7 @@ namespace Masa.ScriptEngine
 				throw new ParseException("外部メソッド呼び出しで必須引数の数が不一致" + method.ToString() + String.Format(" need {0} params but {1} args.", method.DefaultParameterCount, args.Count));
 			}
 			index += args.Count;
-		
+
 			if (atrribute.OptionName != null)//オプションが定義されていれば
 			{
 				string[] name = atrribute.OptionName;
@@ -733,7 +837,7 @@ namespace Masa.ScriptEngine
 				var less = options.Select(o => o.Name).Except(name);
 				if (less.Any())
 				{
-					throw new ParseException(id + "メソッド呼び出しに無効なオプション指定 : " + less.Aggregate((src, dst) => dst + ", " + src));
+					throw new ParseException(method.Name + "メソッド呼び出しに無効なオプション指定 : " + less.Aggregate((src, dst) => dst + ", " + src));
 				}
 
 				for (int i = 0; i < name.Length; i++)
@@ -746,19 +850,19 @@ namespace Masa.ScriptEngine
 						index += op.Args.Count();
 						argCount -= op.Args.Count();
 					}
-					if(argCount > 0)
+					if (argCount > 0)
 					{
 						//ValueならNaN, 引数のデフォルト値があればその値、参照型ならNull, それ以外ならValue型の0で埋める
-						args.AddRange(Enumerable.Range(index, argCount).Select(x=>
-							{
-								if (param[x].ParameterType == ValueType) return NanExpression;
-								if (param[x].DefaultValue != DBNull.Value) return Expression.Constant(param[x].DefaultValue);
-								if (param[x].ParameterType.IsClass) return Expression.Constant(null);
-								return ZeroExpression;
-							}));
+						args.AddRange(Enumerable.Range(index, argCount).Select(x =>
+						{
+							if (param[x].ParameterType == ValueType) return NanExpression;
+							if (param[x].DefaultValue != DBNull.Value) return Expression.Constant(param[x].DefaultValue);
+							if (param[x].ParameterType.IsClass) return Expression.Constant(null);
+							return ZeroExpression;
+						}));
 						index += argCount;
 					}
-					
+
 				}
 			}
 			if (param.Length != args.Count)
@@ -774,8 +878,10 @@ namespace Masa.ScriptEngine
 			}
 
 
-			return Expression.Call(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), method.MethodInfo, args);
+			return Expression.Call(caller, method.MethodInfo, args);
 		}
+
+
 
 		/// <summary>
 		/// 
@@ -907,7 +1013,66 @@ namespace Masa.ScriptEngine
 				//関数を実行するExpression
 
 			}
+			if (l.Length >= 3 && l[1].Equals(Marks.Dot))
+			{
+				return ParseDotAccess(l);
+			}
 			return ArithExpressionMaker.ParseArithExpression(pare, ParsePareBlock, ParseVariable);//多項式の時
+		}
+
+		/// <summary>
+		/// hoge.piyoの形式を処理
+		/// </summary>
+		/// <param name="tokens"></param>
+		/// <returns></returns>
+		Expression ParseDotAccess(object[] tokens)
+		{
+			var src = tokens[0];
+			Expression obj;
+			if (src is PareBlock)
+			{
+				obj = ParsePareBlock((PareBlock)src);
+			}
+			else if (src is string)
+			{
+				obj = ParseVariable(src as string);
+			}
+			else
+			{
+				throw new ParseException("ドット前にあるトークンが不正");
+			}
+			var info = GetObjectInfo(obj.Type);
+			var call = tokens[2] as string;
+			if (call == null)
+			{
+				throw new ParseException("ドット後にあるトークンが不正");
+			}
+			if (info.PropertyDict.ContainsKey(call))
+			{
+				var prop = info.PropertyDict[call];
+				return Expression.Property(obj, prop);
+			}
+			if (info.MethodDict.ContainsKey(call))
+			{
+				return CallExternalMethodInner(info.MethodDict[call], tokens.Skip(3).ToArray(), obj);
+			}
+			if (info.FieldDict.ContainsKey(call))
+			{
+				return Expression.Field(obj, info.FieldDict[call]);
+			}
+
+			throw new ParseException("ドット後にあるトークンが不正");
+		}
+
+		ClassReflectionInfo GetObjectInfo(Type type)
+		{
+			ClassReflectionInfo info;
+			if (!ReflectionCashe.TryGetValue(type, out info))
+			{
+				MakeTargetInfoCache(type);
+				info = ReflectionCashe[type];
+			}
+			return info;
 		}
 
 

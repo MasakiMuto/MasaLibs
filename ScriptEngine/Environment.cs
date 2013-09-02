@@ -29,13 +29,13 @@ namespace Masa.ScriptEngine
 
 
 		[ScriptMember("count")]
-		public Value Frame;
+		public Value Frame { get; set; }
 		[ScriptMember("scount")]
-		public Value StateFrame;
+		public Value StateFrame { get; set; }
 		[ScriptMember("lcount")]
-		public Value LastFrame;
+		public Value LastFrame { get; set; }
 		[ScriptMember("slcount")]
-		public Value LastStateFrame;
+		public Value LastStateFrame { get; set; }
 		
 		public void FrameUpdate()
 		{
@@ -49,7 +49,7 @@ namespace Masa.ScriptEngine
 	public class Environment : SimpleEnvironment
 	{
 		internal static readonly FieldInfo Info_TargetObject = typeof(Environment).GetField("TargetObject", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-		internal static readonly FieldInfo Info_StateFrame = typeof(Environment).GetField("StateFrame");
+		internal static readonly PropertyInfo Info_StateFrame = typeof(Environment).GetProperty("StateFrame");
 		internal static readonly PropertyInfo Info_Item = typeof(Environment).GetProperty("Item", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 		internal static readonly PropertyInfo Info_State = typeof(Environment).GetProperty("State");
 
