@@ -88,6 +88,11 @@ namespace Masa.ScriptEngine
 		{
 			if (ReflectionCashe.ContainsKey(target)) return;
 			ReflectionCashe[target] = ExpressionTreeMakerHelper.MakeTargetInfoCache(target);
+			var atr = Attribute.GetCustomAttribute(target, typeof(ScriptTypeAttribute)) as ScriptTypeAttribute;
+			if (atr != null)
+			{
+				TypeNameDictionary[atr.Name] = target;
+			}
 		}
 
 		void GetTargetInfo()
@@ -412,6 +417,11 @@ namespace Masa.ScriptEngine
 			if (line.Tokens.Length >= 4 && line.Tokens[2].Equals(Marks.Dollar))// var hoge $ float2
 			{
 				type = TypeNameDictionary[line.Tokens[3] as string];
+				if (line.Tokens.Contains(Marks.Sub))//型明示かつ初期化あり
+				{
+					target = ParsePareBlock(new PareBlock(line.Tokens.SkipWhile(x => !x.Equals(Marks.Sub)).Skip(1).ToArray()));
+					target = Expression.Convert(target, type);//強制キャストを試みる
+				}
 			}
 			else
 			{
@@ -1036,6 +1046,10 @@ namespace Masa.ScriptEngine
 			else if (src is string)
 			{
 				obj = ParseVariable(src as string);
+			}
+			else if (src is Expression)
+			{
+				obj = src as Expression;
 			}
 			else
 			{
