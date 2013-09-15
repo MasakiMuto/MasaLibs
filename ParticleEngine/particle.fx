@@ -70,8 +70,9 @@ VertexShaderOutput VS3D(VertexShaderInput input)
 float4 PixelShaderFunction(float4 color : COLOR0, float2 tex : TEXCOORD0) : COLOR0
 {
 	float4 t = tex2D(texsampler, tex);
+	t.rgb *= color.rgb;
 	//t *= alpha;
-	return  t * (Color * color);
+	return  t * (Color * color.a);
 }
 
 float4 MulPixel(float4 color : COLOR0, float2 tex : TEXCOORD0) : COLOR0
