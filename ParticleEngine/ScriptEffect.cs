@@ -19,8 +19,8 @@ namespace Masa.ParticleEngine
 		/// Theta=xy2次元での角度、Phi=3次元での角度(省略した場合0)
 		/// </summary>
 		[ScriptMember("make",
-			OptionName = new[] { "pos", "apos", "posa", "vel", "vela", "ac", "aca", "acv", "alp", "r", "angle" },
-			OptionArgNum = new[] { 3, 3, 3, 3, 3, 3, 3, 1, 3, 2, 2 })]
+			OptionName = new[] { "pos", "apos", "posa", "vel", "vela", "ac", "aca", "acv", "alp", "r", "angle", "color" },
+			OptionArgNum = new[] { 3, 3, 3, 3, 3, 3, 3, 1, 3, 2, 2, 1 })]
 		protected void Make(float name,
 			float relativePosX, float relativePosY, float relativePosZ,
 			float absolutePosX, float absolutePosY, float absolutePosZ,
@@ -32,7 +32,8 @@ namespace Masa.ParticleEngine
 			float accelVelRate,
 			float alphaInitial, float alphaVel, float alphaAccel,
 			float radiusX, float radiusY,
-			float angle, float angleVel)
+			float angle, float angleVel,
+			Vector3 color)
 		{
 			Vector3 p = Position;
 			Vector3 vel = Vector3.Zero;
@@ -81,7 +82,7 @@ namespace Masa.ParticleEngine
 				radius = new Vector2(radiusX, radiusY);
 			}
 
-			Manager.MakeParticle((int)name, new ParticleParameter(p, vel, ac, alphaInitial, alphaVel, alphaAccel, radius, new Vector2(angle.ValueOr0(), angleVel.ValueOr0())));
+			Manager.MakeParticle((int)name, new ParticleParameter(p, vel, ac, alphaInitial, alphaVel, alphaAccel, radius, new Vector2(angle.ValueOr0(), angleVel.ValueOr0()), color == Vector3.Zero ? Vector3.One : color));
 		}
 
 		//Vector3 MakeVector(float r, float theta, float phy)//極座標

@@ -100,7 +100,7 @@ namespace Masa.ParticleEngine
 				Alpha = param.Alpha,
 				Time = this.Time,
 				Angle = param.Angle,
-
+				Color = param.Color
 			};
 		}
 
