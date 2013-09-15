@@ -38,11 +38,11 @@ VertexShaderOutput VS2D(VertexShaderInput input)
 	sincos(input.Angle.x + input.Angle.y * dtime, sn, cs);
 	output.Color = float4(input.Color, input.Alpha.x + input.Alpha.y * dtime + input.Alpha.z * (0.5 * dtime * dtime));
 	output.tex = input.Tex;
-	p = input.Pos.xy + input.Vel.xy * dtime + 0.5 * input.Acc.xy * dtime * dtime + Offset;//中心点のスクリーン座標演算
+	p = input.Pos.xy + input.Vel.xy * dtime + input.Acc.xy * (0.5 * dtime * dtime) + Offset;//中心点のスクリーン座標演算
 	p += mul((output.tex * 2 - 1) * input.R, float2x2(cs, sn, -sn, cs));//正方形の各頂点の座標
 	p /= TargetSize * 0.5;//3D座標 0~2
 	p -= 1;//-1~+1
-	output.Pos = float4(p.x, -p.y, 0, output.Alpha > 0);//Alpha <= 0ならwを0にして表示しない
+	output.Pos = float4(p.x, -p.y, 0, output.Color.a > 0);//Alpha <= 0ならwを0にして表示しない
 	
 	return output;
 }
@@ -56,7 +56,7 @@ VertexShaderOutput VS3D(VertexShaderInput input)
 	output.tex = input.Tex;
 	output.Color = float4(input.Color, input.Alpha.x + input.Alpha.y * dtime + input.Alpha.z * (0.5 * dtime * dtime));
 	//input.R *= output.Alpha > 0;
-	input.Pos = input.Pos + input.Vel * dtime + 0.5 * input.Acc * dtime * dtime;
+	input.Pos = input.Pos + input.Vel * dtime + input.Acc * (0.5 * dtime * dtime);
 	//input.Pos.x -= TargetSize.x * 0.5;
 	//input.Pos.y -= TargetSize.y * 0.5;
 	//input.Pos.y *= -1;
@@ -84,13 +84,13 @@ technique Technique1
 {
 	pass Game2D
 	{
-		VertexShader = compile vs_2_0 VS2D();
-		PixelShader = compile ps_2_0 PixelShaderFunction();
+		VertexShader = compile vs_3_0 VS2D();
+		PixelShader = compile ps_3_0 PixelShaderFunction();
 	}
 
 	pass Back3D
 	{
-		VertexShader = compile vs_2_0 VS3D();
-		PixelShader = compile ps_2_0 PixelShaderFunction();
+		VertexShader = compile vs_3_0 VS3D();
+		PixelShader = compile ps_3_0 PixelShaderFunction();
 	}
 }
