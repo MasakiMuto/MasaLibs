@@ -226,7 +226,7 @@ namespace Masa.ParticleEngine
 		public void Draw(Matrix view)
 		{
 			SetDrawStates(view);
-			foreach (var item in particles.Where(p => p != null && p.Enable).GroupBy(p => p.BlendMode))
+			foreach (var item in particles.Where(p => p != null && p.Enable).GroupBy(p => p.BlendMode).OrderBy(x=>x.Key))
 			{
 				Device.BlendState = ParticleBlendState.State(item.Key);
 				foreach (var pt in item)
