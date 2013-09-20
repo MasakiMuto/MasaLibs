@@ -84,7 +84,7 @@ namespace Masa.ScriptEngine
 		/// 用意されたメソッドの定義
 		/// </summary>
 		/// <returns></returns>
-		public static Dictionary<string, MethodInfo> GetStaticMethodInfo()
+		public static Dictionary<string, ScriptMethodInfo> GetStaticMethodInfo()
 		{
 			//var ValueType = ExpressionTreeMaker.ValueType;
 			var ret = new Dictionary<string, MethodInfo>();
@@ -121,7 +121,8 @@ namespace Masa.ScriptEngine
 			ret["in"] = vals.GetMethod("InRange", args[3]);
 			ret["log"] = mu.GetMethod("Log", args[2]);
 			ret["hsv"] = typeof(Masa.Lib.XNA.HSVColor).GetMethod("HSVToRGB");
-			return ret;
+			return ret.ToDictionary(x => x.Key, x => new ScriptMethodInfo(x.Value, x.Key, x.Value.GetParameters().Count()));
+			//return ret;
 		}
 
 		public static Dictionary<Type, ClassReflectionInfo> GetLibraryClassScriptInfo()
@@ -129,12 +130,20 @@ namespace Masa.ScriptEngine
 			var ret = new Dictionary<Type, ClassReflectionInfo>();
 			var v2 = typeof(Vector2);
 			var v3 = typeof(Vector3);
+			Func<IEnumerable<Tuple<string, string>>, Type, Dictionary<string, ScriptMethodInfo>> getMethod = (keys, type) =>
+				keys.ToDictionary(x => x.Item1, x => new ScriptMethodInfo(type.GetMethod(x.Item2), x.Item1, 0));//scriptName, originalName, type
+
 			ret[v2] = new ClassReflectionInfo(
-				new Dictionary<string, ScriptMethodInfo>()
+				getMethod(new[]
 				{
-					{ "len", new ScriptMethodInfo(v2.GetMethod("Length"), "len")},
-					{ "len2", new ScriptMethodInfo(v2.GetMethod("LengthSquared"), "len2")},
-				},
+					Tuple.Create("len", "Length"),
+					Tuple.Create("len2", "LengthSquared"),
+				}, v2),
+				//new Dictionary<string, ScriptMethodInfo>()
+				//{
+				//	{ "len", new ScriptMethodInfo(v2.GetMethod("Length"), "len", 0)},
+				//	{ "len2", new ScriptMethodInfo(v2.GetMethod("LengthSquared"), "len2")},
+				//},
 				new Dictionary<string, PropertyInfo>()
 				{
 
@@ -145,11 +154,16 @@ namespace Masa.ScriptEngine
 					{"y", v2.GetField("Y")},
 				});
 			ret[v3] = new ClassReflectionInfo(
-				new Dictionary<string, ScriptMethodInfo>()
+				//new Dictionary<string, ScriptMethodInfo>()
+				//{
+				//	{ "len", new ScriptMethodInfo(v3.GetMethod("Length"), "len")},
+				//	{ "len2", new ScriptMethodInfo(v3.GetMethod("LengthSquared"), "len2")},
+				//},
+				getMethod(new[]
 				{
-					{ "len", new ScriptMethodInfo(v3.GetMethod("Length"), "len")},
-					{ "len2", new ScriptMethodInfo(v3.GetMethod("LengthSquared"), "len2")},
-				},
+					Tuple.Create("len", "Length"),
+					Tuple.Create("len2", "LengthSquared"),
+				}, v3),
 				new Dictionary<string, PropertyInfo>()
 				{
 
