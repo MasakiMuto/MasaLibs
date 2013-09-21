@@ -47,7 +47,7 @@ namespace Masa.ScriptEngine
 		//static readonly LabelTarget LOOPEND = Expression.Label("EndLoop");
 		//static readonly Dictionary<string, FieldInfo> EnvironmentField = ExpressionTreeMakerHelper.GetEnvironmentFieldInfo();
 		static readonly Dictionary<string, PropertyInfo> EnvironmentProperty = ExpressionTreeMakerHelper.GetEnvironmentPropertyInfo();
-		static readonly Dictionary<string, MethodInfo> StaticMethodDict = GlobalFunctionProvider.GetStaticMethodInfo();
+		static readonly Dictionary<string, ScriptMethodInfo> StaticMethodDict = GlobalFunctionProvider.GetStaticMethodInfo();
 		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = GlobalFunctionProvider.GetLibraryClassScriptInfo();
 		static readonly Dictionary<string, Expression> ConstantValueDict = GlobalFunctionProvider.GetConstantValueDictionary();
 		static readonly Dictionary<string, Type> TypeNameDictionary = GlobalFunctionProvider.GetTypeNameDictionary();//組み込み型のスクリプト内名称
@@ -118,7 +118,7 @@ namespace Masa.ScriptEngine
 
 		public static System.Xml.Linq.XElement OutputGlobalXml()
 		{
-			return DocumentCreater.GlobalsToXml(StaticMethodDict);
+			return DocumentCreater.GlobalsToXml(StaticMethodDict.ToDictionary(x=>x.Key, x=>x.Value.MethodInfo));
 		}
 
 		#endregion
@@ -637,7 +637,8 @@ namespace Masa.ScriptEngine
 					{
 						if (StaticMethodDict.ContainsKey(id))//オプション無しの前提
 						{
-							return Expression.Call(StaticMethodDict[id], args());
+							//return Expression.Call(StaticMethodDict[id], args());
+							return CallExternalMethodInner(StaticMethodDict[id], line.Tokens.Skip(1).ToArray(), null);
 						}
 						if (MethodDict.ContainsKey(id))
 						{
@@ -826,11 +827,18 @@ namespace Masa.ScriptEngine
 		
 		}
 
-		Expression CallExternalMethodInner(ScriptMethodInfo method, object[] l, Expression caller)
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="method"></param>
+		/// <param name="tokens">名前を除いたトークン列</param>
+		/// <param name="caller">呼び出し元のインスタンス</param>
+		/// <returns></returns>
+		Expression CallExternalMethodInner(ScriptMethodInfo method, object[] tokens, Expression caller)
 		{
-			List<Expression> args = GetArgs(l);
-			Option[] options = GetOptions(l);
-			var atrribute = method.Attribute;
+			List<Expression> args = GetArgs(tokens);
+			Option[] options = GetOptions(tokens);
+			var attribute = method.Attribute;
 			var param = method.MethodInfo.GetParameters();
 			int index = 0;
 
@@ -840,10 +848,10 @@ namespace Masa.ScriptEngine
 			}
 			index += args.Count;
 
-			if (atrribute.OptionName != null)//オプションが定義されていれば
+			if (attribute != null && attribute.OptionName != null)//オプションが定義されていれば
 			{
-				string[] name = atrribute.OptionName;
-				int[] num = atrribute.OptionArgNum;
+				string[] name = attribute.OptionName;
+				int[] num = attribute.OptionArgNum;
 				var less = options.Select(o => o.Name).Except(name);
 				if (less.Any())
 				{
@@ -890,6 +898,10 @@ namespace Masa.ScriptEngine
 			}
 
 
+			if (caller == null)
+			{
+				return Expression.Call(method.MethodInfo, args);
+			}
 			return Expression.Call(caller, method.MethodInfo, args);
 		}
 
@@ -1013,8 +1025,9 @@ namespace Masa.ScriptEngine
 
 				if (StaticMethodDict.ContainsKey((string)l[0]))
 				{
-					Expression[] args = GetArgs(l.Slice(1, l.Length - 1)).ToArray();
-					return Expression.Call(StaticMethodDict[(string)l[0]], args);
+					//Expression[] args = GetArgs(l.Slice(1, l.Length - 1)).ToArray();
+					//return Expression.Call(StaticMethodDict[(string)l[0]], args);
+					return CallExternalMethodInner(StaticMethodDict[l[0] as string], pare.tokens.Skip(1).ToArray(), null);
 				}
 				if (MethodDict.ContainsKey((string)l[0]))//関数の時
 				{

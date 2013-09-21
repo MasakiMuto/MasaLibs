@@ -141,17 +141,27 @@ namespace Masa.ScriptEngine
 		public readonly ScriptMemberAttribute Attribute;
 		public readonly int DefaultParameterCount;
 
+		/// <summary>
+		/// ScriptMemberAttributeを探しだして作成
+		/// </summary>
+		/// <param name="method"></param>
 		public ScriptMethodInfo(MethodInfo method)
 			: this(method, method.GetCustomAttributes<ScriptMemberAttribute>(true).First())
 		{
 			
 		}
 
-		internal ScriptMethodInfo(MethodInfo method, string name)
+		/// <summary>
+		/// オプション引数なしで作成
+		/// </summary>
+		/// <param name="method"></param>
+		/// <param name="name"></param>
+		/// <param name="paramCount"></param>
+		internal ScriptMethodInfo(MethodInfo method, string name, int paramCount)
 		{
 			MethodInfo = method;
 			Name = name;
-			DefaultParameterCount = 0;
+			DefaultParameterCount = paramCount;
 			Attribute = null;
 		}
 
