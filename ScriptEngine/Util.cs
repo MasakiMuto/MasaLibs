@@ -123,6 +123,17 @@ namespace Masa.ScriptEngine
 		public Type TargetType { get; set; }
 	}
 
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = true, AllowMultiple = false)]
+	public class ScriptTypeAttribute : Attribute
+	{
+		public string Name { get; private set; }
+		
+		public ScriptTypeAttribute(string name)
+		{
+			Name = name;
+		}
+	}
+
 	internal class ScriptMethodInfo
 	{
 		public readonly string Name;

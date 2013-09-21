@@ -112,28 +112,42 @@ namespace Masa.Lib.XNA
 
 		public Color ToRGB()
 		{
-			int hi = (int)(H / 60f);
-			float f = (H / 60f) - hi;
-			float p = V * (1 - S);
-			float q = V * (1 - f * S);
-			float t = V * (1 - (1 - f) * S);
+			return new Color(HSVToRGB(H, S, V)) * A;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="h">0..360</param>
+		/// <param name="s">0..1</param>
+		/// <param name="v">0..1</param>
+		/// <returns></returns>
+		public static Vector3 HSVToRGB(float h, float s, float v)
+		{
+			h = MathUtil.PositiveMod(h, 360);
+			s = MathHelper.Clamp(s, 0, 1);
+			v = MathHelper.Clamp(v, 0, 1);
+			int hi = (int)(h / 60f);
+			float f = (h / 60f) - hi;
+			float p = v * (1 - s);
+			float q = v * (1 - f * s);
+			float t = v * (1 - (1 - f) * s);
 			switch (hi)
 			{
 				case 0:
-					return new Color(V, t, p) * A;
+					return new Vector3(v, t, p);
 				case 1:
-					return new Color(q, V, p) * A;
+					return new Vector3(q, v, p);
 				case 2:
-					return new Color(p, V, t) * A;
+					return new Vector3(p, v, t);
 				case 3:
-					return new Color(p, q, V) * A;
+					return new Vector3(p, q, v);
 				case 4:
-					return new Color(t, p, V) * A;
+					return new Vector3(t, p, v);
 				case 5:
-					return new Color(V, p, q) * A;
+					return new Vector3(v, p, q);
 				default:
 					throw new Exception();
-				
 			}
 		}
 

@@ -35,6 +35,7 @@ namespace Masa.ParticleEngine
 		//public float Index;
 		public float Time;
 		public Vector2 Angle;
+		public Vector3 Color;
 		//public Vector2 TexCoord;
 		 
 
@@ -54,7 +55,8 @@ namespace Masa.ParticleEngine
 				new VertexElement(36, VertexElementFormat.Vector3, VertexElementUsage.Color, 0),
 				new VertexElement(48, VertexElementFormat.Vector2, VertexElementUsage.PointSize, 0),
 				new VertexElement(56, VertexElementFormat.Single, VertexElementUsage.BlendWeight, 0),
-				new VertexElement(60, VertexElementFormat.Vector2, VertexElementUsage.Position, 3)
+				new VertexElement(60, VertexElementFormat.Vector2, VertexElementUsage.Position, 3),
+				new VertexElement(68, VertexElementFormat.Vector3, VertexElementUsage.Color, 1)
 			);
 					//new VertexElement(48, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0));
 					//new VertexElement(52, VertexElementFormat.Single, VertexElementUsage.BlendIndices, 0));

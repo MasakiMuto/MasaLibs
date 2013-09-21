@@ -12,5 +12,10 @@ namespace Masa.Lib
 		{
 			return int.Parse(element.Value);
 		}
+
+		public static bool BoolValue(this XElement element)
+		{
+			return bool.Parse(element.Value);
+		}
 	}
 }

@@ -22,6 +22,7 @@ namespace Masa.ParticleEngine
 		internal Vector3 Alpha;
 		internal Vector2 Radius;
 		internal Vector2 Angle;
+		internal Vector3 Color;
 
 		/// <summary>
 		/// 
@@ -31,7 +32,7 @@ namespace Masa.ParticleEngine
 		/// <param name="ac">加速度</param>
 		/// <param name="al">アルファの初期値、初期変化量、変化量の変化量(アルファ値についての位置、速度、加速度ということ)</param>
 		/// <param name="r"></param>
-		public ParticleParameter(Vector3 po, Vector3 ve, Vector3 ac, Vector3 al, Vector2 r, Vector2 angle)
+		public ParticleParameter(Vector3 po, Vector3 ve, Vector3 ac, Vector3 al, Vector2 r, Vector2 angle, Vector3 color)
 		{
 			Pos = po;
 			Vel = ve;
@@ -39,9 +40,11 @@ namespace Masa.ParticleEngine
 			Alpha = al;
 			Radius = r;
 			Angle = angle;
+			Color = color;
 		}
 
-		public ParticleParameter(Vector2 po, Vector2 ve, Vector2 ac, Vector3 al, Vector2 r, Vector2 angle) : this(new Vector3(po, 0), new Vector3(ve, 0), new Vector3(ac, 0), al, r, angle)
+		public ParticleParameter(Vector2 po, Vector2 ve, Vector2 ac, Vector3 al, Vector2 r, Vector2 angle, Vector3 color)
+			: this(new Vector3(po, 0), new Vector3(ve, 0), new Vector3(ac, 0), al, r, angle, color)
 		{
 		}
 
@@ -55,8 +58,8 @@ namespace Masa.ParticleEngine
 		/// <param name="va">アルファの初期変化量</param>
 		/// <param name="aa">アルファの変化量の変化量</param>
 		/// <param name="r"></param>
-		public ParticleParameter(Vector3 po, Vector3 ve, Vector3 ac, float a0, float va, float aa, Vector2 r, Vector2 angle)
-			: this(po, ve, ac, new Vector3(a0, va, aa), r, angle)
+		public ParticleParameter(Vector3 po, Vector3 ve, Vector3 ac, float a0, float va, float aa, Vector2 r, Vector2 angle, Vector3 color)
+			: this(po, ve, ac, new Vector3(a0, va, aa), r, angle, color)
 		{
 
 		}
