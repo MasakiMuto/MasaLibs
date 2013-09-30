@@ -56,6 +56,11 @@ namespace Masa.ParticleEngine
 				&& a.Blend == Blend
 				&& a.Layer == Layer;
 		}
+
+		public override int GetHashCode()
+		{
+			return Name.GetHashCode();
+		}
 	}
 
 	public class ParticleManagerInitializerManager

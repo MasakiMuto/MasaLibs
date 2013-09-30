@@ -67,8 +67,10 @@ namespace Masa.ScriptEngine
 			var pd = new Dictionary<string, PropertyInfo>();
 			var fd = new Dictionary<string, FieldInfo>();
 			var overrideItems = new Dictionary<string, List<Tuple<ScriptMemberAttribute, Maybe<ScriptMethodInfo, PropertyInfo>>>>();
+
+
 			foreach (var item in target.GetMembers(BindingFlags.NonPublic | BindingFlags.Public
-				| BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy))
+				| BindingFlags.Instance | BindingFlags.FlattenHierarchy))
 			{
 
 				//var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), true).OfType<ScriptMemberAttribute>();
@@ -151,9 +153,22 @@ namespace Masa.ScriptEngine
 			}
 
 
-			return new ClassReflectionInfo(md, pd, fd);
+			return new ClassReflectionInfo(md, pd, fd, GetStaticMethods(target));
 		}
 
+		static Dictionary<string, ScriptMethodInfo> GetStaticMethods(Type t)
+		{
+			var ret = new Dictionary<string, ScriptMethodInfo>();
+			foreach (var item in t.GetMethods(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public))
+			{
+				var attr = item.GetCustomAttributes<ScriptMemberAttribute>(false).FirstOrDefault();
+				if (attr != null)
+				{
+					ret[attr.Name] = new ScriptMethodInfo(item, attr);
+				}
+			}
+			return ret;
+		}
 
 		internal static Expression ExpressionToBool(Expression value)
 		{

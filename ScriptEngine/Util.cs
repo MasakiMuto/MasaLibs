@@ -185,14 +185,16 @@ namespace Masa.ScriptEngine
 
 	struct ClassReflectionInfo
 	{
+		public readonly Dictionary<string, ScriptMethodInfo> StaticMethodDict;
 		public readonly Dictionary<string, ScriptMethodInfo> MethodDict;
 		public readonly Dictionary<string, PropertyInfo> PropertyDict;
 		public readonly Dictionary<string, FieldInfo> FieldDict;
-		public ClassReflectionInfo(Dictionary<string, ScriptMethodInfo> md, Dictionary<string, PropertyInfo> pd, Dictionary<string, FieldInfo> fd)
+		public ClassReflectionInfo(Dictionary<string, ScriptMethodInfo> md, Dictionary<string, PropertyInfo> pd, Dictionary<string, FieldInfo> fd, Dictionary<string, ScriptMethodInfo> staticMethods)
 		{
 			MethodDict = md;
 			PropertyDict = pd;
 			FieldDict = fd;
+			StaticMethodDict = staticMethods;
 		}
 	}
 
