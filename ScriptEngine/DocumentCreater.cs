@@ -9,11 +9,11 @@ namespace Masa.ScriptEngine
 {
 	internal static class DocumentCreater
 	{
-		internal static string OutputClass(Dictionary<string, ScriptMethodInfo> method, Dictionary<string, PropertyInfo> property)
+		internal static string OutputClass(ClassReflectionInfo classInfo)
 		{
 			var str = new StringBuilder();
 			string[] itemTypes = { "Method", "Function", "Property" };
-			foreach (var item in method.OrderBy(i => i.Key))
+			foreach (var item in classInfo.MethodDict.OrderBy(i => i.Key))
 			{
 				PrintName(str, item.Value.MethodInfo.ReturnType == typeof(float) ? "Function" : "Method", item.Key, item.Value.MethodInfo.Name);
 				//str.Append(itemTypes[item.Value.ReturnType == typeof(float) ? 1 : 0]);
@@ -61,7 +61,7 @@ namespace Masa.ScriptEngine
 				}
 				str.AppendLine();
 			}
-			foreach (var item in property)
+			foreach (var item in classInfo.PropertyDict)
 			{
 				//str.Append(itemTypes[2]);
 				//str.Append(": ");
@@ -101,14 +101,14 @@ namespace Masa.ScriptEngine
 
 		}
 
-		internal static XElement ClassToXml(Type target, Dictionary<string, ScriptMethodInfo> method, Dictionary<string, PropertyInfo> property)
+		internal static XElement ClassToXml(Type target, ClassReflectionInfo info)
 		{
 			var root = new XElement("class");
 			root.Add(NameToXml(target.Name));
 			var methodRoot = new XElement("methods");
-			methodRoot.Add(method.Select(x => MethodToXml(x.Value)).ToArray());
+			methodRoot.Add(info.MethodDict.Select(x => MethodToXml(x.Value)).ToArray());
 			var propRoot = new XElement("propertys");
-			propRoot.Add(property.Select(x => PropertyToXml(x.Value)).ToArray());
+			propRoot.Add(info.PropertyDict.Select(x => PropertyToXml(x.Value)).ToArray());
 			root.Add(methodRoot, propRoot);
 
 			return root;

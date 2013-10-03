@@ -152,6 +152,9 @@ namespace Masa.ScriptEngine
 				{
 					{"x", v2.GetField("X")},
 					{"y", v2.GetField("Y")},
+				},
+				new Dictionary<string, ScriptMethodInfo>()
+				{
 				});
 			ret[v3] = new ClassReflectionInfo(
 				//new Dictionary<string, ScriptMethodInfo>()
@@ -173,6 +176,9 @@ namespace Masa.ScriptEngine
 					{"x", v3.GetField("X")},
 					{"y", v3.GetField("Y")},
 					{"z", v3.GetField("Z")},
+				},
+				new Dictionary<string, ScriptMethodInfo>()
+				{
 				});
 			return ret;
 		}

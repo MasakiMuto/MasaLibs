@@ -30,9 +30,7 @@ namespace Masa.ScriptEngine
 		List<string> TypeUndefinedVarList;
 		Dictionary<string, ParameterExpression> VarDict;
 		Dictionary<string, Expression> LabelDict;
-		Dictionary<string, ScriptMethodInfo> MethodDict;
-		Dictionary<string, PropertyInfo> PropertyDict;
-		Dictionary<string, FieldInfo> FieldDict;
+		ClassReflectionInfo ClassInfo;
 		ParameterExpression Environment;
 		string[] NameValueTable;
 		Line[] Lines;
@@ -101,19 +99,18 @@ namespace Masa.ScriptEngine
 			{
 				MakeTargetInfoCache(TargetType);
 			}
-			MethodDict = ReflectionCashe[TargetType].MethodDict;
-			PropertyDict = ReflectionCashe[TargetType].PropertyDict;
-			FieldDict = ReflectionCashe[TargetType].FieldDict;
+			ClassInfo = ReflectionCashe[TargetType];
+			
 		}
 
 		public string OutputClassInformation()
 		{
-			return DocumentCreater.OutputClass(MethodDict, PropertyDict);
+			return DocumentCreater.OutputClass(ClassInfo);
 		}
 
 		public System.Xml.Linq.XElement OutputClassXml()
 		{
-			return DocumentCreater.ClassToXml(this.TargetType, MethodDict, PropertyDict);
+			return DocumentCreater.ClassToXml(TargetType, ClassInfo);
 		}
 
 		public static System.Xml.Linq.XElement OutputGlobalXml()
@@ -249,12 +246,12 @@ namespace Masa.ScriptEngine
 			}
 
 			PropertyInfo prp;
-			if (PropertyDict.TryGetValue(id, out prp))//外部プロパティ
+			if (ClassInfo.PropertyDict.TryGetValue(id, out prp))//外部プロパティ
 			{
 				return Expression.Property(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), prp);
 			}
 			FieldInfo fld;
-			if(FieldDict.TryGetValue(id, out fld))
+			if(ClassInfo.FieldDict.TryGetValue(id, out fld))
 			{
 				return Expression.Field(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), fld);
 			}
@@ -284,7 +281,7 @@ namespace Masa.ScriptEngine
 				return Expression.Property(Environment, ScriptEngine.Environment.Info_Item, Expression.Constant(gvar, typeof(int)));
 			}
 
-			if (MethodDict.Any(p => p.Value.DefaultParameterCount == 0 && p.Key == id))//必須引数が0個の関数を呼び出す
+			if (ClassInfo.MethodDict.Any(p => p.Value.DefaultParameterCount == 0 && p.Key == id))//必須引数が0個の関数を呼び出す
 			{
 				return CallExternalMethod(id, null);
 			}
@@ -640,7 +637,7 @@ namespace Masa.ScriptEngine
 							//return Expression.Call(StaticMethodDict[id], args());
 							return CallExternalMethodInner(StaticMethodDict[id], line.Tokens.Skip(1).ToArray(), null);
 						}
-						if (MethodDict.ContainsKey(id))
+						if (ClassInfo.MethodDict.ContainsKey(id))
 						{
 							return CallExternalMethod(id, line.Tokens.Slice(1, line.Tokens.Length - 1));
 						}
@@ -823,7 +820,7 @@ namespace Masa.ScriptEngine
 		Expression CallExternalMethod(string id, object[] l)
 		{
 			//object[] l = line.Tokens.Slice(1, line.Tokens.Length - 1);
-			return CallExternalMethodInner(MethodDict[id], l, Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType));
+			return CallExternalMethodInner(ClassInfo.MethodDict[id], l, Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType));
 		
 		}
 
@@ -903,6 +900,17 @@ namespace Masa.ScriptEngine
 				return Expression.Call(method.MethodInfo, args);
 			}
 			return Expression.Call(caller, method.MethodInfo, args);
+		}
+
+		Expression CallConstructor(Type type, IEnumerable<object> tokens)
+		{
+			List<Expression> args = GetArgs(tokens);
+			var constructor = type.GetConstructor(args.Select(x => x.Type).ToArray());
+			if (constructor == null)
+			{
+				throw new ParseException(type.ToString() + "型で引数に一致するコンストラクタが存在しない");
+			}
+			return Expression.New(constructor, args);
 		}
 
 
@@ -1029,7 +1037,7 @@ namespace Masa.ScriptEngine
 					//return Expression.Call(StaticMethodDict[(string)l[0]], args);
 					return CallExternalMethodInner(StaticMethodDict[l[0] as string], pare.tokens.Skip(1).ToArray(), null);
 				}
-				if (MethodDict.ContainsKey((string)l[0]))//関数の時
+				if (ClassInfo.MethodDict.ContainsKey((string)l[0]))//関数の時
 				{
 					return CallExternalMethod((string)l[0], l.Slice(1, l.Length - 1));
 					//Expression[] args = GetArgs(l.Slice(1, l.Length - 1));
@@ -1053,7 +1061,29 @@ namespace Masa.ScriptEngine
 		Expression ParseDotAccess(object[] tokens)
 		{
 			var src = tokens[0];
+			var call = tokens[2] as string;
 			Expression obj;
+			if (src is string)
+			{
+				Type t = ParseStringAsType(src as string);
+				if (t != null)
+				{
+					if (call == "new")
+					{
+						return CallConstructor(t, tokens.Skip(3));
+					}
+					else
+					{
+						ScriptMethodInfo method;
+						if (ClassInfo.StaticMethodDict.TryGetValue(call, out method))
+						{
+							CallExternalMethodInner(method, tokens.Skip(3).ToArray(), null);
+						}
+					}
+					throw new ParseException("型名後の識別子が不正");
+
+				}
+			}
 			if (src is PareBlock)
 			{
 				obj = ParsePareBlock((PareBlock)src);
@@ -1071,11 +1101,11 @@ namespace Masa.ScriptEngine
 				throw new ParseException("ドット前にあるトークンが不正");
 			}
 			var info = GetObjectInfo(obj.Type);
-			var call = tokens[2] as string;
 			if (call == null)
 			{
 				throw new ParseException("ドット後にあるトークンが不正");
 			}
+			
 			if (info.PropertyDict.ContainsKey(call))
 			{
 				var prop = info.PropertyDict[call];
@@ -1091,6 +1121,24 @@ namespace Masa.ScriptEngine
 			}
 
 			throw new ParseException("ドット後にあるトークンが不正");
+		}
+
+		/// <summary>
+		/// 文字列を形名に変換する。できなければnull
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		Type ParseStringAsType(string name)
+		{
+			Type t;
+			if (TypeNameDictionary.TryGetValue(name, out t))
+			{
+				return t;
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		ClassReflectionInfo GetObjectInfo(Type type)

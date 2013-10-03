@@ -249,7 +249,9 @@ namespace Masa.ScriptEngine
 			}
 			else
 			{
-				return Directory.EnumerateFiles(GetScriptDirectory(directory), "*.mss", SearchOption.TopDirectoryOnly).Select(i => Path.GetFullPath(i).Substring(FullRoot.Length));
+				return Directory.EnumerateFiles(GetScriptDirectory(directory), "*.mss", SearchOption.TopDirectoryOnly)
+					.Where(x=>Path.GetExtension(x).Length == 4)//.mss_を列挙しない
+					.Select(i => Path.GetFullPath(i).Substring(FullRoot.Length));
 			}
 
 		}
