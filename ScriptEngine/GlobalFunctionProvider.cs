@@ -92,6 +92,7 @@ namespace Masa.ScriptEngine
 			var xmath = typeof(Masa.Lib.XNA.MathUtilXNA);
 			var math = typeof(Math);
 			var vals = typeof(GlobalFunctionProvider);
+			var util = typeof(Masa.Lib.Utility);
 			Type vec = typeof(Vector2);
 			Type[] vecs = new[] { vec };
 			
@@ -121,6 +122,9 @@ namespace Masa.ScriptEngine
 			ret["in"] = vals.GetMethod("InRange", args[3]);
 			ret["log"] = mu.GetMethod("Log", args[2]);
 			ret["hsv"] = typeof(Masa.Lib.XNA.HSVColor).GetMethod("HSVToRGB");
+			ret["limit"] = util.GetMethod("LimitChange");
+			ret["vibrate"] = util.GetMethod("Vibrate");
+			ret["pmod"] = util.GetMethod("PositiveMod", args[2]);
 			return ret.ToDictionary(x => x.Key, x => new ScriptMethodInfo(x.Value, x.Key, x.Value.GetParameters().Count()));
 			//return ret;
 		}
