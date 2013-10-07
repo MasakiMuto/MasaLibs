@@ -125,6 +125,8 @@ namespace Masa.ScriptEngine
 			ret["limit"] = util.GetMethod("LimitChange");
 			ret["vibrate"] = util.GetMethod("Vibrate");
 			ret["pmod"] = util.GetMethod("PositiveMod", args[2]);
+			ret["isnan"] = mu.GetMethod("IsNan", args[1]);
+			ret["wrapangle"] = typeof(Microsoft.Xna.Framework.MathHelper).GetMethod("WrapAngle");
 			return ret.ToDictionary(x => x.Key, x => new ScriptMethodInfo(x.Value, x.Key, x.Value.GetParameters().Count()));
 			//return ret;
 		}
