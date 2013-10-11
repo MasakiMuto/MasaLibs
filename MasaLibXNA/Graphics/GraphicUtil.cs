@@ -11,19 +11,43 @@ namespace Masa.Lib.XNA
 	{
 		#region String
 		
-		public static void DrawStringCenter(this SpriteBatch batch, SpriteFont font, string text, Vector2 pos, Color col)
+		/// <summary>
+		/// 複数行の文字列全体の中心をcenterに合わせて描画(中央揃え)
+		/// </summary>
+		/// <param name="batch"></param>
+		/// <param name="font"></param>
+		/// <param name="text"></param>
+		/// <param name="center"></param>
+		/// <param name="col"></param>
+		public static void DrawStringCenter(this SpriteBatch batch, SpriteFont font, string text, Vector2 center, Color col)
 		{
-			Vector2 size = font.MeasureString(text);
-			batch.DrawString(font, text, pos - size / 2, col);
+			var lines = text.Split('\n');
+			var height = font.MeasureString(text).Y;
+			center.Y -= height * .5f;
+			foreach (var item in lines)
+			{
+				var size = font.MeasureString(item);
+				batch.DrawString(font, item, new Vector2(center.X - size.X * .5f, center.Y), col);
+				center.Y += size.Y;
+			}
 		}
 
 		/// <summary>
 		/// xy中央揃え
 		/// </summary>
-		public static void DrawStringCenter(this SpriteBatch batch, SpriteFont font, string text, Vector2 pos, Color col, float scale)
+		public static void DrawStringCenter(this SpriteBatch batch, SpriteFont font, string text, Vector2 center, Color col, float scale)
 		{
-			Vector2 size = font.MeasureString(text);
-			batch.DrawString(font, text, pos, col, 0, size / 2, scale, SpriteEffects.None, 0);
+			var lines = text.Split('\n');
+			var height = font.MeasureString(text).Y;
+			center.Y -= height * .5f;
+			foreach (var item in lines)
+			{
+				var size = font.MeasureString(item);
+				batch.DrawString(font, item, new Vector2(center.X, center.Y + size.Y * .5f), col, 0, size * .5f, scale, SpriteEffects.None, 0);
+				center.Y += size.Y;
+			}
+			//Vector2 size = font.MeasureString(text);
+			//batch.DrawString(font, text, pos, col, 0, size / 2, scale, SpriteEffects.None, 0);
 		}
 
 		/// <summary>
