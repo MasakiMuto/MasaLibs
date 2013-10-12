@@ -141,6 +141,11 @@ namespace Masa.Lib.Scene
 		{
 			Dispose();
 		}
+
+		public bool Any()
+		{
+			return Scenes.Any() || addQueue.Any();
+		}
 	}
 
 }
