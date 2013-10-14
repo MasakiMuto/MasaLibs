@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection.Emit;
 using System.Reflection;
 using Masa.Lib;
+using MoreLinq;
 
 namespace Masa.ScriptEngine
 {
@@ -188,19 +189,19 @@ namespace Masa.ScriptEngine
 		}
 	}
 
-	struct ClassReflectionInfo
+	internal class ScriptPropertyInfo
 	{
-		public readonly Dictionary<string, ScriptMethodInfo> StaticMethodDict;
-		public readonly Dictionary<string, ScriptMethodInfo> MethodDict;
-		public readonly Dictionary<string, PropertyInfo> PropertyDict;
-		public readonly Dictionary<string, FieldInfo> FieldDict;
-		public ClassReflectionInfo(Dictionary<string, ScriptMethodInfo> md, Dictionary<string, PropertyInfo> pd, Dictionary<string, FieldInfo> fd, Dictionary<string, ScriptMethodInfo> staticMethods)
+		public readonly string Name;
+		public readonly PropertyInfo PropertyInfo;
+		public readonly ScriptMemberAttribute Attribute;
+
+		public ScriptPropertyInfo(PropertyInfo prop, ScriptMemberAttribute atr)
 		{
-			MethodDict = md;
-			PropertyDict = pd;
-			FieldDict = fd;
-			StaticMethodDict = staticMethods;
+			PropertyInfo = prop;
+			Attribute = atr;
+			Name = atr.Name;
 		}
 	}
 
+	
 }

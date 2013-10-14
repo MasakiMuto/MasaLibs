@@ -85,7 +85,7 @@ namespace Masa.ScriptEngine
 		public static void MakeTargetInfoCache(Type target)
 		{
 			if (ReflectionCashe.ContainsKey(target)) return;
-			ReflectionCashe[target] = ExpressionTreeMakerHelper.MakeTargetInfoCache(target);
+			ReflectionCashe[target] = new ClassReflectionInfo(target);
 			var atr = Attribute.GetCustomAttribute(target, typeof(ScriptTypeAttribute)) as ScriptTypeAttribute;
 			if (atr != null)
 			{
@@ -245,10 +245,10 @@ namespace Masa.ScriptEngine
 				return prm;
 			}
 
-			PropertyInfo prp;
+			ScriptPropertyInfo prp;
 			if (ClassInfo.PropertyDict.TryGetValue(id, out prp))//外部プロパティ
 			{
-				return Expression.Property(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), prp);
+				return Expression.Property(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), prp.PropertyInfo);
 			}
 			FieldInfo fld;
 			if(ClassInfo.FieldDict.TryGetValue(id, out fld))
@@ -481,7 +481,7 @@ namespace Masa.ScriptEngine
 				}
 				if (info.PropertyDict.ContainsKey(op))
 				{
-					return Expression.Property(left, info.PropertyDict[op]);
+					return Expression.Property(left, info.PropertyDict[op].PropertyInfo);
 				}
 				if (info.FieldDict.ContainsKey(op))
 				{

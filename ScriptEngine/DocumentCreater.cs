@@ -160,11 +160,11 @@ namespace Masa.ScriptEngine
 			return root;
 		}
 
-		static XElement PropertyToXml(PropertyInfo prop)
+		static XElement PropertyToXml(ScriptPropertyInfo prop)
 		{
-			var root = MemberToXml("property", prop, ExpressionTreeMakerHelper.GetScriptMemberAttribute(prop));
-			root.Add(TypeToXml(prop.PropertyType));
-			root.Add(new XElement("get", prop.CanRead), new XElement("set", prop.CanWrite));
+			var root = MemberToXml("property", prop.PropertyInfo, prop.Attribute);
+			root.Add(TypeToXml(prop.PropertyInfo.PropertyType));
+			root.Add(new XElement("get", prop.PropertyInfo.CanRead), new XElement("set", prop.PropertyInfo.CanWrite));
 			return root;
 		}
 

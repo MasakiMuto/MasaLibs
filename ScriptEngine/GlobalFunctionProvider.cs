@@ -139,7 +139,7 @@ namespace Masa.ScriptEngine
 			Func<IEnumerable<Tuple<string, string>>, Type, Dictionary<string, ScriptMethodInfo>> getMethod = (keys, type) =>
 				keys.ToDictionary(x => x.Item1, x => new ScriptMethodInfo(type.GetMethod(x.Item2), x.Item1, 0));//scriptName, originalName, type
 
-			ret[v2] = new ClassReflectionInfo(
+			ret[v2] = new ClassReflectionInfo(v2,
 				getMethod(new[]
 				{
 					Tuple.Create("len", "Length"),
@@ -150,7 +150,7 @@ namespace Masa.ScriptEngine
 				//	{ "len", new ScriptMethodInfo(v2.GetMethod("Length"), "len", 0)},
 				//	{ "len2", new ScriptMethodInfo(v2.GetMethod("LengthSquared"), "len2")},
 				//},
-				new Dictionary<string, PropertyInfo>()
+				new Dictionary<string, ScriptPropertyInfo>()
 				{
 
 				},
@@ -162,7 +162,7 @@ namespace Masa.ScriptEngine
 				new Dictionary<string, ScriptMethodInfo>()
 				{
 				});
-			ret[v3] = new ClassReflectionInfo(
+			ret[v3] = new ClassReflectionInfo(v3,
 				//new Dictionary<string, ScriptMethodInfo>()
 				//{
 				//	{ "len", new ScriptMethodInfo(v3.GetMethod("Length"), "len")},
@@ -173,7 +173,7 @@ namespace Masa.ScriptEngine
 					Tuple.Create("len", "Length"),
 					Tuple.Create("len2", "LengthSquared"),
 				}, v3),
-				new Dictionary<string, PropertyInfo>()
+				new Dictionary<string, ScriptPropertyInfo>()
 				{
 
 				},
