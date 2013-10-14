@@ -1175,28 +1175,12 @@ namespace Masa.ScriptEngine
 			}
 			foreach (var item in line)
 			{
-				if (item is PareBlock)
+				if (item is OptionBlock)
 				{
-					ret.Add(ProcessExpression((item as PareBlock).tokens));
-				}
-				else if (item is OptionBlock)
-				{
-				}
-				else if (item is string)//変数か文字列?
-				{
-					ret.Add(ParseIdentifier((string)item));
-				}
-				else if (item is Value)//数値リテラル
-				{
-					ret.Add(Expression.Constant(item, typeof(float)));
-				}
-				else if (item is Marks)
-				{
-					throw new ParseException("引数リスト内に不正なMark " + Enum.GetName(typeof(Marks), item));
 				}
 				else
 				{
-					throw new ParseException("予期せぬエラー");
+					ret.Add(ProcessSingleToken(item));
 				}
 			}
 			return ret;
