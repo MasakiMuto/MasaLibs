@@ -331,14 +331,18 @@ namespace Masa.ScriptEngine
 		#endregion
 
 		#region 式の生成
+		/// <summary>
+		/// 行単位の処理ルート
+		/// </summary>
+		/// <param name="line"></param>
+		/// <returns></returns>
 		Expression ProcessStatement(Line line)
 		{
-			//line.Tokens = ParseLine(line.Tokens);//括弧やオプションをまとめる
 			//string id = (string)line.Tokens[0];
 			var id = line.Tokens[0] as string;
 			if (id == null)//pare
 			{
-				line.Tokens[0] = ParsePareBlock((PareBlock)line.Tokens[0]);
+				line.Tokens[0] = ParsePareBlock(line.Tokens[0] as PareBlock);
 			}
 			if (id == "var")
 			{
@@ -355,18 +359,8 @@ namespace Masa.ScriptEngine
 				return null;
 			}
 
-			var assignMarks = new[]
-			{
-				Marks.Sub,
-				Marks.SubNeg,
-				Marks.SubPos,
-				Marks.SubMul,
-				Marks.SubDiv,
-				Marks.Inc,
-				Marks.Dec
-			};
-			var mark = line.Tokens.OfType<Marks>().Intersect(assignMarks).SingleOrDefault();
-			if (mark != Marks.No)//代入系演算子が行に含まれている
+			var mark = IsAssignLine(line);
+			if (mark != Marks.No)
 			{
 				return ProcessAssign(line, mark);
 			}
@@ -395,13 +389,40 @@ namespace Masa.ScriptEngine
 
 		}
 
+		/// <summary>
+		/// その行が代入文の行か
+		/// </summary>
+		/// <param name="line"></param>
+		/// <returns></returns>
+		Marks IsAssignLine(Line line)
+		{
+			var assignMarks = new[]
+			{
+				Marks.Sub,
+				Marks.SubNeg,
+				Marks.SubPos,
+				Marks.SubMul,
+				Marks.SubDiv,
+				Marks.Inc,
+				Marks.Dec
+			};
+			return line.Tokens.OfType<Marks>().Intersect(assignMarks).SingleOrDefault();
+		}
+
+		/// <summary>
+		/// ローカル変数の定義
+		/// var hoge
+		/// </summary>
+		/// <param name="line"></param>
+		/// <returns></returns>
 		Expression DefineVariable(Line line)
 		{
 			ParameterExpression v;
-			string name = (string)line.Tokens[1];
+			string id = (string)line.Tokens[1];
 			Type type = typeof(Value);
 			
 			Expression target = null;
+			
 			if (line.Tokens.Length >= 4)// var hoge = 1
 			{
 				int rightPos = Array.FindIndex(line.Tokens, x => x.Equals(Marks.Sub));
@@ -424,13 +445,13 @@ namespace Masa.ScriptEngine
 			{
 				if (target == null)//型の明示なし、初期化なし
 				{
-					TypeUndefinedVarList.Add(name);
+					TypeUndefinedVarList.Add(id);
 					return null;
 				}
 			}
 			
-			v = Expression.Parameter(type, name);
-			VarDict.Add(name, v);
+			v = Expression.Parameter(type, id);
+			VarDict.Add(id, v);
 			
 			if (target != null)
 			{
@@ -539,6 +560,13 @@ namespace Masa.ScriptEngine
 
 		//}
 
+		/// <summary>
+		/// 代入Expressionを作成する
+		/// </summary>
+		/// <param name="mark"></param>
+		/// <param name="target"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
 		Expression Assign(Marks mark, Expression target, Expression value)
 		{
 			if (!target.Type.IsAssignableFrom(value.Type))
@@ -583,6 +611,7 @@ namespace Masa.ScriptEngine
 
 
 		/// <summary>
+		/// 代入文でも宣言文でもない文
 		/// if ループ stateなどの制御文や、fireなどの外部命令を処理
 		/// 一般文、つまり代入文や宣言文以外の、「識別子 引数リスト・・・」となる文
 		/// </summary>
