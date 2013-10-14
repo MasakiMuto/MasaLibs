@@ -10,7 +10,7 @@ namespace Masa.ScriptEngine
 	/// <summary>
 	/// ()の中身を表す構造体。最初と最後に( ) はつかない
 	/// </summary>
-	struct PareBlock
+	class PareBlock
 	{
 		public object[] tokens;
 		public PareBlock(object[] t)
@@ -27,12 +27,12 @@ namespace Masa.ScriptEngine
 	/// <summary>
 	/// ドット演算子前後
 	/// </summary>
-	struct DotBlock
+	class DotBlock
 	{
-		public object[] Left;
-		public object[] Right;
+		public object Left;
+		public object Right;
 
-		public DotBlock(object[] left, object[] right)
+		public DotBlock(object left, object right)
 		{
 			Left = left;
 			Right = right;
@@ -41,15 +41,9 @@ namespace Masa.ScriptEngine
 		public override string ToString()
 		{
 			var s = new StringBuilder();
-			foreach (var item in Left)
-			{
-				s.Append(item.ToString());
-			}
+			s.Append(Left.ToString());
 			s.Append('.');
-			foreach (var item in Right)
-			{
-				s.Append(item);
-			}
+			s.Append(Right.ToString());
 			return s.ToString();
 		}
 	}
@@ -57,7 +51,7 @@ namespace Masa.ScriptEngine
 	/// <summary>
 	/// オプション項を表す構造体。最初に : はつかない
 	/// </summary>
-	struct OptionBlock
+	class OptionBlock
 	{
 		public object[] Tokens;
 		public string Name;
