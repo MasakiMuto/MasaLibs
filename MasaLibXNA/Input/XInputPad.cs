@@ -12,6 +12,7 @@ namespace Masa.Lib.XNA.Input
 	{
 		PlayerIndex padNumber;
 		public PadConfig Config { get; set; }
+		
 
 		public XInputPad(PlayerIndex number)
 		{
@@ -23,21 +24,21 @@ namespace Masa.Lib.XNA.Input
 			Config = PadConfig.GetDefault();
 		}
 
-		public short Update()
+		public void Update()
 		{
 			GamePadState state = XPad.GetState(padNumber, GamePadDeadZone.IndependentAxes);
 			if (!state.IsConnected)
 			{
-				return 0;
+				CurrentValue = 0;
 			}
-			short ret = 0;
+			CurrentValue = 0;
 			var bt = Config.ButtonArray;
 			int i;
 			for (i = 0; i < bt.Length; i++)
 			{
 				if (state.IsButtonDown(bt[i]))
 				{
-					ret += (short)(1 << i);
+					CurrentValue += (short)(1 << i);
 				}
 			}
 			bool[] dir = ProcessDirection(state);
@@ -45,11 +46,10 @@ namespace Masa.Lib.XNA.Input
 			{
 				if (dir[k])
 				{
-					ret += (short)(1 << i);
+					CurrentValue += (short)(1 << i);
 				}
 				i++;
 			}
-			return ret;
 		}
 
 		bool[] ProcessDirection(GamePadState state)
@@ -61,5 +61,6 @@ namespace Masa.Lib.XNA.Input
 			}
 			return dir;
 		}
+		public short CurrentValue { get; private set; }
 	}
 }

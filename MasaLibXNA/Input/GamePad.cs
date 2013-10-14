@@ -10,8 +10,6 @@ using XInput = Microsoft.Xna.Framework.Input;
 
 namespace Masa.Lib.XNA.Input
 {
-	
-
 	/// <summary>
 	/// DirectInputデバイスをラップしたもの
 	/// </summary>
@@ -61,11 +59,11 @@ namespace Masa.Lib.XNA.Input
 			this.Dispose();
 		}
 
-		public short Update()
+		public void Update()
 		{
 			if (Device == null)
 			{
-				return 0;
+				CurrentValue = 0;
 			}
 			State = null;
 			try
@@ -75,14 +73,14 @@ namespace Masa.Lib.XNA.Input
 			catch (Exception)
 			{
 				Device = null;
-				return 0;
+				CurrentValue = 0;
 			}
 			if (State == null)
 			{
-				return 0;
+				CurrentValue = 0;
 			}
 
-			return ProcessState(State);
+			CurrentValue = ProcessState(State);
 		}
 
 		short ProcessState(JoystickState state)
@@ -136,9 +134,7 @@ namespace Masa.Lib.XNA.Input
 				if (px < -Border) dir[2] = true;
 				if (py > Border) dir[0] = true;
 				if (py < -Border) dir[1] = true;
-
 			}
-
 			return dir;
 		}
 
@@ -151,5 +147,7 @@ namespace Masa.Lib.XNA.Input
 			}
 			GC.SuppressFinalize(this);
 		}
+
+		public short CurrentValue { get; private set; }
 	}
 }

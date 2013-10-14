@@ -224,11 +224,13 @@ namespace Masa.Lib.XNA.Input
 		{
 			if (gamePads != null)
 			{
-				for (int i = 0; i < gamePads.Length; i++)
-				{
-					yield return gamePads[i];
-				}
+				//for (int i = 0; i < gamePads.Length; i++)
+				//{
+				//	yield return gamePads[i];
+				//}
+				return gamePads;
 			}
+			return Enumerable.Empty<GamePad>();
 		}
 
 		public InputManager(Game game, ActiveDevice device = ActiveDevice.Keyboard | ActiveDevice.Pad, int lever = 500)
@@ -355,11 +357,17 @@ namespace Masa.Lib.XNA.Input
 			inputValue = 0;
 			if ((Device & ActiveDevice.Keyboard) != 0)
 			{
-				inputValue |= keyBoard.Update();
+				keyBoard.Update();
+				inputValue |= keyBoard.CurrentValue;
 			}
 			if ((Device & ActiveDevice.Pad) != 0)
 			{
-				inputValue |= gamePads.Aggregate((short)0, (short val, GamePad pad) => (short)(val | pad.Update()));
+				foreach (var item in gamePads)
+				{
+					item.Update();
+					inputValue |= item.CurrentValue;
+				}
+				//inputValue |= gamePads.Aggregate((short)0, (short val, GamePad pad) => (short)(val | pad.Update()));
 				//inputValue |= gamePad.Update();
 			}
 			UpdateControlState();
@@ -475,7 +483,6 @@ namespace Masa.Lib.XNA.Input
 					p.State.GetButtons()
 					.Select((b, i) => b ? i : -1)
 					.Where(i => i != -1)
-					
 				)
 				.SelectMany(a => a).ToArray();
 			var exc = pushed.Except(lastPushedButton).ToArray();

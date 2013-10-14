@@ -15,6 +15,8 @@ namespace Masa.Lib.XNA.Input
 			private set;
 		}
 
+		public short CurrentValue { get; private set; }
+
 		public static string KeyToString(Keys key)
 		{
 			return Enum.GetName(typeof(Keys), key);
@@ -27,9 +29,9 @@ namespace Masa.Lib.XNA.Input
 			Config = KeyboardConfig.GetDefault();
 		}
 
-		public short Update()
+		public void Update()
 		{
-			short ret = 0;
+			CurrentValue = 0;
 			KeyState = Keyboard.GetState();
 			Keys[] bt = Config.ButtonArray;
 			int k = 0;
@@ -37,7 +39,7 @@ namespace Masa.Lib.XNA.Input
 			{
 				if (KeyState.IsKeyDown(bt[i]))
 				{
-					ret += (short)(1 << k);
+					CurrentValue += (short)(1 << k);
 				}
 				k++;
 			}
@@ -46,11 +48,10 @@ namespace Masa.Lib.XNA.Input
 			{
 				if (KeyState.IsKeyDown(arrow[i]))
 				{
-					ret += (short)(1 << k);
+					CurrentValue += (short)(1 << k);
 				}
 				k++;
 			}
-			return ret;
 		}
 	}
 }

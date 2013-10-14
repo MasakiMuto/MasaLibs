@@ -9,7 +9,8 @@ namespace Masa.Lib.XNA.Input
 {
 	interface IInputDevice
 	{
-		short Update();
+		void Update();
+		short CurrentValue { get; }
 	}
 
 }
