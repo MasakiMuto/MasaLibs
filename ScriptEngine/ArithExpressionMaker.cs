@@ -111,12 +111,12 @@ namespace Masa.ScriptEngine
 			new[]{Marks.And, Marks.Or, },
 		};
 
-		public static Expression ParseArithExpression(PareBlock p, Func<PareBlock, Expression> parsePareBlock, Func<string, Expression> parseVariable)
+		public static Expression ParseArithExpression(object[] tokens, Func<object, Expression> processSingleToken)
 		{
 			//多項式構築
 			List<object>[] list = new List<object>[2];
 			int ind = 0;
-			list[0] = new List<object>(ProcessToExpressionAndMark(p, parsePareBlock, parseVariable));
+			list[0] = new List<object>(ProcessToExpressionAndMark(tokens, processSingleToken));
 			list[1] = new List<object>();
 			for (int i = 0; i < OperatorPriorityList.Length; i++)
 			{
@@ -154,31 +154,18 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		/// <param name="p"></param>
 		/// <returns></returns>
-		static object[] ProcessToExpressionAndMark(PareBlock p, Func<PareBlock, Expression> parsePareBlock, Func<string, Expression> parseVariable)
+		static object[] ProcessToExpressionAndMark(object[] tokens, Func<object, Expression> processSingleToken)
 		{
-			object[] l = p.tokens;
 			var tmp = new List<object>();
-			for (int i = 0; i < l.Length; i++)
+			for (int i = 0; i < tokens.Length; i++)
 			{
-				if (l[i] is Value)
+				if (tokens[i] is Marks)
 				{
-					tmp.Add(Expression.Constant(l[i], ValueType));
+					tmp.Add(tokens[i]);
 				}
-				else if (l[i] is Marks)
+				else
 				{
-					tmp.Add(l[i]);
-				}
-				else if (l[i] is PareBlock)
-				{
-					tmp.Add(parsePareBlock((PareBlock)l[i]));
-				}
-				else if (l[i] is string)
-				{
-					tmp.Add(parseVariable((string)l[i]));
-				}
-				else//OptionBlockなど?
-				{
-					throw new ParseException("予期せぬトークンが多項式構築中に出現");
+					tmp.Add(processSingleToken(tokens[i]));
 				}
 			}
 			return ProcessUnaryExpression(tmp.ToArray());

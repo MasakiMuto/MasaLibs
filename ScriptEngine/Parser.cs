@@ -157,6 +157,7 @@ namespace Masa.ScriptEngine
 		{
 			object[] tokens = GroupToPareBlock(line);
 			tokens = GroupToOptionBlock(tokens);
+			tokens = GroupToDotBlock(tokens);
 			return tokens;
 		}
 
@@ -260,6 +261,63 @@ namespace Masa.ScriptEngine
 				generate();
 			}
 			return ret.ToArray();
+		}
+
+		/// <summary>
+		/// 行ないし括弧の中身にドット構文があればDotBlockに置換する
+		/// </summary>
+		/// <param name="block"></param>
+		/// <returns></returns>
+		static object[] GroupToDotBlock(object[] block)
+		{
+			for (int i = 0; i < block.Length; i++)
+			{
+				object t = block[i];
+				if (t is PareBlock)//引数などに存在しうるドット構文を先に処理
+				{
+					var p = t as PareBlock;
+					p.tokens = GroupToDotBlock(p.tokens);
+				}
+				if (t is OptionBlock)
+				{
+					var o = t as OptionBlock;
+					o.Tokens = GroupToDotBlock(o.Tokens);
+				}
+			}
+			var src = new LinkedList<object>(block);
+			LinkedListNode<object> current = src.First;
+			while (current != null)
+			{
+				if (current.Value.Equals(Marks.Dot))
+				{
+					var dot = new DotBlock(current.Previous.Value, current.Next.Value);
+					src.Remove(current.Previous);
+					src.Remove(current.Next);
+					src.AddAfter(current, dot);
+					current = current.Next;
+					src.Remove(current.Previous);//ドット前後3トークンを削除してDotBlockに置き換え
+				}
+				else
+				{
+					current = current.Next;
+				}
+			}
+			return src.ToArray();
+			//var dst = new List<object>();
+			//for (int i = 0; i < block.Length; i++)
+			//{
+			//	object t = block[i];
+			//	if (t.Equals(Marks.Dot))
+			//	{
+			//		var dot = new DotBlock(block[i - 1], block[i + 1]);
+			//		i += 2;
+			//	}
+			//	else
+			//	{
+			//		dst.Add(t);
+			//	}
+			//}
+			//return block;
 		}
 
 		

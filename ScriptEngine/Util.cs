@@ -181,6 +181,11 @@ namespace Masa.ScriptEngine
 			}
 			Name = atr.Name;
 		}
+
+		public override string ToString()
+		{
+			return Name + ":" + MethodInfo.ToString();
+		}
 	}
 
 	struct ClassReflectionInfo

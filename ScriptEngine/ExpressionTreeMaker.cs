@@ -232,11 +232,11 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
-		Expression ParseVariable(string id)
+		Expression ParseIdentifier(string id)
 		{
-			if (id[0] == Scanner.StringLiteralMark)//@エスケープ文字列の場合
+			if (id[0] == Scanner.StringLiteralMark)//""文字列の場合
 			{
-				return RegistLiteral(id.Substring(1));
+				return ProcessStringLiteral(id.Substring(1));//末尾のマークはスキャナで処理済み
 			}
 
 			ParameterExpression prm;
@@ -286,10 +286,10 @@ namespace Masa.ScriptEngine
 				return CallExternalMethod(id, null);
 			}
 
-			return RegistLiteral(id);
+			return ProcessStringLiteral(id);
 		}
 
-		Expression RegistLiteral(string id)
+		Expression ProcessStringLiteral(string id)
 		{
 			return Expression.Constant(id, typeof(string));
 			//int i = StringLiterals.FindIndex(s => s == id);
@@ -340,10 +340,10 @@ namespace Masa.ScriptEngine
 		{
 			//string id = (string)line.Tokens[0];
 			var id = line.Tokens[0] as string;
-			if (id == null)//pare
-			{
-				line.Tokens[0] = ParsePareBlock(line.Tokens[0] as PareBlock);
-			}
+			//if (id == null)//pare
+			//{
+			//	line.Tokens[0] = ParsePareBlock(line.Tokens[0] as PareBlock);
+			//}
 			if (id == "var")
 			{
 				return DefineVariable(line);
@@ -390,6 +390,116 @@ namespace Masa.ScriptEngine
 		}
 
 		/// <summary>
+		/// 一つの式(返り値なし含む)を表すトークン列を受ける
+		/// </summary>
+		/// <param name="tokens"></param>
+		/// <returns></returns>
+		Expression ProcessExpression(IEnumerable<object> tokens)
+		{
+			object[] objs = tokens.ToArray();
+			if (objs[0] is string)
+			{
+				var id = objs[0] as string;
+				if (StaticMethodDict.ContainsKey(id))
+				{
+					return CallExternalMethodInner(StaticMethodDict[id], tokens.Skip(1).ToArray(), null);
+				}
+				if (ClassInfo.MethodDict.ContainsKey(id))//ターゲットオブジェクト関数の時
+				{
+					return CallExternalMethod(id, tokens.Skip(1).ToArray());
+				}
+			}
+
+			return ArithExpressionMaker.ParseArithExpression(objs, ProcessSingleToken);//多項式の時
+		}
+
+		/// <summary>
+		/// PareblockやDotBlock,数値や文字列トークン
+		/// </summary>
+		/// <param name="token"></param>
+		/// <returns></returns>
+		Expression ProcessSingleToken(object token)
+		{
+			if (token is PareBlock)
+			{
+				return ProcessExpression((token as PareBlock).tokens);
+			}
+			else if (token is DotBlock)
+			{
+				return ProcessDotBlock(token as DotBlock);
+			}
+			else if(token is string)
+			{
+				return ParseIdentifier(token as string);
+			}
+			else if (token is Value)
+			{
+				return Expression.Constant((Value)token, ValueType);
+			}
+			throw new ParseException("不明なトークン:" + token.ToString());
+		}
+
+		Expression ProcessDotBlock(DotBlock dot)
+		{
+			Type leftType;
+			Expression left;
+			ClassReflectionInfo info;
+			var id = dot.Left as string;
+			if (id != null && TypeNameDictionary.ContainsKey(id))//静的メンバアクセス
+			{
+				left = null;
+				leftType = TypeNameDictionary[id];
+			}
+			else
+			{
+				left = ProcessSingleToken(dot.Left);
+				leftType = left.Type;
+			}
+			info = GetObjectInfo(leftType);
+			string op;
+			object[] args;
+			if (dot.Right is string)
+			{
+				op = dot.Right as string;
+				args = null;
+			}
+			else if (dot.Right is PareBlock)
+			{
+				var pare = dot.Right as PareBlock;
+				op = pare.tokens[0] as string;
+				args = pare.tokens.Skip(1).ToArray();
+			}
+			else
+			{
+				throw new ParseException("ドット演算子の右に不正なトークン:" + dot.ToString());
+			}
+			if (left != null)
+			{
+				if (info.MethodDict.ContainsKey(op))
+				{
+					return CallExternalMethodInner(info.MethodDict[op], args, left);
+				}
+				if (info.PropertyDict.ContainsKey(op))
+				{
+					return Expression.Property(left, info.PropertyDict[op]);
+				}
+				if (info.FieldDict.ContainsKey(op))
+				{
+					return Expression.Field(left, info.FieldDict[op]);
+				}	
+			}
+			if (info.StaticMethodDict.ContainsKey(op))
+			{
+				return CallExternalMethodInner(info.StaticMethodDict[op], args, null);
+			}
+			else if (op == "new")
+			{
+				return CallConstructor(leftType, args);
+			}
+			throw new ParseException("ドット演算子右辺の識別子が不明:" + dot.ToString());
+		}
+
+		/// <summary>
 		/// その行が代入文の行か
 		/// </summary>
 		/// <param name="line"></param>
@@ -411,112 +521,189 @@ namespace Masa.ScriptEngine
 
 		/// <summary>
 		/// ローカル変数の定義
-		/// var hoge
 		/// </summary>
 		/// <param name="line"></param>
 		/// <returns></returns>
 		Expression DefineVariable(Line line)
 		{
-			ParameterExpression v;
+			//ParameterExpression v;
 			string id = (string)line.Tokens[1];
-			Type type = typeof(Value);
+			Type type = ValueType;
 			
-			Expression target = null;
-			
-			if (line.Tokens.Length >= 4)// var hoge = 1
+			//Expression target = null;
+
+			if (line.Tokens.Length == 2)//var hoge
 			{
-				int rightPos = Array.FindIndex(line.Tokens, x => x.Equals(Marks.Sub));
-				if (rightPos != -1)
-				{
-					target = ParsePareBlock(new PareBlock(line.Tokens.Skip(rightPos + 1).ToArray()));
-					type = target.Type;//右辺値からの型推論
-				}
-			}
-			if (line.Tokens.Length >= 4 && line.Tokens[2].Equals(Marks.Dollar))// var hoge $ float2
-			{
-				type = TypeNameDictionary[line.Tokens[3] as string];
-				if (line.Tokens.Contains(Marks.Sub))//型明示かつ初期化あり
-				{
-					target = ParsePareBlock(new PareBlock(line.Tokens.SkipWhile(x => !x.Equals(Marks.Sub)).Skip(1).ToArray()));
-					target = Expression.Convert(target, type);//強制キャストを試みる
-				}
-			}
-			else
-			{
-				if (target == null)//型の明示なし、初期化なし
-				{
-					TypeUndefinedVarList.Add(id);
-					return null;
-				}
-			}
-			
-			v = Expression.Parameter(type, id);
-			VarDict.Add(id, v);
-			
-			if (target != null)
-			{
-				return Expression.Assign(v, target);
-			}
-			else
-			{
+				TypeUndefinedVarList.Add(id);
 				return null;
 			}
+			else if (line.Tokens.Length == 3)
+			{
+				throw new ParseException("ローカル変数宣言行のトークン数が不正", line);
+			}
+			else
+			{
+				if (line.Tokens[2].Equals(Marks.Dollar))//var hoge $ foo
+				{
+					var typeName = line.Tokens[3] as string;
+					if (!TypeNameDictionary.TryGetValue(typeName, out type))
+					{
+						throw new ParseException("ローカル変数宣言の型注釈の型名が不正:" + typeName, line);
+					}
+					VarDict.Add(id, Expression.Parameter(type, id));
+				}
+				else//型注釈なし
+				{
+					TypeUndefinedVarList.Add(id);
+				}
+				int rightPos = Array.FindIndex(line.Tokens, x => x.Equals(Marks.Sub));
+				if (rightPos == -1)
+				{
+					return null;//初期化なし
+				}
+				return ProcessAssign(Marks.Sub, new[] { id }, line.Tokens.Skip(rightPos + 1).ToArray());
+			}
+
+			//if (line.Tokens.Length >= 4)// var hoge = 1
+			//{
+			//	int rightPos = Array.FindIndex(line.Tokens, x => x.Equals(Marks.Sub));
+			//	if (rightPos != -1)
+			//	{
+			//		target = ParsePareBlock(new PareBlock(line.Tokens.Skip(rightPos + 1).ToArray()));
+			//		type = target.Type;//右辺値からの型推論
+			//	}
+			//}
+			//if (line.Tokens.Length >= 4 && line.Tokens[2].Equals(Marks.Dollar))// var hoge $ float2
+			//{
+			//	type = TypeNameDictionary[line.Tokens[3] as string];
+			//	if (line.Tokens.Contains(Marks.Sub))//型明示かつ初期化あり
+			//	{
+			//		target = ParsePareBlock(new PareBlock(line.Tokens.SkipWhile(x => !x.Equals(Marks.Sub)).Skip(1).ToArray()));
+			//		target = Expression.Convert(target, type);//強制キャストを試みる
+			//	}
+			//}
+			//else
+			//{
+			//	if (target == null)//型の明示なし、初期化なし
+			//	{
+			//		TypeUndefinedVarList.Add(id);
+			//		return null;
+			//	}
+			//}
 			
+			//v = Expression.Parameter(type, id);
+			//VarDict.Add(id, v);
+			
+			//if (target != null)
+			//{
+			//	return Expression.Assign(v, target);
+			//}
+			//else
+			//{
+			//	return null;
+			//}
+			
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="mark"></param>
+		/// <param name="left">単純なidかDotBlockかPareblock</param>
+		/// <param name="right"></param>
+		/// <returns></returns>
+		Expression ProcessAssign(Marks mark, object[] left, object[] right)
+		{
+			Expression value;
+			Type leftType = null;
+			Expression target;
+			if (mark == Marks.Dec || mark == Marks.Inc)
+			{
+				Debug.Assert(!right.Any());
+				leftType = ValueType;//インクリメント・デクリメントで初期化ならValue型とする
+				value = null;
+			}
+			else
+			{
+				value = ProcessExpression(right);
+				leftType = value.Type;
+			}
+
+			if (left.Length == 1 && left[0] is string)
+			{
+				var id = left[0] as string;
+				ResolveTypeUndefinedVariable(id, leftType);
+				target = ParseIdentifier(id);
+			}
+			else
+			{
+				target = ProcessExpression(left);
+			}
+			if (mark == Marks.Inc)
+			{
+				return Expression.PostIncrementAssign(target);
+			}
+			else if (mark == Marks.Dec)
+			{
+				return Expression.PostDecrementAssign(target);
+			}
+			else return Assign(mark, target, value);
 		}
 
 		Expression ProcessAssign(Line line, Marks mark)
 		{
 			var left = line.Tokens.TakeWhile(x => !x.Equals(mark)).ToArray();
 			var right = line.Tokens.Skip(left.Length + 1);
-			Expression target, value = null;
-			if (right.Any())
-			{
-				value = ParsePareBlock(new PareBlock(right.ToArray()));
-			}
-			if (left.Length == 1)
-			{
-				if (left[0] is Expression)
-				{
-					target = left[0] as Expression;
-				}
-				else
-				{
-					var name = left[0] as string;
-					Debug.Assert(name != null);
-					if (value != null)
-					{
-						ResolveTypeUndefinedVariable(name, value);
-					}
-					target = ParseVariable(name);
-				}
-			}
-			else
-			{
-				target = ParsePareBlock(new PareBlock(left));
-			}
-			if (mark == Marks.Inc || mark == Marks.Dec)
-			{
-				Debug.Assert(value == null);
-				if (mark == Marks.Inc)
-				{
-					return Expression.PostIncrementAssign(target);
-				}
-				else
-				{
-					return Expression.PostDecrementAssign(target);
-				}
-			}
-			else
-			{
-				return Assign(mark, target, value);
-			}
+			return ProcessAssign(mark, left, right.ToArray());
+			//Expression target, value = null;
+			//if (right.Any())
+			//{
+			//	value = ParsePareBlock(new PareBlock(right.ToArray()));
+			//}
+			//if (left.Length == 1)
+			//{
+			//	if (left[0] is Expression)
+			//	{
+			//		target = left[0] as Expression;
+			//	}
+			//	else
+			//	{
+			//		var name = left[0] as string;
+			//		Debug.Assert(name != null);
+			//		if (value != null)
+			//		{
+			//			ResolveTypeUndefinedVariable(name, value.Type);
+			//		}
+			//		target = ParseVariable(name);
+			//	}
+			//}
+			//else
+			//{
+			//	target = ParsePareBlock(new PareBlock(left));
+			//}
+			//if (mark == Marks.Inc || mark == Marks.Dec)
+			//{
+			//	Debug.Assert(value == null);
+			//	if (mark == Marks.Inc)
+			//	{
+			//		return Expression.PostIncrementAssign(target);
+			//	}
+			//	else
+			//	{
+			//		return Expression.PostDecrementAssign(target);
+			//	}
+			//}
+			//else
+			//{
+			//	return Assign(mark, target, value);
+			//}
 		}
 
-		void ResolveTypeUndefinedVariable(string name, Expression value)
+		void ResolveTypeUndefinedVariable(string name, Type type)
 		{
 			if (TypeUndefinedVarList.Contains(name))
 			{
-				VarDict.Add(name, Expression.Parameter(value.Type, name));
+				VarDict.Add(name, Expression.Parameter(type, name));
 				TypeUndefinedVarList.Remove(name);
 			}
 		}
@@ -619,34 +806,33 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		Expression ProcessNormalStatement(Line line)
 		{
-			string id = line.Tokens[0] as string;
-			Func<Expression[]> args = () => GetArgs(line.Tokens.Skip(1)).ToArray();
-			switch (id)
+			Func<Expression> exp = () => ProcessExpression(line.Tokens.Skip(1));
+			switch (line.Tokens[0] as string)
 			{
 				case "if":
-					return MakeIfStatement(line, args()[0]);
+					return MakeIfStatement(line, exp());
 				case "else"://if - else の流れで処理するため単体ではスルー
 					return null;
 				case "while":
 					goto case "repeat";
 				case "repeat":
 					LabelTarget label = Expression.Label(line.Number.ToString());
-					var pred = Expression.Not( ExpressionTreeMakerHelper.ExpressionToBool(args()[0]));
+					var pred = Expression.Not(ExpressionTreeMakerHelper.ExpressionToBool(exp()));
 					//pred = Expression.Equal(args()[0], ZeroExpression);
 					return Expression.Loop(GetBlockWithBreak(line, pred, label), label);
 				case "loop":
 					return MakeLoopStatement(line);
-				case "goto":
-					var assign = Expression.Assign(Expression.Property(Environment, ScriptEngine.Environment.Info_State), args()[0]);
+				case "goto"://state change
+					var assign = Expression.Assign(Expression.Property(Environment, ScriptEngine.Environment.Info_State), exp());
 					return Expression.Block(assign, Expression.Return(ExitLabel));
 				//return Expression.Assign(Expression.Property(Environment, ScriptEngine.Environment.Info_State), args()[0]);
 				case "state":
-					return Expression.IfThen(Expression.Equal(Expression.Property(Environment, ScriptEngine.Environment.Info_State), args()[0]), GetBlock(line));
+					return Expression.IfThen(Expression.Equal(Expression.Property(Environment, ScriptEngine.Environment.Info_State), exp()), GetBlock(line));
 				case "label":
 					LabelDict.Add((string)line.Tokens[1], GetBlock(line));
 					return null;
 				case "jump":
-					string s = (string)line.Tokens[1];
+					var s = line.Tokens[1] as string;
 					if (LabelDict.ContainsKey(s))
 					{
 						return LabelDict[s];
@@ -656,26 +842,9 @@ namespace Masa.ScriptEngine
 						throw new ParseException("未定義のラベル " + s, line);
 					}
 				case "blank":
-					//return null;
 					return Expression.Empty();
 				default:
-					if (id != null)
-					{
-						if (StaticMethodDict.ContainsKey(id))//オプション無しの前提
-						{
-							//return Expression.Call(StaticMethodDict[id], args());
-							return CallExternalMethodInner(StaticMethodDict[id], line.Tokens.Skip(1).ToArray(), null);
-						}
-						if (ClassInfo.MethodDict.ContainsKey(id))
-						{
-							return CallExternalMethod(id, line.Tokens.Slice(1, line.Tokens.Length - 1));
-						}
-					}
-					if (line.Tokens[1].Equals(Marks.Dot))
-					{
-						return ParseDotAccess(line.Tokens);
-					}
-					throw new ParseException(": 未定義のステートメント " + id, line);
+					return ProcessExpression(line.Tokens);
 			}
 		}
 
@@ -703,10 +872,10 @@ namespace Masa.ScriptEngine
 		{
 			string id = (string)line.Tokens[0];
 			Option[] opt = GetOptions(line.Tokens.Slice(1, line.Tokens.Length - 1));
-			var arg = GetArgs(line.Tokens.Slice(1, line.Tokens.Length - 1));
-			var times = arg[0];
-			var freq = arg[1];
-			var from = arg[2];
+			var arg = GetArgs(line.Tokens.Skip(1));
+			Expression times = arg[0];
+			Expression freq = arg[1];
+			Expression from = arg[2];
 			Expression frame = null;
 			Expression last = null;
 			Expression firstSentence;
@@ -1008,14 +1177,14 @@ namespace Masa.ScriptEngine
 			{
 				if (item is PareBlock)
 				{
-					ret.Add(ParsePareBlock((PareBlock)item));
+					ret.Add(ProcessExpression((item as PareBlock).tokens));
 				}
 				else if (item is OptionBlock)
 				{
 				}
 				else if (item is string)//変数か文字列?
 				{
-					ret.Add(ParseVariable((string)item));
+					ret.Add(ParseIdentifier((string)item));
 				}
 				else if (item is Value)//数値リテラル
 				{
@@ -1053,104 +1222,104 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		/// <param name="pare"></param>
 		/// <returns></returns>
-		Expression ParsePareBlock(PareBlock pare)
-		{
-			object[] l = pare.tokens;
+		//Expression ParsePareBlock(PareBlock pare)
+		//{
+		//	object[] l = pare.tokens;
 
-			if (l[0] is string)
-			{
+		//	if (l[0] is string)
+		//	{
 
-				if (StaticMethodDict.ContainsKey((string)l[0]))
-				{
-					//Expression[] args = GetArgs(l.Slice(1, l.Length - 1)).ToArray();
-					//return Expression.Call(StaticMethodDict[(string)l[0]], args);
-					return CallExternalMethodInner(StaticMethodDict[l[0] as string], pare.tokens.Skip(1).ToArray(), null);
-				}
-				if (ClassInfo.MethodDict.ContainsKey((string)l[0]))//関数の時
-				{
-					return CallExternalMethod((string)l[0], l.Slice(1, l.Length - 1));
-					//Expression[] args = GetArgs(l.Slice(1, l.Length - 1));
-					//return Expression.Call(Expression.Field(Environment, ScriptEngineEx.Environment.Info_TargetObject), MethodDict[(string)l[0]], args);
-				}
-				//関数を実行するExpression
+		//		if (StaticMethodDict.ContainsKey((string)l[0]))
+		//		{
+		//			//Expression[] args = GetArgs(l.Slice(1, l.Length - 1)).ToArray();
+		//			//return Expression.Call(StaticMethodDict[(string)l[0]], args);
+		//			return CallExternalMethodInner(StaticMethodDict[l[0] as string], pare.tokens.Skip(1).ToArray(), null);
+		//		}
+		//		if (ClassInfo.MethodDict.ContainsKey((string)l[0]))//関数の時
+		//		{
+		//			return CallExternalMethod((string)l[0], l.Slice(1, l.Length - 1));
+		//			//Expression[] args = GetArgs(l.Slice(1, l.Length - 1));
+		//			//return Expression.Call(Expression.Field(Environment, ScriptEngineEx.Environment.Info_TargetObject), MethodDict[(string)l[0]], args);
+		//		}
+		//		//関数を実行するExpression
 
-			}
-			if (l.Length >= 3 && l[1].Equals(Marks.Dot))
-			{
-				return ParseDotAccess(l);
-			}
-			return ArithExpressionMaker.ParseArithExpression(pare, ParsePareBlock, ParseVariable);//多項式の時
-		}
+		//	}
+		//	if (l.Length >= 3 && l[1].Equals(Marks.Dot))
+		//	{
+		//		return ParseDotAccess(l);
+		//	}
+		//	return ArithExpressionMaker.ParseArithExpression(pare.tokens, ProcessExpression, ParseIdentifier);//多項式の時
+		//}
 
 		/// <summary>
 		/// hoge.piyoの形式を処理
 		/// </summary>
 		/// <param name="tokens"></param>
 		/// <returns></returns>
-		Expression ParseDotAccess(object[] tokens)
-		{
-			var src = tokens[0];
-			var call = tokens[2] as string;
-			Expression obj;
-			if (src is string)
-			{
-				Type t = ParseStringAsType(src as string);
-				if (t != null)
-				{
-					if (call == "new")
-					{
-						return CallConstructor(t, tokens.Skip(3));
-					}
-					else
-					{
-						ScriptMethodInfo method;
-						if (ClassInfo.StaticMethodDict.TryGetValue(call, out method))
-						{
-							CallExternalMethodInner(method, tokens.Skip(3).ToArray(), null);
-						}
-					}
-					throw new ParseException("型名後の識別子が不正");
+		//Expression ParseDotAccess(object[] tokens)
+		//{
+		//	var src = tokens[0];
+		//	var call = tokens[2] as string;
+		//	Expression obj;
+		//	if (src is string)
+		//	{
+		//		Type t = ParseStringAsType(src as string);
+		//		if (t != null)
+		//		{
+		//			if (call == "new")
+		//			{
+		//				return CallConstructor(t, tokens.Skip(3));
+		//			}
+		//			else
+		//			{
+		//				ScriptMethodInfo method;
+		//				if (ClassInfo.StaticMethodDict.TryGetValue(call, out method))
+		//				{
+		//					CallExternalMethodInner(method, tokens.Skip(3).ToArray(), null);
+		//				}
+		//			}
+		//			throw new ParseException("型名後の識別子が不正");
 
-				}
-			}
-			if (src is PareBlock)
-			{
-				obj = ParsePareBlock((PareBlock)src);
-			}
-			else if (src is string)
-			{
-				obj = ParseVariable(src as string);
-			}
-			else if (src is Expression)
-			{
-				obj = src as Expression;
-			}
-			else
-			{
-				throw new ParseException("ドット前にあるトークンが不正");
-			}
-			var info = GetObjectInfo(obj.Type);
-			if (call == null)
-			{
-				throw new ParseException("ドット後にあるトークンが不正");
-			}
+		//		}
+		//	}
+		//	if (src is PareBlock)
+		//	{
+		//		obj = ProcessExpression((src as PareBlock).tokens);
+		//	}
+		//	else if (src is string)
+		//	{
+		//		obj = ParseIdentifier(src as string);
+		//	}
+		//	else if (src is Expression)
+		//	{
+		//		obj = src as Expression;
+		//	}
+		//	else
+		//	{
+		//		throw new ParseException("ドット前にあるトークンが不正");
+		//	}
+		//	var info = GetObjectInfo(obj.Type);
+		//	if (call == null)
+		//	{
+		//		throw new ParseException("ドット後にあるトークンが不正");
+		//	}
 			
-			if (info.PropertyDict.ContainsKey(call))
-			{
-				var prop = info.PropertyDict[call];
-				return Expression.Property(obj, prop);
-			}
-			if (info.MethodDict.ContainsKey(call))
-			{
-				return CallExternalMethodInner(info.MethodDict[call], tokens.Skip(3).ToArray(), obj);
-			}
-			if (info.FieldDict.ContainsKey(call))
-			{
-				return Expression.Field(obj, info.FieldDict[call]);
-			}
+		//	if (info.PropertyDict.ContainsKey(call))
+		//	{
+		//		var prop = info.PropertyDict[call];
+		//		return Expression.Property(obj, prop);
+		//	}
+		//	if (info.MethodDict.ContainsKey(call))
+		//	{
+		//		return CallExternalMethodInner(info.MethodDict[call], tokens.Skip(3).ToArray(), obj);
+		//	}
+		//	if (info.FieldDict.ContainsKey(call))
+		//	{
+		//		return Expression.Field(obj, info.FieldDict[call]);
+		//	}
 
-			throw new ParseException("ドット後にあるトークンが不正");
-		}
+		//	throw new ParseException("ドット後にあるトークンが不正");
+		//}
 
 		/// <summary>
 		/// 文字列を形名に変換する。できなければnull
@@ -1170,6 +1339,11 @@ namespace Masa.ScriptEngine
 			}
 		}
 
+		/// <summary>
+		/// 型のリフレクション情報を返す
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
 		ClassReflectionInfo GetObjectInfo(Type type)
 		{
 			ClassReflectionInfo info;
