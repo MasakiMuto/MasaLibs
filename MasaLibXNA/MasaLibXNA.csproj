@@ -75,6 +75,7 @@
     <Compile Include="Input\InputDevice.cs" />
     <Compile Include="Input\InputManager.cs" />
     <Compile Include="Input\KeyBoard.cs" />
+    <Compile Include="Input\MultiInputManager.cs" />
     <Compile Include="Input\NativeGamePad.cs" />
     <Compile Include="Input\XInputPad.cs" />
     <Compile Include="ItemSelecter.cs" />

@@ -112,5 +112,15 @@ namespace Masa.Lib.XNA.Input
 			Left = new Button(ButtonTag.Left);
 			Right = new Button(ButtonTag.Right);
 		}
+
+		internal void UpdateFromValue(short value)
+		{
+			int i = 0;
+			foreach (var item in Inputs)
+			{
+				item.Input((value & (short)(1 << i)) != 0);
+				i++;
+			}
+		}
 	}
 }

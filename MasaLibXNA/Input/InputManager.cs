@@ -175,9 +175,9 @@ namespace Masa.Lib.XNA.Input
 		{
 			get
 			{
-				if (keyBoard != null)
+				if (KeyBoard != null)
 				{
-					return keyBoard.Config;
+					return KeyBoard.Config;
 				}
 				return null;
 			}
@@ -192,9 +192,9 @@ namespace Masa.Lib.XNA.Input
 		{
 			get
 			{
-				if (gamePads != null)
+				if (GamePads != null)
 				{
-					return gamePads[0].Config;
+					return GamePads[0].Config;
 				}
 				else return null;
 			}
@@ -207,9 +207,9 @@ namespace Masa.Lib.XNA.Input
 
 		public ActiveDevice Device;
 
-		KeyBoard keyBoard;
+		protected KeyBoard KeyBoard { get; private set; }
 
-		GamePad[] gamePads;
+		protected GamePad[] GamePads { get; private set; }
 		readonly Game Game;
 		readonly int LeverDead;
 		PadConfig padConfig;
@@ -220,15 +220,15 @@ namespace Masa.Lib.XNA.Input
 
 		internal SlimDX.DirectInput.DirectInput DirectInput { get; private set; }
 
-		public IEnumerable<GamePad> GamePads()
+		public IEnumerable<GamePad> GetGamePads()
 		{
-			if (gamePads != null)
+			if (GamePads != null)
 			{
 				//for (int i = 0; i < gamePads.Length; i++)
 				//{
 				//	yield return gamePads[i];
 				//}
-				return gamePads;
+				return GamePads;
 			}
 			return Enumerable.Empty<GamePad>();
 		}
@@ -264,15 +264,15 @@ namespace Masa.Lib.XNA.Input
 				DirectInput = null;
 
 			}
-			if (gamePads != null)
+			if (GamePads != null)
 			{
-				for (int i = 0; i < gamePads.Length; i++)
+				for (int i = 0; i < GamePads.Length; i++)
 				{
-					gamePads[i].Dispose();
-					gamePads[i] = null;
+					GamePads[i].Dispose();
+					GamePads[i] = null;
 				}
 			}
-			gamePads = null;
+			GamePads = null;
 			
 		}
 
@@ -283,25 +283,25 @@ namespace Masa.Lib.XNA.Input
 
 		void ApplyConfig()
 		{
-			if (keyBoard != null)
+			if (KeyBoard != null)
 			{
-				keyBoard.Config = keyConfig;
+				KeyBoard.Config = keyConfig;
 			}
-			if (gamePads != null)
+			if (GamePads != null)
 			{
-				foreach (var item in gamePads)
+				foreach (var item in GamePads)
 				{
 					item.Config = padConfig;
 				}
 			}
 		}
 
-		public void InitDevices(ActiveDevice device)
+		public virtual void InitDevices(ActiveDevice device)
 		{
 			Device = device;
 			if ((Device & ActiveDevice.Keyboard) != 0)
 			{
-				keyBoard = new KeyBoard();
+				KeyBoard = new KeyBoard();
 			}
 			if ((Device & ActiveDevice.Pad) != 0)
 			{
@@ -312,7 +312,7 @@ namespace Masa.Lib.XNA.Input
 				}
 				else
 				{
-					gamePads = Enumerable.Range(0, padNum).Select(i => new GamePad(Game, LeverDead, i, DirectInput)).ToArray();
+					GamePads = Enumerable.Range(0, padNum).Select(i => new GamePad(Game, LeverDead, i, DirectInput)).ToArray();
 				}
 				//try
 				//{
@@ -326,6 +326,10 @@ namespace Masa.Lib.XNA.Input
 			ApplyConfig();
 		}
 
+		/// <summary>
+		/// 現在接続されているゲームパッド数を取得する(InputManagerに認識されていないもの含めて)
+		/// </summary>
+		/// <returns></returns>
 		public int GetPadNum()
 		{
 			return GamePadDevice.GetPadNumber(DirectInput);
@@ -348,7 +352,7 @@ namespace Masa.Lib.XNA.Input
 		/// 入力を取得してInputValueとControlStateを設定する
 		/// GamePlayControlStateはUpdateGamePlay系を呼ばないと更新されないので注意
 		/// </summary>
-		public void Update()
+		public virtual void Update()
 		{
 			if ((Device & ActiveDevice.Mouse) != 0)
 			{
@@ -357,12 +361,12 @@ namespace Masa.Lib.XNA.Input
 			inputValue = 0;
 			if ((Device & ActiveDevice.Keyboard) != 0)
 			{
-				keyBoard.Update();
-				inputValue |= keyBoard.CurrentValue;
+				KeyBoard.Update();
+				inputValue |= KeyBoard.CurrentValue;
 			}
 			if ((Device & ActiveDevice.Pad) != 0)
 			{
-				foreach (var item in gamePads)
+				foreach (var item in GamePads)
 				{
 					item.Update();
 					inputValue |= item.CurrentValue;
@@ -429,6 +433,7 @@ namespace Masa.Lib.XNA.Input
 			lastY = MouseState.Y;
 		}
 
+
 		/// <summary>
 		/// SHORT値からゲームキー入力を再現する(リプレイ再生)
 		/// </summary>
@@ -437,12 +442,13 @@ namespace Masa.Lib.XNA.Input
 		{
 			//HACK キーボード入力全体の保存には未対応ゆえ、KeyStateを使う場合はバグる。
 			inputValue = value;
-			int i = 0;
-			foreach (var item in GamePlayControlState.Inputs)
-			{
-				item.Input((InputValue & (short)(1 << i)) != 0);
-				i++;
-			}
+			GamePlayControlState.UpdateFromValue(InputValue);
+			//int i = 0;
+			//foreach (var item in GamePlayControlState.Inputs)
+			//{
+			//	item.Input((InputValue & (short)(1 << i)) != 0);
+			//	i++;
+			//}
 		}
 
 		/// <summary>
@@ -450,12 +456,14 @@ namespace Masa.Lib.XNA.Input
 		/// </summary>
 		public void UpdateGamePlayFromControl()
 		{
-			int i = 0;
-			foreach (var item in GamePlayControlState.Inputs)
-			{
-				item.Input((InputValue & (short)(1 << i)) != 0);
-				i++;
-			}
+			GamePlayControlState.UpdateFromValue(InputValue);
+			//UpdateControlStateInner(GamePlayControlState, InputValue);
+			//int i = 0;
+			//foreach (var item in GamePlayControlState.Inputs)
+			//{
+			//	item.Input((InputValue & (short)(1 << i)) != 0);
+			//	i++;
+			//}
 		}
 
 		/// <summary>
@@ -463,12 +471,14 @@ namespace Masa.Lib.XNA.Input
 		/// </summary>
 		public void UpdateControlState()
 		{
-			int i = 0;
-			foreach (var item in ControlState.Inputs)
-			{
-				item.Input((InputValue & (short)(1 << i)) != 0);
-				i++;
-			}
+			ControlState.UpdateFromValue(InputValue);
+			//UpdateControlStateInner(ControlState, InputValue);
+			//int i = 0;
+			//foreach (var item in ControlState.Inputs)
+			//{
+			//	item.Input((InputValue & (short)(1 << i)) != 0);
+			//	i++;
+			//}
 		}
 
 		/// <summary>
@@ -477,7 +487,7 @@ namespace Masa.Lib.XNA.Input
 		/// <returns>-1なら何も押されていない、それ以外ならPadConfig.IntToButtonに入れられる値</returns>
 		public int GetPushedButton()
 		{
-			var pushed = GamePads()
+			var pushed = GetGamePads()
 				.Where(p=>p.State != null)
 				.Select(p =>
 					p.State.GetButtons()
