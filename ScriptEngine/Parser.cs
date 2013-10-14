@@ -25,6 +25,36 @@ namespace Masa.ScriptEngine
 	}
 
 	/// <summary>
+	/// ドット演算子前後
+	/// </summary>
+	struct DotBlock
+	{
+		public object[] Left;
+		public object[] Right;
+
+		public DotBlock(object[] left, object[] right)
+		{
+			Left = left;
+			Right = right;
+		}
+
+		public override string ToString()
+		{
+			var s = new StringBuilder();
+			foreach (var item in Left)
+			{
+				s.Append(item.ToString());
+			}
+			s.Append('.');
+			foreach (var item in Right)
+			{
+				s.Append(item);
+			}
+			return s.ToString();
+		}
+	}
+
+	/// <summary>
 	/// オプション項を表す構造体。最初に : はつかない
 	/// </summary>
 	struct OptionBlock
@@ -44,6 +74,16 @@ namespace Masa.ScriptEngine
 			//tokens = t;
 			Name = (string)t[0];
 			Tokens = Parser.ParseStatement(t.Skip(1).ToArray());//再帰
+		}
+
+		public override string ToString()
+		{
+			var s = new StringBuilder(Name);
+			foreach (var item in Tokens)
+			{
+				s.Append(item.ToString());
+			}
+			return s.ToString();
 		}
 	}
 
