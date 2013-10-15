@@ -12,12 +12,6 @@ namespace Masa.Lib.XNA
 		Horizonal,
 	}
 
-	public enum SelectLoopType
-	{
-		Enable,
-		Disable,
-	}
-
 	public abstract class SelecterBase
 	{
 		internal Input.ControlState Input;
@@ -46,9 +40,26 @@ namespace Masa.Lib.XNA
 			}
 			set
 			{
-				index = MathUtil.PositiveMod(value, OptionCount);
+				if (!SuppressLoop)
+				{
+					index = MathUtil.PositiveMod(value, OptionCount);
+				}
+				else
+				{
+					index = (value < 0) ? 0 : (value >= OptionCount ? OptionCount - 1 : value);
+				}
 			}
 		}
+
+		/// <summary>
+		/// indexが端まで行ってもループさせない
+		/// </summary>
+		public bool SuppressLoop { get; set; }
+
+		/// <summary>
+		/// 0なら不動、+1なら正方向、-1なら負方向、+2なら大きく動くほうの正方向、-2なら大きく動くほうの負方向
+		/// </summary>
+		public int LastMoveDirection { get; protected set; }
 
 		protected SelecterBase(ControlState input, int max, int freq)
 			: this(input, max, freq, freq)
@@ -70,6 +81,11 @@ namespace Masa.Lib.XNA
 		/// <returns></returns>
 		public abstract bool Update();
 
+		/// <summary>
+		/// カーソルが動くべきタイミング
+		/// </summary>
+		/// <param name="input"></param>
+		/// <returns></returns>
 		protected bool IsMoved(bool input)
 		{
 			if (!input)
@@ -138,10 +154,23 @@ namespace Masa.Lib.XNA
 				default:
 					break;
 			}
+			LastMoveDirection = 0;
 			if (IsMoved(d != 0))
 			{
+				var last = Index;
 				Index += d;
-				return true;
+				if (last != Index)
+				{
+					if (d > 0)
+					{
+						LastMoveDirection = 1;
+					}
+					else if(d < 0)
+					{
+						LastMoveDirection = -1;
+					}
+					return true;
+				}
 			}
 			return false;
 		}
@@ -197,12 +226,33 @@ namespace Masa.Lib.XNA
 				default:
 					break;
 			}
+			LastMoveDirection = 0;
 			if (IsMoved(one != 0 || line != 0))
 			{
+				var last = Index;
 				Index += one + line * LineLength;
-				return true;
+				if(last != Index)
+				{
+					if (line > 0)
+					{
+						LastMoveDirection = 2;
+					}
+					else if (line < 0)
+					{
+						LastMoveDirection = -2;
+					}
+					else if (one > 0)
+					{
+						LastMoveDirection = 1;
+					}
+					else if (one < 0)
+					{
+						LastMoveDirection = -1;
+					}
+					return true;
+				}
 			}
-			else return false;
+			return false;
 		}
 	}
 }
