@@ -113,6 +113,11 @@ namespace Masa.ScriptEngine
 			return DocumentCreater.ClassToXml(TargetType, ClassInfo);
 		}
 
+		public static Dictionary<Type, System.Xml.Linq.XElement> OutputClassesXml()
+		{
+			return ReflectionCashe.ToDictionary(x=>x.Key ,x => DocumentCreater.ClassToXml(x.Key, x.Value));
+		}
+
 		public static System.Xml.Linq.XElement OutputGlobalXml()
 		{
 			return DocumentCreater.GlobalsToXml(StaticMethodDict.ToDictionary(x=>x.Key, x=>x.Value.MethodInfo));

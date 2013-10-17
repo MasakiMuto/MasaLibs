@@ -16,7 +16,7 @@ namespace Masa.ScriptEngine
 	/// </summary>
 	public class ScriptManager
 	{
-		protected Dictionary<Type, TypeScriptDictionary> items;
+		protected Dictionary<Type, TypeScriptDictionary> scriptItems;
 		public Func<string, string> PathToKey;
 		//List<CompiledExpressionTree> CompiledTrees;
 		Dictionary<string, System.Reflection.Assembly> assemblyDict;
@@ -73,7 +73,7 @@ namespace Masa.ScriptEngine
 		public ScriptManager()
 		{
 			CodeMapper = s => s;
-			items = new Dictionary<Type, TypeScriptDictionary>();
+			scriptItems = new Dictionary<Type, TypeScriptDictionary>();
 			//CompiledTrees = new List<CompiledExpressionTree>();
 			assemblyDict = new Dictionary<string, System.Reflection.Assembly>();
 			PathToKey = s => Path.GetFileNameWithoutExtension(s);
@@ -153,10 +153,10 @@ namespace Masa.ScriptEngine
 
 			//}
 			TypeScriptDictionary dict;
-			if (!items.TryGetValue(target, out dict))
+			if (!scriptItems.TryGetValue(target, out dict))
 			{
 				dict = new TypeScriptDictionary();
-				items[target] = dict;
+				scriptItems[target] = dict;
 			}
 			dict[key] = data;
 			//items[target][key] = data;
@@ -278,7 +278,7 @@ namespace Masa.ScriptEngine
 		{
 			try
 			{
-				items
+				scriptItems
 					.SelectMany(pair => pair.Value.Values)
 					.OfType<FileScriptData>()
 					.AsParallel()
@@ -319,7 +319,7 @@ namespace Masa.ScriptEngine
 			ScriptDataBase data;
 			TypeScriptDictionary dict;
 			Type type = target.GetType();
-			if (items.TryGetValue(type, out dict))
+			if (scriptItems.TryGetValue(type, out dict))
 			{
 				if (dict.TryGetValue(key, out data))
 				{
@@ -358,7 +358,7 @@ namespace Masa.ScriptEngine
 		public void OutputDocumentText(string fileName)
 		{
 			var str = new StringBuilder();
-			foreach (var item in items)
+			foreach (var item in scriptItems)
 			{
 				str.AppendLine("*" + item.Key.ToString());
 				str.Append(item.Value.First().Value.GetDocument());
@@ -373,7 +373,9 @@ namespace Masa.ScriptEngine
 			//<?xml-stylesheet href="doc.css" type="text/css"?>
 			var doc = new XDocument();
 			doc.Add(new XProcessingInstruction("xml-stylesheet", "type='text/css' href='doc.css'"));
-			doc.Add(new XElement("document", items.Values.Select(d => (d.First().Value.Tree as ExpressionTreeMaker).OutputClassXml()).ToArray()));
+			doc.Add(new XElement("document",
+				scriptItems.Values.Select(d => (d.First().Value.Tree as ExpressionTreeMaker).OutputClassXml()).ToArray()
+				));
 			// .OfType<ScriptData>().Select(x => (x.Tree as ExpressionTreeMaker).OutputClassXml()).ToArray()));
 			doc.Save(fileName);
 		}
@@ -385,9 +387,13 @@ namespace Masa.ScriptEngine
 				Directory.CreateDirectory(outputDirectory);
 			}
 			Func<string, string> path = name=>Path.Combine(outputDirectory, name + ".xml");
-			foreach (var item in GetTypeScripts())
+			//foreach (var item in GetTypeScripts())
+			//{
+			//	SaveXmlDocument(path(item.TargetType.Name), item.OutputClassXml());
+			//}
+			foreach (var item in ExpressionTreeMaker.OutputClassesXml())
 			{
-				SaveXmlDocument(path(item.TargetType.Name), item.OutputClassXml());
+				SaveXmlDocument(path(item.Key.Name), item.Value);
 			}
 			SaveXmlDocument(path("global"), ExpressionTreeMaker.OutputGlobalXml());
 			
@@ -407,7 +413,7 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		IEnumerable<ExpressionTreeMaker> GetTypeScripts()
 		{
-			return items.Values.Select(i => i.First().Value.Tree as ExpressionTreeMaker);
+			return scriptItems.Values.Select(i => i.First().Value.Tree as ExpressionTreeMaker);
 		}
 
 

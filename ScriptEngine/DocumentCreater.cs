@@ -114,17 +114,17 @@ namespace Masa.ScriptEngine
 			return root;
 		}
 
-		static XElement MemberToXml(string type, MemberInfo member, ScriptMemberAttribute atr)
+		static XElement MemberToXml(string type, MemberInfo member, string name)
 		{
 			var root = new XElement(type);
-			root.Add(NameToXml(atr.Name));
+			root.Add(NameToXml(name));
 			root.Add(new XElement("source", member.DeclaringType.Name + "." + member.Name));
 			return root;
 		}
 
 		static XElement MethodToXml(ScriptMethodInfo method)
 		{
-			var root = MemberToXml("method", method.MethodInfo, method.Attribute);
+			var root = MemberToXml("method", method.MethodInfo, method.Name);
 			//root.Add(NameToXml(method.Attribute.Name));
 			root.Add(TypeToXml(method.MethodInfo.ReturnType));
 			//root.Add(new XElement("source", method.MethodInfo.Name));
@@ -138,7 +138,7 @@ namespace Masa.ScriptEngine
 				}
 				param.Add(defparam);
 			}
-			if (method.Attribute.OptionName != null && method.Attribute.OptionName.Count() > 0)
+			if (method.Attribute != null && method.Attribute.OptionName != null && method.Attribute.OptionName.Count() > 0)
 			{
 				var opt = new XElement("options");
 				int index = method.DefaultParameterCount;
@@ -162,7 +162,7 @@ namespace Masa.ScriptEngine
 
 		static XElement PropertyToXml(ScriptPropertyInfo prop)
 		{
-			var root = MemberToXml("property", prop.PropertyInfo, prop.Attribute);
+			var root = MemberToXml("property", prop.PropertyInfo, prop.Name);
 			root.Add(TypeToXml(prop.PropertyInfo.PropertyType));
 			root.Add(new XElement("get", prop.PropertyInfo.CanRead), new XElement("set", prop.PropertyInfo.CanWrite));
 			return root;
