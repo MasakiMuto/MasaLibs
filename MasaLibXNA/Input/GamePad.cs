@@ -13,11 +13,10 @@ namespace Masa.Lib.XNA.Input
 	/// <summary>
 	/// DirectInputデバイスをラップしたもの
 	/// </summary>
-	public class GamePad : IInputDevice, IDisposable
+	public class GamePad : GamePadBase
 	{
 		GamePadDevice Device;
 
-		public PadConfig Config { get; set; }
 		int border;
 		public int StickBorder
 		{
@@ -32,7 +31,7 @@ namespace Masa.Lib.XNA.Input
 			}
 		}
 
-		public JoystickState State { get; private set; }
+		JoystickState State { get; set; }
 
 		public GamePad(Game game, int lever, int padNumber, DirectInput directInput)
 		{
@@ -59,7 +58,7 @@ namespace Masa.Lib.XNA.Input
 			this.Dispose();
 		}
 
-		public void Update()
+		public override void Update()
 		{
 			if (Device == null)
 			{
@@ -138,7 +137,7 @@ namespace Masa.Lib.XNA.Input
 			return dir;
 		}
 
-		public void Dispose()
+		public override void Dispose()
 		{
 			if (Device != null)
 			{
@@ -148,6 +147,19 @@ namespace Masa.Lib.XNA.Input
 			GC.SuppressFinalize(this);
 		}
 
-		public short CurrentValue { get; private set; }
+
+		public override IEnumerable<int> GetPushedButton()
+		{
+			if (State == null)
+			{
+				return Enumerable.Empty<int>();
+			}
+			else
+			{
+				return State.GetButtons()
+					.Select((b, i) => b ? i : -1)
+					.Where(x => x != -1);
+			}
+		}
 	}
 }

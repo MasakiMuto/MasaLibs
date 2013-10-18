@@ -5,14 +5,19 @@ using System.Text;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 using XPad = Microsoft.Xna.Framework.Input.GamePad;
+using XButtons = Microsoft.Xna.Framework.Input.Buttons;
 
 namespace Masa.Lib.XNA.Input
 {
-	public class XInputPad : IInputDevice
+	public class XInputPad : GamePadBase
 	{
 		PlayerIndex padNumber;
-		public PadConfig Config { get; set; }
-		
+
+		public static IEnumerable<PlayerIndex> GetAvailableControllers()
+		{
+			return Enum.GetValues(typeof(PlayerIndex)).Cast<PlayerIndex>()
+				.Where(x => XPad.GetState(x).IsConnected);
+		}
 
 		public XInputPad(PlayerIndex number)
 		{
@@ -24,7 +29,7 @@ namespace Masa.Lib.XNA.Input
 			Config = PadConfig.GetDefault();
 		}
 
-		public void Update()
+		public override void Update()
 		{
 			GamePadState state = XPad.GetState(padNumber, GamePadDeadZone.IndependentAxes);
 			if (!state.IsConnected)
@@ -61,6 +66,19 @@ namespace Masa.Lib.XNA.Input
 			}
 			return dir;
 		}
-		public short CurrentValue { get; private set; }
+
+		public override IEnumerable<int> GetPushedButton()
+		{
+			var state = XPad.GetState(padNumber);
+			return Enum.GetValues(typeof(XButtons)).Cast<XButtons>()
+				.Where(x => state.IsButtonDown(x))
+				.Select(x => PadConfig.ButtonToInt(x));
+			//XPad.GetState(padNumber).Buttons.Y
+		}
+
+		public override void Dispose()
+		{
+
+		}
 	}
 }

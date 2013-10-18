@@ -209,7 +209,7 @@ namespace Masa.Lib.XNA.Input
 
 		protected KeyBoard KeyBoard { get; private set; }
 
-		protected GamePad[] GamePads { get; private set; }
+		protected GamePadBase[] GamePads { get; private set; }
 		readonly Game Game;
 		readonly int LeverDead;
 		PadConfig padConfig;
@@ -220,7 +220,7 @@ namespace Masa.Lib.XNA.Input
 
 		internal SlimDX.DirectInput.DirectInput DirectInput { get; private set; }
 
-		public IEnumerable<GamePad> GetGamePads()
+		public IEnumerable<GamePadBase> GetGamePads()
 		{
 			if (GamePads != null)
 			{
@@ -230,7 +230,7 @@ namespace Masa.Lib.XNA.Input
 				//}
 				return GamePads;
 			}
-			return Enumerable.Empty<GamePad>();
+			return Enumerable.Empty<GamePadBase>();
 		}
 
 		public InputManager(Game game, ActiveDevice device = ActiveDevice.Keyboard | ActiveDevice.Pad, int lever = 500)
@@ -312,7 +312,11 @@ namespace Masa.Lib.XNA.Input
 				}
 				else
 				{
-					GamePads = Enumerable.Range(0, padNum).Select(i => new GamePad(Game, LeverDead, i, DirectInput)).ToArray();
+					GamePads = Enumerable.Range(0, padNum)
+						.Select<int, GamePadBase>(i => new GamePad(Game, LeverDead, i, DirectInput))
+						.Concat(XInputPad.GetAvailableControllers()
+							.Select(x=>new XInputPad(x)))
+						.ToArray();
 				}
 				//try
 				//{
@@ -488,13 +492,7 @@ namespace Masa.Lib.XNA.Input
 		public int GetPushedButton()
 		{
 			var pushed = GetGamePads()
-				.Where(p=>p.State != null)
-				.Select(p =>
-					p.State.GetButtons()
-					.Select((b, i) => b ? i : -1)
-					.Where(i => i != -1)
-				)
-				.SelectMany(a => a).ToArray();
+				.SelectMany(x => x.GetPushedButton()).ToArray();
 			var exc = pushed.Except(lastPushedButton).ToArray();
 			if (exc.Any())
 			{
