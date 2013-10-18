@@ -63,6 +63,7 @@ namespace Masa.Lib.XNA.Input
 			if (Device == null)
 			{
 				CurrentValue = 0;
+				return;
 			}
 			State = null;
 			try
@@ -73,10 +74,12 @@ namespace Masa.Lib.XNA.Input
 			{
 				Device = null;
 				CurrentValue = 0;
+				return;
 			}
 			if (State == null)
 			{
 				CurrentValue = 0;
+				return;
 			}
 
 			CurrentValue = ProcessState(State);

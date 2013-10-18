@@ -35,6 +35,7 @@ namespace Masa.Lib.XNA.Input
 			if (!state.IsConnected)
 			{
 				CurrentValue = 0;
+				return;
 			}
 			CurrentValue = 0;
 			var bt = Config.ButtonArray;
