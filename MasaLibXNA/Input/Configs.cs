@@ -130,11 +130,11 @@ namespace Masa.Lib.XNA.Input
 	            {3, MSButton.Y},
 	        };
 			IntButtonTable = ButtonIntTable.ToDictionary(i => i.Value, i => i.Key);
-			DPadArray = new[] { MSButton.DPadDown, MSButton.DPadUp, MSButton.DPadLeft, MSButton.DPadRight };
+			DPadArray = new[] { MSButton.DPadUp, MSButton.DPadDown, MSButton.DPadLeft, MSButton.DPadRight };
 			LeftStickArray = new[]
 				{
-					MSButton.LeftThumbstickDown,
 					MSButton.LeftThumbstickUp,
+					MSButton.LeftThumbstickDown,
 					MSButton.LeftThumbstickLeft,
 					MSButton.LeftThumbstickRight
 				};

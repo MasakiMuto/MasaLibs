@@ -59,7 +59,7 @@ namespace Masa.Lib.XNA.Input
 
 		bool[] ProcessDirection(GamePadState state)
 		{
-			var dir = new bool[4];//0down 1up 2left 3right 
+			var dir = new bool[4];//0up 1down 2left 3right 
 			for (int i = 0; i < dir.Length; i++)
 			{
 				dir[i] = state.IsButtonDown(PadConfig.DPadArray[i]) || state.IsButtonDown(PadConfig.LeftStickArray[i]);
