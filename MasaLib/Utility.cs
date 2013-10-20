@@ -203,6 +203,25 @@ namespace Masa.Lib
 			return	new System.Reflection.AssemblyName(asm.FullName).Version;
 		}
 
+		/// <summary>
+		/// Enumの要素を列挙
+		/// </summary>
+		/// <typeparam name="T">列挙体</typeparam>
+		/// <returns></returns>
+		public static IEnumerable<T> GetEnumValues<T>() where T : struct
+		{
+			return Enum.GetValues(typeof(T)).Cast<T>();
+		}
+
+		public static StringBuilder AppendLines(this StringBuilder builder, IEnumerable<string> lines)
+		{
+			foreach (var item in lines)
+			{
+				builder.AppendLine(item);
+			}
+			return builder;
+		}
+
 		#region MathUtils
 
 
