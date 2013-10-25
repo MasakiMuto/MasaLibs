@@ -80,6 +80,16 @@ namespace Masa.ScriptEngine
 			return ((under <= value) && (value <= over)) ? 1 : 0;
 		}
 
+		public static string ToString(object obj)
+		{
+			return obj.ToString();
+		}
+
+		public static string ValueToString(Value val)
+		{
+			return val.ToString();
+		}
+
 		/// <summary>
 		/// 用意されたメソッドの定義
 		/// </summary>
@@ -127,6 +137,8 @@ namespace Masa.ScriptEngine
 			ret["pmod"] = util.GetMethod("PositiveMod", args[2]);
 			ret["isnan"] = mu.GetMethod("IsNan", args[1]);
 			ret["wrapangle"] = typeof(Microsoft.Xna.Framework.MathHelper).GetMethod("WrapAngle");
+			ret["tostr"] = vals.GetMethod("ToString", new[]{typeof(object)});
+			ret["valtostr"] = vals.GetMethod("ValueToString");
 			return ret.ToDictionary(x => x.Key, x => new ScriptMethodInfo(x.Value, x.Key, x.Value.GetParameters().Count()));
 			//return ret;
 		}
