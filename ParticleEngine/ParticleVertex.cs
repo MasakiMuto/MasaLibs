@@ -8,6 +8,7 @@ namespace Masa.ParticleEngine
 {
 	internal struct ParticleIndexVertex 
 	{
+		[VertexElement("TEXCOORD0")]
 		public Vector2 Tex;
 		/*
 		public readonly static VertexDeclaration Decla = new VertexDeclaration(
@@ -27,14 +28,22 @@ namespace Masa.ParticleEngine
 
 	public struct ParticleVertex 
 	{
+		[VertexElement("POSITION0")]
 		public Vector3 Position;
+		[VertexElement("POSITION1")]
 		public Vector3 Velocity;
+		[VertexElement("POSITION2")]
 		public Vector3 Accel;
+		[VertexElement("COLOR0")]
 		public Vector3 Alpha;///Alphaのvalue, speed, accel
+		[VertexElement("PSIZE0")]
 		public Vector2 Radius;
 		//public float Index;
+		[VertexElement("BLENDWEIGHT0")]
 		public float Time;
+		[VertexElement("POSITION3")]
 		public Vector2 Angle;
+		[VertexElement("COLOR1")]
 		public Vector3 Color;
 		//public Vector2 TexCoord;
 		 
