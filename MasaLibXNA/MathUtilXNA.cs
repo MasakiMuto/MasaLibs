@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Xna.Framework;
+using SharpDX;
 using Masa.Lib;
 using System.Diagnostics;
+using MathHelper = SharpDX.MathUtil;
 
 namespace Masa.Lib.XNA
 {
@@ -43,7 +44,8 @@ namespace Masa.Lib.XNA
 		//角度差を -Pi ~ +Piで返す
 		public static float GetAngleDistance(float a1, float a2)
 		{
-			return MathHelper.WrapAngle(a1 - a2);
+			return MathHelper.Mod2PI(a1 - a2);
+			//return MathHelper.WrapAngle(a1 - a2);
 		}
 
 
@@ -68,7 +70,7 @@ namespace Masa.Lib.XNA
 			//}
 			//return target;
 			float single = MathHelper.TwoPi / divitation;
-			target = MathHelper.WrapAngle(target) + MathHelper.Pi;//0-2pi
+			target = MathHelper.Mod2PI(target) + MathHelper.Pi;//0-2pi
 			float a1 = target % single;
 			float a2 = target - a1 - MathHelper.Pi;
 			if (a1 > single * .5f)

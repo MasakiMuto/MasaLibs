@@ -10,9 +10,7 @@ using MoreLinq;
 namespace Masa.ScriptEngine
 {
 	using Value = System.Single;
-	using Vector2 = Microsoft.Xna.Framework.Vector2;
-	using Vector3 = Microsoft.Xna.Framework.Vector3;
-
+	
 	//[AttributeUsage(AttributeTargets.Method, Inherited = true)]
 	//public class ScriptDefinedMethodAttribute : Attribute
 	//{

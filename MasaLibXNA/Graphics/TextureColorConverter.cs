@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using SharpDX;
+using SharpDX.Toolkit.Graphics;
 
 namespace Masa.Lib.XNA
 {
@@ -43,9 +43,9 @@ namespace Masa.Lib.XNA
 
 		public Texture2D Convert(Func<HSVColor, Color> converter)
 		{
-			var tex = new Texture2D(baseTexture.GraphicsDevice, baseTexture.Width, baseTexture.Height);
+			var tex = Texture2D.New(baseTexture.GraphicsDevice, baseTexture.Width, baseTexture.Height, baseTexture.Format);
 			buffer = hsv.Select(converter).ToArray();
-			tex.SetData(buffer);
+			tex.SetData<Color>(buffer);
 			return tex;
 		}
 

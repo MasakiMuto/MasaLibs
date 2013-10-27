@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using MSInput = Microsoft.Xna.Framework.Input;
-using MSButton = Microsoft.Xna.Framework.Input.Buttons;
+using SharpDX;
+using SharpDX.XInput;
+using SharpDX.DirectInput;
 using System.Xml.Linq;
-
+using MSButton = SharpDX.XInput.GamepadButtonFlags;
 
 namespace Masa.Lib.XNA.Input
 {
@@ -59,9 +58,9 @@ namespace Masa.Lib.XNA.Input
 		}
 	}
 
-	public class KeyboardConfig : ConfigBase<Keys>
+	public class KeyboardConfig : ConfigBase<Key>
 	{
-		public static readonly Keys[] ArrowArray;
+		public static readonly Key[] ArrowArray;
 
 		public override string XElementName
 		{
@@ -70,24 +69,24 @@ namespace Masa.Lib.XNA.Input
 
 		static KeyboardConfig()
 		{
-			ArrowArray = new[] { Keys.Up, Keys.Down, Keys.Left, Keys.Right };
+			ArrowArray = new[] { Key.Up, Key.Down, Key.Left, Key.Right };
 		}
 
-		public KeyboardConfig(Keys a, Keys b, Keys x, Keys y, Keys st, Keys es, Keys db)
+		public KeyboardConfig(Key a, Key b, Key x, Key y, Key st, Key es, Key db)
 			: base(a, b, x, y, st, es, db)
 		{
 
 		}
 
 		public KeyboardConfig(int a, int b, int x, int y, int st, int es, int db)
-			: this((Keys)a, (Keys)b, (Keys)x, (Keys)y, (Keys)st, (Keys)es, (Keys)db)
+			: this((Key)a, (Key)b, (Key)x, (Key)y, (Key)st, (Key)es, (Key)db)
 		{
 
 		}
 
 		public static KeyboardConfig GetDefault()
 		{
-			return new KeyboardConfig(Keys.Z, Keys.X, Keys.C, Keys.LeftShift, Keys.Enter, Keys.Escape, Keys.F1);
+			return new KeyboardConfig(Key.Z, Key.X, Key.C, Key.LeftShift, Key.Return, Key.Escape, Key.F1);
 		}
 
 		/// <summary>
@@ -110,7 +109,6 @@ namespace Masa.Lib.XNA.Input
 		static readonly Dictionary<int, MSButton> ButtonIntTable;
 		static readonly Dictionary<MSButton, int> IntButtonTable;
 		public static readonly MSButton[] DPadArray;
-		public static readonly MSButton[] LeftStickArray;
 		static PadConfig()
 		{
 			ButtonIntTable = new Dictionary<int, MSButton>()
@@ -118,26 +116,20 @@ namespace Masa.Lib.XNA.Input
 	            {0, MSButton.A},
 	            {1, MSButton.B},
 	            {7, MSButton.Back},
-	            {12, MSButton.BigButton},
+				//{12, MSButton},
 	            {4, MSButton.LeftShoulder},
-	            {8, MSButton.LeftStick},
-	            {10, MSButton.LeftTrigger},
+	            {8, MSButton.LeftThumb},
+	            {10, MSButton.LeftShoulder},
 	            {5, MSButton.RightShoulder},
-	            {9, MSButton.RightStick},
-	            {11, MSButton.RightTrigger},
+	            {9, MSButton.RightThumb},
+	            {11, MSButton.RightShoulder},
 	            {6, MSButton.Start},
 	            {2, MSButton.X},
 	            {3, MSButton.Y},
 	        };
 			IntButtonTable = ButtonIntTable.ToDictionary(i => i.Value, i => i.Key);
 			DPadArray = new[] { MSButton.DPadUp, MSButton.DPadDown, MSButton.DPadLeft, MSButton.DPadRight };
-			LeftStickArray = new[]
-				{
-					MSButton.LeftThumbstickUp,
-					MSButton.LeftThumbstickDown,
-					MSButton.LeftThumbstickLeft,
-					MSButton.LeftThumbstickRight
-				};
+			
 		}
 
 		/// <summary>
@@ -172,7 +164,7 @@ namespace Masa.Lib.XNA.Input
 		public static PadConfig GetDefault()
 		{
 			return new PadConfig(MSButton.A, MSButton.B, MSButton.X, MSButton.Y,
-				MSButton.Start, MSButton.Back, MSButton.LeftStick);
+				MSButton.Start, MSButton.Back, MSButton.LeftThumb);
 		}
 		/// <summary>
 		/// 対応するボタンがなければしいたけボタンを返す
@@ -187,7 +179,7 @@ namespace Masa.Lib.XNA.Input
 			}
 			else
 			{
-				return MSButton.BigButton;
+				return MSButton.None;
 			}
 		}
 

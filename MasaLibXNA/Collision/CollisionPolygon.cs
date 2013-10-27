@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
+using SharpDX;
 
 namespace Masa.Lib.XNA.Collision
 {
@@ -56,8 +56,8 @@ namespace Masa.Lib.XNA.Collision
 			foreach (var item in vertices)
 			{
 				t = item.LengthSquared();
-				or = MathHelper.Max(or, t);
-				ir = MathHelper.Min(ir, t);
+				or = Math.Max(or, t);
+				ir = Math.Min(ir, t);
 			}
 			or = (float)System.Math.Sqrt(or);
 			ir = (float)System.Math.Sqrt(ir);

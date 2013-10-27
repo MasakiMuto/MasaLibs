@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Masa.Lib.XNA;
 using Masa.Lib;
-using Microsoft.Xna.Framework;
+using SharpDX;
 using System.Linq.Expressions;
 using System.Reflection;
 using MoreLinq;

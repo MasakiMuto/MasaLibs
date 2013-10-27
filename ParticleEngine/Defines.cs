@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using SharpDX;
+using SharpDX.Toolkit.Graphics;
 
 namespace Masa.ParticleEngine
 {
@@ -133,55 +133,5 @@ namespace Masa.ParticleEngine
 		}
 	}
 
-	public static class ParticleBlendState
-	{
-		static BlendState[] blendStates;
-		const int BlendModeNum = 4;
-
-		static ParticleBlendState()
-		{
-			blendStates = new BlendState[BlendModeNum];
-			blendStates[(int)ParticleBlendMode.Add] = new BlendState()
-			{
-				AlphaBlendFunction = BlendFunction.Add,
-				ColorBlendFunction = BlendFunction.Add,
-				ColorDestinationBlend = Blend.One,
-				AlphaDestinationBlend = Blend.One,
-				ColorSourceBlend = Blend.One,
-				AlphaSourceBlend = Blend.One,
-			};
-			blendStates[(int)ParticleBlendMode.Alpha] = BlendState.AlphaBlend;
-			blendStates[(int)ParticleBlendMode.Subtract] = new BlendState()
-			{
-				AlphaBlendFunction = BlendFunction.ReverseSubtract,
-				ColorBlendFunction = BlendFunction.ReverseSubtract,
-				AlphaDestinationBlend = Blend.One,
-				ColorDestinationBlend = Blend.One,
-				ColorSourceBlend = Blend.SourceAlpha,
-				AlphaSourceBlend = Blend.SourceAlpha,
-				//AlphaDestinationBlend = Blend.InverseDestinationAlpha,
-				//ColorDestinationBlend = Blend.InverseDestinationColor,
-				ColorWriteChannels = ColorWriteChannels.Red,
-				ColorWriteChannels1 = ColorWriteChannels.Green,
-				ColorWriteChannels2 = ColorWriteChannels.Blue,
-			};
-			blendStates[(int)ParticleBlendMode.Mul] = new BlendState()
-			{
-				ColorWriteChannels = ColorWriteChannels.Red | ColorWriteChannels.Green | ColorWriteChannels.Blue,
-				ColorBlendFunction = BlendFunction.Add,
-				AlphaBlendFunction = BlendFunction.Add,
-				ColorDestinationBlend = Blend.SourceColor,
-				AlphaDestinationBlend = Blend.SourceColor,
-				ColorSourceBlend = Blend.Zero,
-				AlphaSourceBlend = Blend.Zero
-
-			};
-		}
-
-		public static BlendState State(ParticleBlendMode blend)
-		{
-			return blendStates[(int)blend];
-		}
-	}
-
+	
 }

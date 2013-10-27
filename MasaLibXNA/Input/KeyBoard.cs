@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework;
+using SharpDX.DirectInput;
+using SharpDX;
 
 namespace Masa.Lib.XNA.Input
 {
-	public class KeyBoard : IInputDevice
+	public class KeyBoard : IInputDevice, IDisposable
 	{
 		public KeyboardState KeyState
 		{
@@ -17,27 +17,31 @@ namespace Masa.Lib.XNA.Input
 
 		public short CurrentValue { get; private set; }
 
-		public static string KeyToString(Keys key)
+		public static string KeyToString(Key key)
 		{
-			return Enum.GetName(typeof(Keys), key);
+			return Enum.GetName(typeof(Key), key);
 		}
 
 		public KeyboardConfig Config;
+		Keyboard keyboard;
 
-		public KeyBoard()
+		public KeyBoard(DirectInput input)
 		{
 			Config = KeyboardConfig.GetDefault();
+			keyboard = new Keyboard(input);
 		}
 
 		public void Update()
 		{
+			keyboard.Acquire();
+			keyboard.Poll();
+			KeyState = keyboard.GetCurrentState();
 			CurrentValue = 0;
-			KeyState = Keyboard.GetState();
-			Keys[] bt = Config.ButtonArray;
+			Key[] bt = Config.ButtonArray;
 			int k = 0;
 			for (int i = 0; i < bt.Length; i++)
 			{
-				if (KeyState.IsKeyDown(bt[i]))
+				if(KeyState.IsPressed(bt[i]))
 				{
 					CurrentValue += (short)(1 << k);
 				}
@@ -46,11 +50,25 @@ namespace Masa.Lib.XNA.Input
 			var arrow = KeyboardConfig.ArrowArray;
 			for (int i = 0; i < arrow.Length; i++)
 			{
-				if (KeyState.IsKeyDown(arrow[i]))
+				if(KeyState.IsPressed(bt[i]))
 				{
 					CurrentValue += (short)(1 << k);
 				}
 				k++;
+			}
+		}
+
+		public IEnumerable<Key> GetPushedKeys()
+		{
+			return KeyState.PressedKeys;
+		}
+
+		public void Dispose()
+		{
+			if (keyboard != null)
+			{
+				keyboard.Dispose();
+				keyboard = null;
 			}
 		}
 	}

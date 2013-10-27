@@ -5,7 +5,7 @@ using System.Text;
 using Masa.Lib;
 using Masa.Lib.XNA;
 using Masa.ScriptEngine;
-using Microsoft.Xna.Framework;
+using SharpDX;
 
 namespace Masa.ParticleEngine
 {

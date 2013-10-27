@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using SharpDX;
+using SharpDX.Toolkit.Graphics;
 using Masa.Lib;
 
 namespace Masa.ParticleEngine
@@ -53,7 +53,7 @@ namespace Masa.ParticleEngine
 
 		public static Matrix GetDefault2DProjection(float width, float height)
 		{
-			return Matrix.CreateOrthographic(width, height, -10, 100);
+			return Matrix.OrthoLH(width, height, -10, 100);
 		}
 
 		public ScriptEffectManager(ScriptEngine.ScriptManager script, GraphicsDevice device, Effect effect,
@@ -223,12 +223,29 @@ namespace Masa.ParticleEngine
 			}
 		}
 
+		BlendState GetBlendState(ParticleBlendMode mode)
+		{
+			switch (mode)
+			{
+				case ParticleBlendMode.Add:
+					return Device.BlendStates.Additive;
+				case ParticleBlendMode.Subtract:
+					throw new NotImplementedException();
+				case ParticleBlendMode.Mul:
+					throw new NotImplementedException();
+				case ParticleBlendMode.Alpha:
+					return Device.BlendStates.AlphaBlend;
+				default:
+					throw new NotImplementedException();
+			}
+		}
+
 		public void Draw(Matrix view)
 		{
 			SetDrawStates(view);
 			foreach (var item in particles.Where(p => p != null && p.Enable).GroupBy(p => p.BlendMode).OrderBy(x=>x.Key))
 			{
-				Device.BlendState = ParticleBlendState.State(item.Key);
+				Device.SetBlendState(GetBlendState(item.Key));
 				foreach (var pt in item)
 				{
 					pt.Draw();
@@ -238,16 +255,17 @@ namespace Masa.ParticleEngine
 
 		void SetDrawStates(Matrix view)
 		{
-			Device.SamplerStates[0] = SamplerState.LinearWrap;
-			Device.RasterizerState = RasterizerState.CullNone;
+			//Device. = Device.SamplerStates.LinearWrap;
+			
+			Device.SetRasterizerState(Device.RasterizerStates.CullNone);
 			Device.Viewport = viewport;
 			if (mode == ParticleMode.TwoD)
 			{
-				Device.DepthStencilState = DepthStencilState.None;
+				Device.SetDepthStencilState(Device.DepthStencilStates.None);
 			}
 			else
 			{
-				Device.DepthStencilState = DepthStencilState.DepthRead;
+				Device.SetDepthStencilState(Device.DepthStencilStates.DepthRead);
 				effectParams[(int)EffectParam.Projection].SetValue(Projection);
 				effectParams[(int)EffectParam.ViewProjection].SetValue(view * Projection);
 			}
@@ -275,7 +293,7 @@ namespace Masa.ParticleEngine
 			SetDrawStates(Matrix.Identity);
 			foreach (var item in particles.Where(p=> p!= null && p.Enable && p.Layer == layer).GroupBy(p=>p.BlendMode))
 			{
-				Device.BlendState = ParticleBlendState.State(item.Key);
+				Device.SetBlendState(GetBlendState(item.Key));
 				foreach (var pt in item)
 				{
 					pt.Draw();

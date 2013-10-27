@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Masa.ScriptEngine;
-using Microsoft.Xna.Framework;
+using SharpDX;
 using Masa.Lib;
 
 namespace Masa.ParticleEngine

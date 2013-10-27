@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using Masa.Lib;
+using SharpDX;
 
 //using ScriptEngineEx.Environment = ScriptEngineEx.Environment;
 
@@ -12,9 +13,7 @@ namespace Masa.ScriptEngine
 {
 	using System.Diagnostics;
 	using Value = System.Single;
-	using Vector2 = Microsoft.Xna.Framework.Vector2;
-	using Vector3 = Microsoft.Xna.Framework.Vector3;
-
+	
 	public class ExpressionTreeMaker : IExpressionTreeMaker
 	{
 		public Action<ScriptEngine.Environment> Statement { get; private set; }

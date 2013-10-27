@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
+using SharpDX;
 using Masa.Lib;
 using Masa.Lib.XNA;
 using System.Reflection;
@@ -11,9 +11,7 @@ using System.Linq.Expressions;
 namespace Masa.ScriptEngine
 {
 	using Value = System.Single;
-	using Vector2 = Microsoft.Xna.Framework.Vector2;
-	using Vector3 = Microsoft.Xna.Framework.Vector3;
-
+	
 
 	static class GlobalFunctionProvider
 	{
@@ -136,7 +134,7 @@ namespace Masa.ScriptEngine
 			ret["vibrate"] = util.GetMethod("Vibrate");
 			ret["pmod"] = util.GetMethod("PositiveMod", args[2]);
 			ret["isnan"] = mu.GetMethod("IsNan", args[1]);
-			ret["wrapangle"] = typeof(Microsoft.Xna.Framework.MathHelper).GetMethod("WrapAngle");
+			ret["wrapangle"] = typeof(SharpDX.MathUtil).GetMethod("Mod2PI");
 			ret["tostr"] = vals.GetMethod("ToString", new[]{typeof(object)});
 			ret["valtostr"] = vals.GetMethod("ValueToString");
 			return ret.ToDictionary(x => x.Key, x => new ScriptMethodInfo(x.Value, x.Key, x.Value.GetParameters().Count()));
@@ -207,7 +205,7 @@ namespace Masa.ScriptEngine
 			{
 				{"PI2", Expression.Constant((Value)Math.PI * 2f, ValueType)},
 				{"PI", Expression.Constant((Value)Math.PI, ValueType)},
-				{"PI_2", Expression.Constant((Value)MathHelper.PiOver2, ValueType)},
+				{"PI_2", Expression.Constant((Value)SharpDX.MathUtil.PiOverTwo, ValueType)},
 				{"true", Expression.Constant(true)},
 				{"false", Expression.Constant(false)},
 				{"NAN", Expression.Constant(Value.NaN)}

@@ -11,7 +11,8 @@
     <AssemblyName>MasaLibXNA</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,11 +36,38 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
-    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
-    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
-    <Reference Include="SlimDX.DirectInput">
-      <HintPath>.\SlimDX.DirectInput.dll</HintPath>
+    <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D11, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Direct3D11.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DirectInput">
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.DirectInput.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DXGI, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.DXGI.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Toolkit, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Toolkit.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Toolkit.Game, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Toolkit.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Toolkit.Graphics, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Toolkit.Graphics.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Toolkit.Input">
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Toolkit.Input.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.XInput">
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.XInput.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -67,7 +95,6 @@
     <Compile Include="Graphics\GlowEffectDrawer.cs" />
     <Compile Include="Graphics\GraphicUtil.cs" />
     <Compile Include="Graphics\HSVColor.cs" />
-    <Compile Include="Graphics\PostEffectCreater.cs" />
     <Compile Include="Input\Configs.cs" />
     <Compile Include="Input\ControlState.cs" />
     <Compile Include="Input\GamePad.cs" />
@@ -76,6 +103,7 @@
     <Compile Include="Input\InputDevice.cs" />
     <Compile Include="Input\InputManager.cs" />
     <Compile Include="Input\KeyBoard.cs" />
+    <Compile Include="Input\Mouse.cs" />
     <Compile Include="Input\MultiInputManager.cs" />
     <Compile Include="Input\NativeGamePad.cs" />
     <Compile Include="Input\XInputPad.cs" />
@@ -86,7 +114,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Selecter.cs" />
     <Compile Include="Graphics\TextureColorConverter.cs" />
-    <Compile Include="Graphics\WritableVertexBuffer.cs" />
     <Compile Include="SplineCurve.cs" />
     <Compile Include="SplineCurve3.cs" />
   </ItemGroup>

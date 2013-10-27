@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Masa.Lib;
 using System.Diagnostics;
-using Microsoft.Xna.Framework;
+using SharpDX;
 
 
 namespace Masa.Lib.XNA

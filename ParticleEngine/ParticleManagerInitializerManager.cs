@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.Xna.Framework;
-using TextureFunc = System.Func<string, Microsoft.Xna.Framework.Graphics.Texture2D>;
+using SharpDX;
+using TextureFunc = System.Func<string, SharpDX.Toolkit.Graphics.Texture2D>;
 
 namespace Masa.ParticleEngine
 {

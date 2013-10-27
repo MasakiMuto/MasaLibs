@@ -2,27 +2,30 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework;
-using XPad = Microsoft.Xna.Framework.Input.GamePad;
-using XButtons = Microsoft.Xna.Framework.Input.Buttons;
+using SharpDX.XInput;
+using SharpDX;
+using XButtons = SharpDX.XInput.GamepadButtonFlags;
+using Masa.Lib;
 
 namespace Masa.Lib.XNA.Input
 {
 	public class XInputPad : GamePadBase
 	{
-		PlayerIndex padNumber;
-
-		public static IEnumerable<PlayerIndex> GetAvailableControllers()
+		UserIndex padNumber;
+		Controller controller;
+		public static IEnumerable<UserIndex> GetAvailableControllers()
 		{
-			return Enum.GetValues(typeof(PlayerIndex)).Cast<PlayerIndex>()
-				.Where(x => XPad.GetState(x).IsConnected);
+			return Enum.GetValues(typeof(UserIndex)).Cast<UserIndex>()
+				.Where(x => new Controller(x).IsConnected);
+			
 		}
 
-		public XInputPad(PlayerIndex number)
+		public XInputPad(UserIndex number)
 		{
 			padNumber = number;
-			if (!XPad.GetState(number).IsConnected)
+			controller = new SharpDX.XInput.Controller(padNumber);
+
+			if (!controller.IsConnected)
 			{
 				throw new NoDeviceException("XInputパッド" + number.ToString() + "は接続されていない");
 			}
@@ -31,23 +34,25 @@ namespace Masa.Lib.XNA.Input
 
 		public override void Update()
 		{
-			GamePadState state = XPad.GetState(padNumber, GamePadDeadZone.IndependentAxes);
-			if (!state.IsConnected)
+			if (!controller.IsConnected)
 			{
 				CurrentValue = 0;
 				return;
 			}
+			var state = controller.GetState();
+			
 			CurrentValue = 0;
 			var bt = Config.ButtonArray;
 			int i;
 			for (i = 0; i < bt.Length; i++)
 			{
-				if (state.IsButtonDown(bt[i]))
+				if(state.Gamepad.Buttons.HasFlag(bt[i]))
+				//if (state.IsButtonDown(bt[i]))
 				{
 					CurrentValue += (short)(1 << i);
 				}
 			}
-			bool[] dir = ProcessDirection(state);
+			bool[] dir = ProcessDirection(state.Gamepad);
 			for (int k = 0; k < dir.Length; k++)
 			{
 				if (dir[k])
@@ -58,21 +63,22 @@ namespace Masa.Lib.XNA.Input
 			}
 		}
 
-		bool[] ProcessDirection(GamePadState state)
+		bool[] ProcessDirection(SharpDX.XInput.Gamepad state)
 		{
 			var dir = new bool[4];//0up 1down 2left 3right 
 			for (int i = 0; i < dir.Length; i++)
 			{
-				dir[i] = state.IsButtonDown(PadConfig.DPadArray[i]) || state.IsButtonDown(PadConfig.LeftStickArray[i]);
+				dir[i] = state.Buttons.HasFlag(PadConfig.DPadArray[i]);// || state.Buttons.HasFlag(PadConfig.LeftStickArray[i]);
+				//dir[i] = state.IsButtonDown(PadConfig.DPadArray[i]) || state.IsButtonDown(PadConfig.LeftStickArray[i]);
 			}
 			return dir;
 		}
 
 		public override IEnumerable<int> GetPushedButton()
 		{
-			var state = XPad.GetState(padNumber);
-			return Enum.GetValues(typeof(XButtons)).Cast<XButtons>()
-				.Where(x => state.IsButtonDown(x))
+			var state = controller.GetState().Gamepad;
+			return Utility.GetEnumValues<XButtons>()
+				.Where(x => state.Buttons.HasFlag(x))
 				.Select(x => PadConfig.ButtonToInt(x));
 			//XPad.GetState(padNumber).Buttons.Y
 		}

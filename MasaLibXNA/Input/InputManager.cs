@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using MSInput = Microsoft.Xna.Framework.Input;
-using MSButton = Microsoft.Xna.Framework.Input.Buttons;
+using SharpDX;
+using SharpDX.DirectInput;
+using SharpDX.Toolkit;
 
 namespace Masa.Lib.XNA.Input
 {
@@ -114,8 +113,11 @@ namespace Masa.Lib.XNA.Input
 	{
 		public MouseState MouseState
 		{
-			get;
-			private set;
+			get
+			{
+				return Mouse.State;
+			}
+			
 		}
 
 		///// <summary>
@@ -208,17 +210,17 @@ namespace Masa.Lib.XNA.Input
 		public ActiveDevice Device;
 
 		protected KeyBoard KeyBoard { get; private set; }
+		protected Mouse Mouse { get; private set; }
 
 		protected GamePadBase[] GamePads { get; private set; }
-		readonly Game Game;
 		readonly int LeverDead;
 		PadConfig padConfig;
 		KeyboardConfig keyConfig;
 
 		int[] lastPushedButton = {};
-		Keys[] lastPushedKey = {};
+		Key[] lastPushedKey = {};
 
-		internal SlimDX.DirectInput.DirectInput DirectInput { get; private set; }
+		internal DirectInput DirectInput { get; private set; }
 
 		public IEnumerable<GamePadBase> GetGamePads()
 		{
@@ -233,15 +235,10 @@ namespace Masa.Lib.XNA.Input
 			return Enumerable.Empty<GamePadBase>();
 		}
 
-		public InputManager(Game game, ActiveDevice device = ActiveDevice.Keyboard | ActiveDevice.Pad, int lever = 500)
+		public InputManager(ActiveDevice device = ActiveDevice.Keyboard | ActiveDevice.Pad, int lever = 500)
 		{
-			Game = game;
-			DirectInput = new SlimDX.DirectInput.DirectInput();
+			DirectInput = new DirectInput();
 			LeverDead = lever;
-			MouseState = new MouseState();
-			var ms = MSInput::Mouse.GetState();
-			MouseState.X = ms.X;
-			MouseState.Y = ms.Y;
 			ControlState = new ControlState();
 			GamePlayControlState = new ControlState();
 			keyConfig = KeyboardConfig.GetDefault();
@@ -273,6 +270,16 @@ namespace Masa.Lib.XNA.Input
 				}
 			}
 			GamePads = null;
+			if (KeyBoard != null)
+			{
+				KeyBoard.Dispose();
+				KeyBoard = null;
+			}
+			if (Mouse != null)
+			{
+				Mouse.Dispose();
+				Mouse = null;
+			}
 			
 		}
 
@@ -301,7 +308,11 @@ namespace Masa.Lib.XNA.Input
 			Device = device;
 			if ((Device & ActiveDevice.Keyboard) != 0)
 			{
-				KeyBoard = new KeyBoard();
+				KeyBoard = new KeyBoard(DirectInput);
+			}
+			if ((Device & ActiveDevice.Mouse) != 0)
+			{
+				Mouse = new Mouse(DirectInput);
 			}
 			if ((Device & ActiveDevice.Pad) != 0)
 			{
@@ -313,7 +324,7 @@ namespace Masa.Lib.XNA.Input
 				else
 				{
 					GamePads = Enumerable.Range(0, padNum)
-						.Select<int, GamePadBase>(i => new GamePad(Game, LeverDead, i, DirectInput))
+						.Select<int, GamePadBase>(i => new GamePad(LeverDead, i, DirectInput))
 						.Concat(XInputPad.GetAvailableControllers()
 							.Select(x=>new XInputPad(x)))
 						.ToArray();
@@ -360,7 +371,7 @@ namespace Masa.Lib.XNA.Input
 		{
 			if ((Device & ActiveDevice.Mouse) != 0)
 			{
-				UpdateMouse();
+				Mouse.Update();
 			}
 			inputValue = 0;
 			if ((Device & ActiveDevice.Keyboard) != 0)
@@ -381,62 +392,9 @@ namespace Masa.Lib.XNA.Input
 			UpdateControlState();
 		}
 
-		public void ClampMousePosition(int minX, int maxX, int minY, int maxY)
-		{
-			var st = MSInput.Mouse.GetState();
-			int x = st.X;
-			int y = st.Y;
-			x = (int)MathHelper.Clamp(x, minX, maxX);
-			y = (int)MathHelper.Clamp(y, minY, maxY);
-			SetMousePosition(x, y);
-		}
 
-		/// <summary>
-		/// マウス位置を指定された座標内に収める
-		/// </summary>
-		/// <param name="right"></param>
-		/// <param name="bottom"></param>
-		public void ClampMousePosition(int right, int bottom)
-		{
-			ClampMousePosition(0, right, 0, bottom);
-		}
-
-		/// <summary>
-		/// マウス位置を強制的に設定する
-		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		public void SetMousePosition(int x, int y)
-		{
-			MSInput.Mouse.SetPosition(x, y);
-			//MouseState.X = x;
-			//MouseState.Y = y;
-			lastX = x;
-			lastY = y;
-		}
-
-		int lastX, lastY;
-
-		void UpdateMouse()
-		{
-			var mouse = MSInput.Mouse.GetState();
-
-			ButtonState[] ms = { mouse.LeftButton, mouse.RightButton, mouse.MiddleButton };
-			int i = 0;
-			foreach (var item in MouseState.Buttons)
-			{
-				item.Input(ms[i] == ButtonState.Pressed);
-				i++;
-			}
-
-			MouseState.X = mouse.X;
-			MouseState.Y = mouse.Y;
-			MouseState.DX = mouse.X - lastX;
-			MouseState.DY = mouse.Y - lastY;
-			lastX = MouseState.X;
-			lastY = MouseState.Y;
-		}
-
+		
+		
 
 		/// <summary>
 		/// SHORT値からゲームキー入力を再現する(リプレイ再生)
@@ -506,16 +464,14 @@ namespace Masa.Lib.XNA.Input
 			}
 		}
 
-		static readonly Keys[] DirectionKeys = new[] { Keys.Up, Keys.Down, Keys.Left, Keys.Right };
+		static readonly Key[] DirectionKeys = new[] { Key.Up, Key.Down, Key.Left, Key.Right };
 		/// <summary>
 		/// 全てのキーから押されたキーを取得する
 		/// </summary>
 		/// <returns>-1なら何も押されてない、それ以外ならMicrosoft.Xna.Framework.Input.Keysにキャスト可能</returns>
 		public int GetPushedKey()
 		{
-			var pushed = Keyboard.GetState().GetPressedKeys()
-				.Where(k => !DirectionKeys.Contains(k))
-				.ToArray();
+			var pushed = KeyBoard.GetPushedKeys().ToArray();
 
 			var inter = pushed.Except(lastPushedKey).ToArray();
 			lastPushedKey = pushed;

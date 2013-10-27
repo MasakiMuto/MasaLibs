@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
+using SharpDX;
 
 namespace Masa.Lib.XNA.Input
 {
@@ -17,8 +17,8 @@ namespace Masa.Lib.XNA.Input
 			private set;
 		}
 
-		public MultiInputManager(Game game)
-			: base(game)
+		public MultiInputManager()
+			: base()
 		{
 
 		}

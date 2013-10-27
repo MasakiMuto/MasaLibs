@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+using SharpDX;
+using SharpDX.Toolkit.Graphics;
 
 namespace Masa.ParticleEngine
 {
-	internal struct ParticleIndexVertex : IVertexType
+	internal struct ParticleIndexVertex 
 	{
 		public Vector2 Tex;
-
+		/*
 		public readonly static VertexDeclaration Decla = new VertexDeclaration(
 			new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0)
 			);
@@ -18,14 +18,14 @@ namespace Masa.ParticleEngine
 		{
 			get { return Decla; }
 		}
-	
+	*/
 		public ParticleIndexVertex(Vector2 tex)
 		{
 			Tex = tex;
 		}
 	}
 
-	public struct ParticleVertex : IVertexType
+	public struct ParticleVertex 
 	{
 		public Vector3 Position;
 		public Vector3 Velocity;
@@ -46,7 +46,7 @@ namespace Masa.ParticleEngine
 				return 68;
 			}
 		}
-
+		/*
 		public readonly static VertexDeclaration Declaration = new VertexDeclaration
 			(
 				new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
@@ -69,5 +69,6 @@ namespace Masa.ParticleEngine
 				return Declaration;
 			}
 		}
+		 */
 	}
 }
