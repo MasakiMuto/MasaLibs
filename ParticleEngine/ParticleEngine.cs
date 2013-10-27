@@ -195,7 +195,8 @@ namespace Masa.ParticleEngine
 			}
 
 			SetBuffer();
-
+			//Drawer.Parameters["Texture"].SetResource(Texture);
+			
 			Drawer.CurrentTechnique.Passes[(int)Mode].Apply();
 			Device.DrawIndexedInstanced(PrimitiveType.TriangleList, 3, VertexDataBuffer.ElementCount);
 			//Device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, IndexVertexBuffer.VertexCount, 0, Index.IndexCount / 3, bind.VertexBuffer.VertexCount);
