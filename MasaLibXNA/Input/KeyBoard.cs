@@ -29,6 +29,7 @@ namespace Masa.Lib.XNA.Input
 		{
 			Config = KeyboardConfig.GetDefault();
 			keyboard = new Keyboard(input);
+			Update();
 		}
 
 		public void Update()
@@ -50,7 +51,7 @@ namespace Masa.Lib.XNA.Input
 			var arrow = KeyboardConfig.ArrowArray;
 			for (int i = 0; i < arrow.Length; i++)
 			{
-				if(KeyState.IsPressed(bt[i]))
+				if(KeyState.IsPressed(arrow[i]))
 				{
 					CurrentValue += (short)(1 << k);
 				}
@@ -67,9 +68,16 @@ namespace Masa.Lib.XNA.Input
 		{
 			if (keyboard != null)
 			{
+				keyboard.Unacquire();
 				keyboard.Dispose();
 				keyboard = null;
 			}
+			GC.SuppressFinalize(this);
+		}
+
+		~KeyBoard()
+		{
+			Dispose();
 		}
 	}
 }

@@ -108,21 +108,23 @@ namespace Masa.Lib.XNA.Input
 			return ret;
 		}
 
+		const int Axis = 65536 / 2;
+
 		bool[] ProcessDirection(JoystickState state)
 		{
 			var dir = new bool[4];//0down 1up 2left 3right 
 			int x = state.X;
 			int y = state.Y;
 			int pov = state.PointOfViewControllers[0];
-			if (Math.Abs(y) >= StickBorder)
+			if (Math.Abs(y - Axis) >= StickBorder)
 			{
-				if (y < 0) dir[0] = true;
-				if (y > 0) dir[1] = true;
+				if (y < Axis) dir[0] = true;
+				if (y > Axis) dir[1] = true;
 			}
-			if (Math.Abs(x) >= StickBorder)
+			if (Math.Abs(x - Axis) >= StickBorder)
 			{
-				if (x < 0) dir[2] = true;
-				if (x > 0) dir[3] = true;
+				if (x < Axis) dir[2] = true;
+				if (x > Axis) dir[3] = true;
 			}
 			if (pov != -1)
 			{

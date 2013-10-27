@@ -235,7 +235,7 @@ namespace Masa.Lib.XNA.Input
 			return Enumerable.Empty<GamePadBase>();
 		}
 
-		public InputManager(ActiveDevice device = ActiveDevice.Keyboard | ActiveDevice.Pad, int lever = 500)
+		public InputManager(ActiveDevice device = ActiveDevice.Keyboard | ActiveDevice.Pad, int lever = 5000)
 		{
 			DirectInput = new DirectInput();
 			LeverDead = lever;
@@ -471,6 +471,10 @@ namespace Masa.Lib.XNA.Input
 		/// <returns>-1なら何も押されてない、それ以外ならMicrosoft.Xna.Framework.Input.Keysにキャスト可能</returns>
 		public int GetPushedKey()
 		{
+			if (KeyBoard == null)
+			{
+				return -1;
+			}
 			var pushed = KeyBoard.GetPushedKeys().ToArray();
 
 			var inter = pushed.Except(lastPushedKey).ToArray();
