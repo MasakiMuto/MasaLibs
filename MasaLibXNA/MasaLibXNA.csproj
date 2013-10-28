@@ -38,36 +38,39 @@
   <ItemGroup>
     <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.D3DCompiler, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.D3DCompiler.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct3D11, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Direct3D11.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.Direct3D11.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.DirectInput">
+    <Reference Include="SharpDX.DirectInput, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.DirectInput.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.DXGI, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.DXGI.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.DXGI.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Toolkit, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Toolkit.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.Toolkit.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Toolkit.Game, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Toolkit.Game.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.Toolkit.Game.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Toolkit.Graphics, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Toolkit.Graphics.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.Toolkit.Graphics.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Toolkit.Input">
-      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.Toolkit.Input.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.XInput">
-      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11_1-net40\SharpDX.XInput.dll</HintPath>
+    <Reference Include="SharpDX.XInput, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\SharpDX\Bin\DirectX11-net40\SharpDX.XInput.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
