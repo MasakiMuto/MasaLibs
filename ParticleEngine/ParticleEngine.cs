@@ -41,9 +41,9 @@ namespace Masa.ParticleEngine
 
 		static ParticleEngine()
 		{
-			indexVertex = new ParticleIndexVertex[4];
-			int[] x = { 0, 0, 1, 1 };
-			int[] y = { 0, 1, 1, 0 };
+			indexVertex = new ParticleIndexVertex[6];
+			int[] x = { 0, 0, 1, 0, 1, 1 };
+			int[] y = { 0, 1, 1, 0, 1, 0 };
 
 			for (int i = 0; i < indexVertex.Length; i++)
 			{
@@ -186,7 +186,7 @@ namespace Masa.ParticleEngine
 				return;
 			}
 			ParamColor.SetValue(BlendColor);
-			Device.SetIndexBuffer(Index, false);
+			//Device.SetIndexBuffer(Index, false);
 		
 			//Device.Textures[0] = Texture;
 			if (LastCount != Count)
@@ -198,42 +198,9 @@ namespace Masa.ParticleEngine
 			//Drawer.Parameters["Texture"].SetResource(Texture);
 			
 			Drawer.CurrentTechnique.Passes[(int)Mode].Apply();
-			Device.DrawIndexedInstanced(PrimitiveType.TriangleList, 3, VertexDataBuffer.ElementCount);
-			//Device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, IndexVertexBuffer.VertexCount, 0, Index.IndexCount / 3, bind.VertexBuffer.VertexCount);
-			#region OLD
-
-			/*if (Count % buf == 0)
-			{
-				var bind = new VertexBufferBinding(VertexDataBuffer, 0 + PARTICLE_NUM, 1);
-
-				Device.SetVertexBuffers(bind, IndexVertexBuffer);
-				Drawer.CurrentTechnique.Passes[(int)Mode].Apply();
-				Device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, IndexVertexBuffer.VertexCount, 0, Index.IndexCount / 3, bind.VertexBuffer.VertexCount / 2);
-			}
-			else if (Count % buf >= PARTICLE_NUM)//‚Ü‚½‚ª‚È‚¢
-			{
-
-				
-				var bind = new VertexBufferBinding(VertexDataBuffer, Count % buf - PARTICLE_NUM, 1);
-
-				Device.SetVertexBuffers(bind, IndexVertexBuffer);
-				Drawer.CurrentTechnique.Passes[(int)Mode].Apply();
-				Device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, IndexVertexBuffer.VertexCount, 0, Index.IndexCount / 3, bind.VertexBuffer.VertexCount / 2);
-			}
-			else
-			{
-				int n = Count % buf + PARTICLE_NUM;
-				var bind = new VertexBufferBinding(VertexDataBuffer, n, 1);
-				Device.SetVertexBuffers(bind, IndexVertexBuffer);
-				Drawer.CurrentTechnique.Passes[(int)Mode].Apply();
-				Device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, IndexVertexBuffer.VertexCount, 0, Index.IndexCount / 3, bind.VertexBuffer.VertexCount - n);
-
-				bind = new VertexBufferBinding(VertexDataBuffer, 0, 1);
-				Device.SetVertexBuffers(bind, IndexVertexBuffer);
-				Drawer.CurrentTechnique.Passes[(int)Mode].Apply();
-				Device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, IndexVertexBuffer.VertexCount, 0, Index.IndexCount / 3, PARTICLE_NUM - (bind.VertexBuffer.VertexCount - n));
-			}*/
-			#endregion
+			Device.DrawInstanced(PrimitiveType.TriangleList, 6, VertexDataBuffer.ElementCount);
+			//Device.DrawIndexedInstanced(PrimitiveType.TriangleList, 3, VertexDataBuffer.ElementCount);
+			
 			LastCount = Count;
 		}
 
