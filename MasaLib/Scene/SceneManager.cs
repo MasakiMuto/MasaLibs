@@ -146,6 +146,16 @@ namespace Masa.Lib.Scene
 		{
 			return Scenes.Any() || addQueue.Any();
 		}
+
+		/// <summary>
+		/// ある型のシーンが存在もしくは追加キューに入っているか
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public bool AnyOfType<T>()
+		{
+			return Scenes.Any(x => x is T) || addQueue.Any(x => x is T);
+		}
 	}
 
 }

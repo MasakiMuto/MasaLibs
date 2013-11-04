@@ -11,6 +11,9 @@ namespace Masa.Lib.Scene
 
 		readonly int InputWaitTime = 5;
 
+		/// <summary>
+		/// Update数、裏にあっても回る
+		/// </summary>
 		protected int Count { get; private set; }
 		int InputWaitCount { get; set; }
 		public bool IsDestroyed { get; private set; }//SceneManagerにより破棄される待ちフラグ
