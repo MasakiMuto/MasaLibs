@@ -76,5 +76,19 @@ namespace Masa.Lib.Scene
 		}
 
 		public abstract void Dispose();
+
+		/// <summary>
+		/// トップに来たらUpdate前に呼ばれる。Lost前Get後
+		/// </summary>
+		public virtual void OnGetFocus()
+		{
+		}
+
+		/// <summary>
+		/// トップから外れたらUpdate前に呼ばれる。Lost前Get後
+		/// </summary>
+		public virtual void OnLostFocus()
+		{
+		}
 	}
 }
