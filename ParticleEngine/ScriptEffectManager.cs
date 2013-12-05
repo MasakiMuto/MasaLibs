@@ -30,7 +30,7 @@ namespace Masa.ParticleEngine
 		readonly string[] textureTable;//ScriptEffectのスクリプト生成に使うTable
 		internal readonly ScriptEngine.ScriptManager Script;
 		//static readonly Matrix Default2DView = Matrix.CreateLookAt(new Vector3(0, 0, 10), Vector3.Zero, Vector3.Up);
-		readonly GraphicsDevice Device;
+		protected readonly GraphicsDevice Device;
 		internal Random Random;
 		Viewport viewport;
 		readonly Effect particleEffect;
@@ -223,12 +223,17 @@ namespace Masa.ParticleEngine
 			}
 		}
 
+		protected virtual void SetBlendState(ParticleBlendMode mode)
+		{
+			Device.BlendState = ParticleBlendState.State(mode);
+		}
+
 		public void Draw(Matrix view)
 		{
 			SetDrawStates(view);
 			foreach (var item in particles.Where(p => p != null && p.Enable).GroupBy(p => p.BlendMode).OrderBy(x=>x.Key))
 			{
-				Device.BlendState = ParticleBlendState.State(item.Key);
+				SetBlendState(item.Key);
 				foreach (var pt in item)
 				{
 					pt.Draw();
@@ -275,7 +280,7 @@ namespace Masa.ParticleEngine
 			SetDrawStates(Matrix.Identity);
 			foreach (var item in particles.Where(p=> p!= null && p.Enable && p.Layer == layer).GroupBy(p=>p.BlendMode))
 			{
-				Device.BlendState = ParticleBlendState.State(item.Key);
+				SetBlendState(item.Key);
 				foreach (var pt in item)
 				{
 					pt.Draw();
