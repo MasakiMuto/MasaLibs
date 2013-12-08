@@ -15,7 +15,7 @@ namespace Masa.Lib.XNA.Graphics
 		/// </summary>
 		/// <param name="split">円周の分割数</param>
 		/// <param name="coordMaxX">テクスチャX座標最大値。ループしないなら1</param>
-		/// <returns></returns>
+		/// <returns>cull counter-clock</returns>
 		public static Tuple<IEnumerable<VertexPositionTexture>, IEnumerable<short>> CreateBeltRing(int split, float coordMaxX)
 		{
 			var vertex = Enumerable.Range(0, split + 1)
@@ -30,5 +30,34 @@ namespace Masa.Lib.XNA.Graphics
 				.Select(x => (short)x);
 			return Tuple.Create(vertex, index);
 		}
+
+		/// <summary>
+		/// 1*1*1 size
+		/// </summary>
+		/// <returns>cull counter-clock</returns>
+		public static Tuple<Vector3[], short[]> CreateCube()
+		{
+			var v = new[]{
+				new Vector3(1, 1, 1),
+				new Vector3(1, -1, 1),
+				new Vector3(-1, -1, 1),
+				new Vector3(-1, 1, 1),
+				
+				new Vector3(1, 1, -1),
+				new Vector3(1, -1, -1),
+				new Vector3(-1, -1, -1),
+				new Vector3(-1, 1, -1),
+			};
+			var i =new short[]{
+				0, 1, 2, 0, 2, 3,
+				6, 5, 4, 7, 6, 4,
+				7, 4, 0, 7, 0, 3,
+				6, 1, 5, 6, 2, 1,
+				0, 5, 1, 0, 4, 5,
+				7, 2, 6, 7, 3, 2
+			};
+			return Tuple.Create(v, i);
+		}
+
 	}
 }
