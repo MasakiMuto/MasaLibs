@@ -104,7 +104,15 @@ namespace Masa.ScriptEngine
 		internal static XElement ClassToXml(Type target, ClassReflectionInfo info)
 		{
 			var root = new XElement("class");
-			root.Add(NameToXml(target.Name));
+			var atr = Attribute.GetCustomAttribute(target, typeof(ScriptTypeAttribute)) as ScriptTypeAttribute;
+			if (atr != null)
+			{
+				root.Add(NameToXml(target.Name + " (" + atr.Name + ")"));
+			}
+			else
+			{
+				root.Add(NameToXml(target.Name));
+			}
 			var methodRoot = new XElement("methods");
 			methodRoot.Add(info.MethodDict.Select(x => MethodToXml(x.Value)).ToArray());
 			var propRoot = new XElement("propertys");

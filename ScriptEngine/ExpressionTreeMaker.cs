@@ -501,7 +501,16 @@ namespace Masa.ScriptEngine
 			{
 				return CallConstructor(leftType, args);
 			}
+			else
+			{
+				var r = CallNonScriptMethod(left, op, args);
+				if (r != null)
+				{
+					return r;
+				}
+			}
 			throw new ParseException("ドット演算子右辺の識別子が不明:" + dot.ToString());
+
 		}
 
 		/// <summary>
@@ -1114,6 +1123,24 @@ namespace Masa.ScriptEngine
 				throw new ParseException(type.ToString() + "型で引数に一致するコンストラクタが存在しない");
 			}
 			return Expression.New(constructor, args);
+		}
+
+		Expression CallNonScriptMethod(Expression obj, string name, IEnumerable<object> tokens)
+		{
+			var args = GetArgs(tokens);
+			var method = obj.Type.GetMethod(name, args.Select(x => x.Type).ToArray());
+			if (method == null)
+			{
+				return null;
+			}
+			if (method.IsStatic)
+			{
+				return Expression.Call(method, args);
+			}
+			else
+			{
+				return Expression.Call(obj, method, args);
+			}
 		}
 
 
