@@ -491,24 +491,36 @@ namespace Masa.ScriptEngine
 				if (info.FieldDict.ContainsKey(op))
 				{
 					return Expression.Field(left, info.FieldDict[op]);
-				}	
-			}
-			if (info.StaticMethodDict.ContainsKey(op))
-			{
-				return CallExternalMethodInner(info.StaticMethodDict[op], args, null);
-			}
-			else if (op == "new")
-			{
-				return CallConstructor(leftType, args);
+				}
+				else
+				{
+					var res = CallNonScriptMethod(left, op, args);
+					if (res != null)
+					{
+						return res;
+					}
+				}
 			}
 			else
 			{
-				var r = CallNonScriptMethod(left, op, args);
-				if (r != null)
+				if (info.StaticMethodDict.ContainsKey(op))
 				{
-					return r;
+					return CallExternalMethodInner(info.StaticMethodDict[op], args, null);
+				}
+				else if (op == "new")
+				{
+					return CallConstructor(leftType, args);
+				}
+				else
+				{
+					var res = CallStaticNonScriptMethod(leftType, op, args);
+					if (res != null)
+					{
+						return res;
+					}
 				}
 			}
+		
 			throw new ParseException("ドット演算子右辺の識別子が不明:" + dot.ToString());
 
 		}
@@ -1127,22 +1139,31 @@ namespace Masa.ScriptEngine
 
 		Expression CallNonScriptMethod(Expression obj, string name, IEnumerable<object> tokens)
 		{
+			return CallNonScriptMethodInner(obj, obj.Type, name, tokens);
+		}
+
+		Expression CallStaticNonScriptMethod(Type type, string name, IEnumerable<object> tokens)
+		{
+			return CallNonScriptMethodInner(null, type, name, tokens);
+		}
+
+		Expression CallNonScriptMethodInner(Expression obj, Type type, string name, IEnumerable<object> tokens)
+		{
 			var args = GetArgs(tokens);
-			var method = obj.Type.GetMethod(name, args.Select(x => x.Type).ToArray());
+			var method = type.GetMethod(name, args.Select(x => x.Type).ToArray());
 			if (method == null)
 			{
 				return null;
 			}
-			if (method.IsStatic)
-			{
-				return Expression.Call(method, args);
-			}
-			else
+			if (obj != null && !method.IsStatic)
 			{
 				return Expression.Call(obj, method, args);
 			}
+			else
+			{
+				return Expression.Call(method, args);
+			}
 		}
-
 
 
 		/// <summary>
