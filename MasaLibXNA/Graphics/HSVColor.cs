@@ -124,10 +124,14 @@ namespace Masa.Lib.XNA
 		/// <returns></returns>
 		public static Vector3 HSVToRGB(float h, float s, float v)
 		{
-			h = MathUtil.PositiveMod(h, 360);
+			h = MathUtil.PositiveMod(h, 360f);
 			s = MathHelper.Clamp(s, 0, 1);
 			v = MathHelper.Clamp(v, 0, 1);
 			int hi = (int)(h / 60f);
+			if (hi >= 6)
+			{
+				hi = 0;
+			}
 			float f = (h / 60f) - hi;
 			float p = v * (1 - s);
 			float q = v * (1 - f * s);
