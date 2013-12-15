@@ -90,6 +90,11 @@ namespace Masa.ScriptEngine
 			return val.ToString();
 		}
 
+		public static Value Round(Value val)
+		{
+			return (int)val;
+		}
+
 		/// <summary>
 		/// 用意されたメソッドの定義
 		/// </summary>
@@ -139,6 +144,7 @@ namespace Masa.ScriptEngine
 			ret["wrapangle"] = typeof(Microsoft.Xna.Framework.MathHelper).GetMethod("WrapAngle");
 			ret["tostr"] = vals.GetMethod("ToString", new[]{typeof(object)});
 			ret["valtostr"] = vals.GetMethod("ValueToString");
+			ret["round"] = vals.GetMethod("Round");
 			return ret.ToDictionary(x => x.Key, x => new ScriptMethodInfo(x.Value, x.Key, x.Value.GetParameters().Count()));
 			//return ret;
 		}
