@@ -92,15 +92,15 @@ namespace Masa.Lib.XNA
 			return MathUtil.Atan2(vec.Y, vec.X);
 		}
 
-		///origin原点の極座標を(Angle, Distance)で返す
+		///origin原点の極座標を(Distance, Angle)で返す
 		public static Vector2 ToPolar(this Vector2 p, Vector2 origin)
 		{
-			return new Vector2((p - origin).Angle(), (p - origin).Length());
+			return new Vector2((p - origin).Length(), (p - origin).Angle());
 		}
 
 		public static Vector2 ToPolar(this Vector2 p)
 		{
-			return new Vector2(p.Angle(), p.Length());
+			return new Vector2(p.Length(), p.Angle());
 		}
 
 		//二次元外積
@@ -109,10 +109,10 @@ namespace Masa.Lib.XNA
 			return v1.X * v2.Y - v1.Y * v2.X;
 		}
 
-		///origin原点の極座標(Angle, Distance)を直交座標に変換
+		///origin原点の極座標(Distance, Angle)を直交座標に変換
 		public static Vector2 ToRect(this Vector2 p, Vector2 origin)
 		{
-			return new Vector2(MathUtil.Cos(p.X) * p.Y, MathUtil.Sin(p.X) * p.Y) + origin;
+			return new Vector2(MathUtil.Cos(p.Y) * p.X, MathUtil.Sin(p.Y) * p.X) + origin;
 		}
 
 		public static Vector2 Rotate(this Vector2 v, float angle)
