@@ -230,7 +230,38 @@ namespace Masa.ScriptEngine
 			InitStatement = GetLabelStatement("init");
 		}
 
-		
+		/// <summary>
+		/// scriptedのプロパティorフィールド、non-scriptedのプロパティを取得。なければnull
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="left"></param>
+		/// <returns></returns>
+		MemberExpression TryGetPropertyOrField(string id, Expression left)
+		{
+			var info = GetObjectInfo(left.Type);
+			ScriptPropertyInfo prp;
+			if (info.PropertyDict.TryGetValue(id, out prp))//外部プロパティ
+			{
+				return Expression.Property(left, prp.PropertyInfo);
+			}
+			FieldInfo fld;
+			if (info.FieldDict.TryGetValue(id, out fld))
+			{
+				return Expression.Field(left, fld);
+			}
+			var flags = BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
+			var p = left.Type.GetProperty(id, flags);
+			if (p != null)
+			{
+				return Expression.Property(left, p);
+			}
+			//var f = left.Type.GetField(id, flags);
+			//if (f != null)
+			//{
+			//	return Expression.Field(left, f);
+			//}
+			return null;
+		}
 
 		/// <summary>
 		/// 文字列を変数(内部変数、Global変数、外部変数、列挙文字列すべて)としてパース。
@@ -250,15 +281,20 @@ namespace Masa.ScriptEngine
 				return prm;
 			}
 
-			ScriptPropertyInfo prp;
-			if (ClassInfo.PropertyDict.TryGetValue(id, out prp))//外部プロパティ
+			//ScriptPropertyInfo prp;
+			//if (ClassInfo.PropertyDict.TryGetValue(id, out prp))//外部プロパティ
+			//{
+			//	return Expression.Property(GetThis(), prp.PropertyInfo);
+			//}
+			//FieldInfo fld;
+			//if(ClassInfo.FieldDict.TryGetValue(id, out fld))
+			//{
+			//	return Expression.Field(GetThis(), fld);
+			//}
+			var ret = TryGetPropertyOrField(id, GetThis());
+			if (ret != null)
 			{
-				return Expression.Property(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), prp.PropertyInfo);
-			}
-			FieldInfo fld;
-			if(ClassInfo.FieldDict.TryGetValue(id, out fld))
-			{
-				return Expression.Field(Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType), fld);
+				return ret;
 			}
 
 			//if (EnvironmentField.ContainsKey(id))
@@ -409,13 +445,37 @@ namespace Masa.ScriptEngine
 				{
 					return CallExternalMethodInner(StaticMethodDict[id], tokens.Skip(1).ToArray(), null);
 				}
-				if (ClassInfo.MethodDict.ContainsKey(id))//ターゲットオブジェクト関数の時
+				//if (ClassInfo.MethodDict.ContainsKey(id))//ターゲットオブジェクト関数の時
+				//{
+				//	return CallExternalMethod(id, tokens.Skip(1).ToArray());
+				//}
+				var res = TryCallInstanceMethod(id, tokens.Skip(1), GetThis());
+				if(res != null)
 				{
-					return CallExternalMethod(id, tokens.Skip(1).ToArray());
+					return res;
 				}
 			}
 
 			return ArithExpressionMaker.ParseArithExpression(objs, ProcessSingleToken);//多項式の時
+		}
+
+		/// <summary>
+		/// scripted, non-scriptedのインスタンスメソッド呼び出し
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="tokens"></param>
+		/// <param name="caller"></param>
+		/// <returns></returns>
+		Expression TryCallInstanceMethod(string id, IEnumerable<object> tokens, Expression caller)
+		{
+			var info = GetObjectInfo(caller.Type);
+			ScriptMethodInfo m;
+			if (info.MethodDict.TryGetValue(id, out m))
+			{
+				return CallExternalMethodInner(m, (tokens == null ? new object[0] : tokens.ToArray()), caller);
+			}
+			return CallNonScriptMethod(caller, id, tokens);
+			
 		}
 
 		/// <summary>
@@ -480,26 +540,18 @@ namespace Masa.ScriptEngine
 			}
 			if (left != null)
 			{
-				if (info.MethodDict.ContainsKey(op))
+				var pf = TryGetPropertyOrField(op, left);
+				if (pf != null)
 				{
-					return CallExternalMethodInner(info.MethodDict[op], args, left);
+					return pf;
 				}
-				if (info.PropertyDict.ContainsKey(op))
+				
+				var res = TryCallInstanceMethod(op, args, left);
+				if (res != null)
 				{
-					return Expression.Property(left, info.PropertyDict[op].PropertyInfo);
+					return res;
 				}
-				if (info.FieldDict.ContainsKey(op))
-				{
-					return Expression.Field(left, info.FieldDict[op]);
-				}
-				else
-				{
-					var res = CallNonScriptMethod(left, op, args);
-					if (res != null)
-					{
-						return res;
-					}
-				}
+				
 			}
 			else
 			{
@@ -1036,6 +1088,15 @@ namespace Masa.ScriptEngine
 		}
 
 		/// <summary>
+		/// 実行中インスタンスの取得
+		/// </summary>
+		/// <returns></returns>
+		Expression GetThis()
+		{
+			return Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType);
+		}
+
+		/// <summary>
 		/// Targetの持つメソッドや関数を呼ぶ
 		/// </summary>
 		/// <param name="id">メソッド名</param>
@@ -1044,7 +1105,7 @@ namespace Masa.ScriptEngine
 		Expression CallExternalMethod(string id, object[] l)
 		{
 			//object[] l = line.Tokens.Slice(1, line.Tokens.Length - 1);
-			return CallExternalMethodInner(ClassInfo.MethodDict[id], l, Expression.Convert(Expression.Field(Environment, ScriptEngine.Environment.Info_TargetObject), TargetType));
+			return CallExternalMethodInner(ClassInfo.MethodDict[id], l, GetThis());
 		
 		}
 
@@ -1149,6 +1210,10 @@ namespace Masa.ScriptEngine
 
 		Expression CallNonScriptMethodInner(Expression obj, Type type, string name, IEnumerable<object> tokens)
 		{
+			if (!type.GetMethods().Where(x => x.Name == name).Any())
+			{
+				return null;
+			}
 			var args = GetArgs(tokens);
 			var method = type.GetMethod(name, args.Select(x => x.Type).ToArray());
 			if (method == null)
