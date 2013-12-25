@@ -150,6 +150,7 @@ namespace Masa.ScriptEngine
 			ret["tostr"] = vals.GetMethod("ToString", new[]{typeof(object)});
 			ret["valtostr"] = vals.GetMethod("ValueToString");
 			ret["round"] = vals.GetMethod("Round");
+			ret["laim"] = xmath.GetMethod("LimitedAim");
 			return ret.ToDictionary(x => x.Key, x => new ScriptMethodInfo(x.Value, x.Key, x.Value.GetParameters().Count()));
 			//return ret;
 		}
