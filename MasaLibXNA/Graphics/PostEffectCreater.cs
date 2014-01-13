@@ -9,6 +9,11 @@ namespace Masa.Lib.XNA
 {
 	public static class PostEffectCreater
 	{
+		/// <summary>
+		/// return VertexPositionTexture
+		/// </summary>
+		/// <param name="graphics"></param>
+		/// <returns></returns>
 		public static VertexBuffer CreateVertexBuffer(GraphicsDevice graphics)
 		{
 			var vb = new VertexBuffer(graphics, typeof(VertexPositionTexture), 4, BufferUsage.WriteOnly);
