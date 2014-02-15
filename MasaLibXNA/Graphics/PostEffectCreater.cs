@@ -34,6 +34,10 @@ namespace Masa.Lib.XNA
 			return id;
 		}
 
+		/// <summary>
+		/// only draw call
+		/// </summary>
+		/// <param name="graphics"></param>
 		public static void Draw(GraphicsDevice graphics)
 		{
 			graphics.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 4, 0, 2);
