@@ -84,6 +84,24 @@ namespace Masa.ScriptEngine
 			builder.AppendLine(")");
 		}
 
+		internal static XElement CreateIndex(IEnumerable<Type> types)
+		{
+			var doc = new XElement("html");
+			//doc.SetAttributeValue("xmlns", "http://www.w3.org/1999/xhtml");
+			var head = new XElement("head");
+			var body = new XElement("body");
+			foreach (var item in types)
+			{
+				var a = new XElement("a", item.Name);
+				a.SetAttributeValue("href", item.Name + ".xml");
+				a.SetAttributeValue("target", "main");
+				body.Add(a);
+				body.Add(new XElement("br"));
+			}
+			doc.Add(head, body);
+			return doc;
+		}
+
 		internal static XElement GlobalsToXml(Dictionary<string, MethodInfo> method)
 		{
 			var root = new XElement("class");

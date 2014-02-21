@@ -123,6 +123,11 @@ namespace Masa.ScriptEngine
 			return DocumentCreater.GlobalsToXml(StaticMethodDict.ToDictionary(x=>x.Key, x=>x.Value.MethodInfo));
 		}
 
+		public static System.Xml.Linq.XElement OutputIndex()
+		{
+			return DocumentCreater.CreateIndex(ReflectionCashe.Keys);
+		}
+
 		#endregion
 
 		/// <summary>

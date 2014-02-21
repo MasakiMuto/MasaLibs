@@ -396,7 +396,14 @@ namespace Masa.ScriptEngine
 				SaveXmlDocument(path(item.Key.Name), item.Value);
 			}
 			SaveXmlDocument(path("global"), ExpressionTreeMaker.OutputGlobalXml());
-			
+			SaveList(Path.Combine(outputDirectory, "list.html"), ExpressionTreeMaker.OutputIndex());
+		}
+
+		static void SaveList(string outputName, XElement body)
+		{
+			var doc = new XDocument();
+			doc.Add(body);
+			doc.Save(outputName);
 		}
 
 		static void SaveXmlDocument(string outputName, XElement body)
