@@ -90,7 +90,7 @@ namespace Masa.ScriptEngine
 			//doc.SetAttributeValue("xmlns", "http://www.w3.org/1999/xhtml");
 			var head = new XElement("head");
 			var body = new XElement("body");
-			foreach (var item in types)
+			foreach (var item in types.OrderBy(x=>x.Namespace))
 			{
 				var a = new XElement("a", item.Name);
 				a.SetAttributeValue("href", item.Name + ".xml");
