@@ -126,6 +126,7 @@ namespace Masa.ScriptEngine
 			ret.Add("max", math.GetMethod("Max", new[] { ValueType, ValueType }));
 			ret.Add("min", math.GetMethod("Min", new[] { ValueType, ValueType }));
 			ret["sign"] = vals.GetMethod("Sign", args[1]);
+			
 			ret["f2"] = ret["float2"] = vals.GetMethod("MakeVector2", args[2]);
 			ret["f3"] = ret["float3"] = vals.GetMethod("MakeVector3", args[3]);
 			ret["f4"] = ret["float4"] = vals.GetMethod("MakeVector4", args[4]);
@@ -139,6 +140,8 @@ namespace Masa.ScriptEngine
 			ret["float2len2"] = vals.GetMethod("GetVectorLengthSquared", vecs);
 			ret["f2x"] = vals.GetMethod("GetVectorX", vecs);
 			ret["f2y"] = vals.GetMethod("GetVectorY", vecs);
+			ret["norm2"] = typeof(Vector2).GetMethod("Normalize", new[]{typeof(Vector2)});
+
 			ret["in"] = vals.GetMethod("InRange", args[3]);
 			ret["log"] = mu.GetMethod("Log", args[2]);
 			ret["hsv"] = typeof(Masa.Lib.XNA.HSVColor).GetMethod("HSVToRGB");
