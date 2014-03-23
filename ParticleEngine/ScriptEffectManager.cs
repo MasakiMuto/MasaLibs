@@ -278,7 +278,7 @@ namespace Masa.ParticleEngine
 		public void DrawLayer(int layer)
 		{
 			SetDrawStates(Matrix.Identity);
-			foreach (var item in particles.Where(p=> p!= null && p.Enable && p.Layer == layer).GroupBy(p=>p.BlendMode))
+			foreach (var item in particles.Where(p=> p!= null && p.Enable && p.Layer == layer).GroupBy(p=>p.BlendMode).OrderByDescending(x=>(int)x.Key))
 			{
 				SetBlendState(item.Key);
 				foreach (var pt in item)
