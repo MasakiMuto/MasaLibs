@@ -92,6 +92,16 @@ namespace Masa.Lib.XNA
 			return MathUtil.Atan2(vec.Y, vec.X);
 		}
 
+		public static float Angle2(this Vector3 vec)
+		{
+			return MathUtil.Atan2(vec.Z, vec.X);
+		}
+
+		public static float Angle1(this Vector3 vec)
+		{
+			return MathUtil.Atan2(vec.Y, vec.X / MathUtil.Cos(vec.Angle2()));
+		}
+
 		///origin原点の極座標を(Distance, Angle)で返す
 		public static Vector2 ToPolar(this Vector2 p, Vector2 origin)
 		{

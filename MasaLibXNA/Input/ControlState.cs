@@ -98,6 +98,47 @@ namespace Masa.Lib.XNA.Input
 			return new Vector2(lr * OverRoot2, ud * OverRoot2);
 		}
 
+		/// <summary>
+		/// 左なら-1,右なら+1
+		/// </summary>
+		/// <returns></returns>
+		public int Horizontal
+		{
+			get
+			{
+				int a = 0;
+				if (Left.Push)
+				{
+					a -= 1;
+				}
+				if (Right.Push)
+				{
+					a += 1;
+				}
+				return a;
+			}
+		}
+
+		/// <summary>
+		/// 上なら-1,下なら+1
+		/// </summary>
+		public int Vertical
+		{
+			get
+			{
+				int a = 0;
+				if (Up.Push)
+				{
+					a -= 1;
+				}
+				if (Down.Push)
+				{
+					a += 1;
+				}
+				return a;
+			}
+		}
+
 		public ControlState()
 		{
 			A = new Button(ButtonTag.A);
