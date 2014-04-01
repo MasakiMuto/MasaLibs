@@ -141,6 +141,9 @@ namespace Masa.ScriptEngine
 			ret["f2x"] = vals.GetMethod("GetVectorX", vecs);
 			ret["f2y"] = vals.GetMethod("GetVectorY", vecs);
 			ret["norm2"] = typeof(Vector2).GetMethod("Normalize", new[]{typeof(Vector2)});
+			ret["norm3"] = typeof(Vector3).GetMethod("Normalize", new[]{typeof(Vector3)});
+			ret["dot2"] = typeof(Vector2).GetMethod("Dot", new[]{typeof(Vector2), typeof(Vector2)});
+			ret["dot3"] = typeof(Vector3).GetMethod("Dot", new[]{typeof(Vector3), typeof(Vector3)});
 
 			ret["in"] = vals.GetMethod("InRange", args[3]);
 			ret["log"] = mu.GetMethod("Log", args[2]);
@@ -154,6 +157,7 @@ namespace Masa.ScriptEngine
 			ret["valtostr"] = vals.GetMethod("ValueToString");
 			ret["round"] = vals.GetMethod("Round");
 			ret["laim"] = xmath.GetMethod("LimitedAim");
+
 			return ret.ToDictionary(x => x.Key, x => new ScriptMethodInfo(x.Value, x.Key, x.Value.GetParameters().Count()));
 			//return ret;
 		}
