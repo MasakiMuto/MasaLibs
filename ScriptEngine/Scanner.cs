@@ -21,6 +21,7 @@ namespace Masa.ScriptEngine
 		Not,/// !
 		And,/// &
 		Or,/// |
+		Xor,/// ^
 
 		Equal,///比較等号 ==
 		NotEqual,/// !=
@@ -88,6 +89,7 @@ namespace Masa.ScriptEngine
 			MarkNameDict.Add("!", Marks.Not);
 			MarkNameDict.Add("&", Marks.And);
 			MarkNameDict.Add("|", Marks.Or);
+			MarkNameDict.Add("^", Marks.Xor);
 			MarkNameDict.Add("=", Marks.Sub);
 			MarkNameDict.Add("!=", Marks.NotEqual);
 			MarkNameDict.Add("<", Marks.Small);
@@ -215,6 +217,7 @@ namespace Masa.ScriptEngine
 					case '%':
 					case '!':
 					case '&':
+					case '^':
 					case '|':
 					case '>':
 					case '<':

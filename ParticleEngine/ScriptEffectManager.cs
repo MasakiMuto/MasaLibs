@@ -105,7 +105,7 @@ namespace Masa.ParticleEngine
 
 
 		/// <summary>
-		/// 
+		/// 2D用Projection
 		/// </summary>
 		/// <param name="script"></param>
 		/// <param name="device"></param>

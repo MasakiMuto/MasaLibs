@@ -87,6 +87,8 @@ namespace Masa.ScriptEngine
 					return BoolToFloat(Expression.AndAlso(ExpressionTreeMakerHelper.ExpressionToBool(l), ExpressionTreeMakerHelper.ExpressionToBool(r)));
 				case Marks.Or:
 					return BoolToFloat(Expression.OrElse(ExpressionTreeMakerHelper.ExpressionToBool(l), ExpressionTreeMakerHelper.ExpressionToBool(r)));
+				case Marks.Xor:
+					return BoolToFloat(Expression.ExclusiveOr(ExpressionTreeMakerHelper.ExpressionToBool(l), ExpressionTreeMakerHelper.ExpressionToBool(r)));
 				case Marks.Equal:
 					return BoolToFloat(Expression.Equal(l, r));
 				case Marks.NotEqual:
