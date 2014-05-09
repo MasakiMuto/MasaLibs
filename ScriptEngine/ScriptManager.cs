@@ -10,6 +10,7 @@ using System.Xml.Linq;
 namespace Masa.ScriptEngine
 {
 	using TypeScriptDictionary = Dictionary<string, ScriptDataBase>;
+	using System.Reflection.Emit;
 
 	/// <summary>
 	/// ScriptDataをさらにラップしたクラス。エラーログ出力機能付き
@@ -58,7 +59,7 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		public Func<string, string> CodeMapper { get; set; }
 
-		Dictionary<string, string> HeaderDictionary;
+		public Dictionary<string, string> HeaderDictionary { get; private set; }
 
 		/// <summary>
 		/// Rootと結合したパスを返す
@@ -423,6 +424,61 @@ namespace Masa.ScriptEngine
 			return scriptItems.Values.Select(i => i.First().Value.Tree as ExpressionTreeMaker);
 		}
 
+		public void CompileAll(string assemblyName)
+		{
+			var asmName = new AssemblyName(assemblyName);
+			var asmBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, System.Reflection.Emit.AssemblyBuilderAccess.RunAndSave);
+			var module = asmBuilder.DefineDynamicModule(asmName.Name, asmName.Name + ".dll");
+			foreach (var type in scriptItems)
+			{
+				foreach (var item in type.Value)
+				{
+					var typeBuilder = module.DefineType(type.Key.FullName + "." + item.Key, TypeAttributes.Public);
+					var tree = item.Value.Tree as ExpressionTreeMaker;
+					tree.Compile(GetMethodBuilder(typeBuilder, "ScriptMain"));
+					foreach (var label in tree.EnumrateLabels())
+					{
+						tree.CompileLabel(label, GetMethodBuilder(typeBuilder, label));
+					}
+					var il = typeBuilder.DefineMethod("GlobalVarNumber", MethodAttributes.Static | MethodAttributes.Public, typeof(int), null).GetILGenerator();
+					il.Emit(OpCodes.Ldc_I4, tree.GlobalVarNumber);
+					il.Emit(OpCodes.Ret);
+					//typeBuilder.DefineMethod("GlobalVarNumber", MethodAttributes.Static | MethodAttributes.Public).Set
+					//typeBuilder.DefineField("GlobalVarNumber", typeof(int), FieldAttributes.Public | FieldAttributes.Static).SetConstant(tree.GlobalVarNumber);
+					typeBuilder.CreateType();
+				}
+			}
+			asmBuilder.Save(asmName.Name + ".dll");
+		}
+
+		static MethodBuilder GetMethodBuilder(TypeBuilder tp, string name)
+		{
+			return tp.DefineMethod(name, MethodAttributes.Static | MethodAttributes.Public, typeof(void), new[] { typeof(Environment) });
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="asm">目標型が入っているアセンブリ</param>
+		/// <param name="name">アセンブリファイル名</param>
+		/// <returns></returns>
+		public static ScriptManager CreateFromAssembly(Assembly baseAsm, string name)
+		{
+			var man = new ScriptManager();
+			var asm = man.LoadAssembly(name);
+			foreach (var ns in asm.GetTypes().GroupBy(x => x.Namespace))
+			{
+				TypeScriptDictionary dict = new TypeScriptDictionary();
+				var targetType = baseAsm.GetType(ns.Key);
+				foreach (var file in ns)
+				{
+					var data = new CompiledScriptData(file, targetType);
+					dict[file.Name] = data;
+				}
+				man.scriptItems[targetType] = dict;
+			}
+			return man;
+		}
 
 	}
 }

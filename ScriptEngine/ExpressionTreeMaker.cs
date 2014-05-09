@@ -159,53 +159,62 @@ namespace Masa.ScriptEngine
 		#region Compiler
 
 
-		///// <summary>
-		///// スクリプト全体をコンパイルする
-		///// </summary>
-		///// <param name="mtd">出力先</param>
-		//public void Compile(System.Reflection.Emit.MethodBuilder mtd)
-		//{
-		//	var lambda = Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, TotalBlock), Environment);
-		//	lambda.CompileToMethod(mtd);
-		//}
+		/// <summary>
+		/// スクリプト全体をコンパイルする
+		/// </summary>
+		/// <param name="mtd">出力先</param>
+		public void Compile(System.Reflection.Emit.MethodBuilder mtd)
+		{
+			var lambda = Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, TotalBlock), Environment);
+			lambda.CompileToMethod(mtd);
+		}
 
-		//public bool CompileLabel(string label, System.Reflection.Emit.MethodBuilder mtd)
-		//{
-		//	if (!LabelDict.ContainsKey(label)) return false;
-		//	var lambda = Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, LabelDict[label]), Environment);
-		//	lambda.CompileToMethod(mtd);
-		//	return true;
-		//}
+		public bool CompileLabel(string label, System.Reflection.Emit.MethodBuilder mtd)
+		{
+			if (!LabelDict.ContainsKey(label)) return false;
+			var lambda = Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, LabelDict[label]), Environment);
+			lambda.CompileToMethod(mtd);
+			return true;
+		}
 
-		//public Type CompileToClass(Type original, string className, System.Reflection.Emit.ModuleBuilder mb)
-		//{
-		//	TypeBuilder tp = mb.DefineType(className, TypeAttributes.Public, original);
+		public Type CompileToClass(Type original, string className, System.Reflection.Emit.ModuleBuilder mb)
+		{
+			TypeBuilder tp = mb.DefineType(className, TypeAttributes.Public, original);
 
-		//	Func<string, MethodBuilder> define = (n) => tp.DefineMethod(n, MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.ReuseSlot | MethodAttributes.Virtual, null, new[] { typeof(Environment) });
-		//	Compile(define("ScriptMain"));
-		//	//foreach (var item in original.GetMethods().Where(m=>m.GetCustomAttributes(typeof(ScriptDefinedMethodAttribute), true).Count() > 0))
-		//	//{
-		//	//    if (LabelExist(item.Name))
-		//	//    {
-		//	//        CompileLabel(item.Name, define(item.Name));
-		//	//    }
-		//	//}			
-		//	foreach (var item in LabelDict)
-		//	{
-		//		CompileLabel(item.Key, define("Script" + item.Key));
-		//	}
-		//	var getter = tp.DefineMethod("get_GlobalVarNumber", MethodAttributes.Family | MethodAttributes.SpecialName | MethodAttributes.HideBySig);
-		//	Expression.Lambda<Func<int>>(Expression.Constant(GlobalVarNumber)).CompileToMethod(getter);
-		//	tp.DefineProperty("GlobalVarNumber", PropertyAttributes.None, typeof(int), null).SetGetMethod(getter);
-		//	//tp.DefineField("GlobalVarNumber", typeof(int), FieldAttributes.Private | FieldAttributes.Literal).SetConstant(GlobalVarNumber);
-		//	return tp.CreateType();
-		//}
+			Func<string, MethodBuilder> define = (n) => tp.DefineMethod(n, MethodAttributes.Family | MethodAttributes.HideBySig | MethodAttributes.ReuseSlot | MethodAttributes.Virtual, null, new[] { typeof(Environment) });
+			Compile(define("ScriptMain"));
+			//foreach (var item in original.GetMethods().Where(m=>m.GetCustomAttributes(typeof(ScriptDefinedMethodAttribute), true).Count() > 0))
+			//{
+			//    if (LabelExist(item.Name))
+			//    {
+			//        CompileLabel(item.Name, define(item.Name));
+			//    }
+			//}			
+			foreach (var item in LabelDict)
+			{
+				CompileLabel(item.Key, define("Script" + item.Key));
+			}
+			var getter = tp.DefineMethod("get_GlobalVarNumber", MethodAttributes.Family | MethodAttributes.SpecialName | MethodAttributes.HideBySig);
+			Expression.Lambda<Func<int>>(Expression.Constant(GlobalVarNumber)).CompileToMethod(getter);
+			tp.DefineProperty("GlobalVarNumber", PropertyAttributes.None, typeof(int), null).SetGetMethod(getter);
+			//tp.DefineField("GlobalVarNumber", typeof(int), FieldAttributes.Private | FieldAttributes.Literal).SetConstant(GlobalVarNumber);
+			return tp.CreateType();
+		}
 
 		#endregion
 
 		public bool LabelExist(string label)
 		{
 			return LabelDict.ContainsKey(label);
+		}
+
+		/// <summary>
+		/// 存在するlabelを列挙
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<string> EnumrateLabels()
+		{
+			return LabelDict.Keys;
 		}
 
 		#region Parse
@@ -714,7 +723,8 @@ namespace Masa.ScriptEngine
 					return MakeLoopStatement(line);
 				case "goto"://state change
 					var assign = Expression.Assign(Expression.Property(Environment, ScriptEngine.Environment.Info_State), exp());
-					return Expression.Block(assign, Expression.Return(ExitLabel));
+					return assign;
+					//return Expression.Block(assign, Expression.Return(ExitLabel));
 				case "state":
 					return Expression.IfThen(Expression.Equal(Expression.Property(Environment, ScriptEngine.Environment.Info_State), exp()), GetBlock(line));
 				case "label":
