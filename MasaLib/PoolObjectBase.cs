@@ -31,11 +31,16 @@ namespace Masa.Lib
 		}
 	}
 
-	public abstract class PoolObjectManagerBase<T> where T : PoolObjectBase, new()
+	public class PoolObjectManagerBase<T> where T : PoolObjectBase, new()
 	{
 		protected List<T> Items { get; private set; }
 		int headIndex;
 		readonly int DefaultSize;
+		readonly bool IsExtendable;
+		/// <summary>
+		/// 領域を拡張するときの一回あたりの大きさ
+		/// </summary>
+		readonly int ExtendSize;
 
 		/// <summary>
 		/// リストの生成、および項目の初期化
@@ -44,7 +49,16 @@ namespace Masa.Lib
 		public PoolObjectManagerBase(int defaultSize)
 		{
 			DefaultSize = defaultSize;
+			ExtendSize = defaultSize;
+			IsExtendable = false;
 			Items = Enumerable.Range(0, defaultSize).Select(i => new T() {ListIndex = i }).ToList();
+		}
+
+		public PoolObjectManagerBase(int defaultSize, int extendSize)
+			: this(defaultSize)
+		{
+			IsExtendable = true;
+			ExtendSize = extendSize;
 		}
 
 		/// <summary>
@@ -98,13 +112,23 @@ namespace Masa.Lib
 			var i = GetFirstUnusedItem();
 			if (i == null)
 			{
-				Extend(DefaultSize);
+				Extend(ExtendSize);
 				i = GetFirstUnusedItem();
 			}
 			return i;
 		}
 
-		public abstract T GetFirst();
+		public virtual T GetFirst()
+		{
+			if (IsExtendable)
+			{
+				return GetFirstUnusedItemWithExtend();
+			}
+			else
+			{
+				return GetFirstUnusedItem();
+			}
+		}
 
 		/// <summary>
 		/// 配列を拡張する

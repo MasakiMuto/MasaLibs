@@ -158,8 +158,13 @@ namespace Masa.Lib.XNA
 
 		public static void DrawCenter(this SpriteBatch batch, Texture2D texture, Vector2 center, Color color, float angle, float scale)
 		{
+			DrawCenter(batch, texture, center, color, angle, scale, 0);
+		}
+
+		public static void DrawCenter(this SpriteBatch batch, Texture2D texture, Vector2 center, Color color, float angle, float scale, float depth)
+		{
 			Vector2 size = new Vector2(texture.Width * .5f, texture.Height * .5f);
-			batch.Draw(texture, center, null, color, angle, size, scale, SpriteEffects.None, 0);
+			batch.Draw(texture, center, null, color, angle, size, scale, SpriteEffects.None, depth);
 		}
 
 		#region Color

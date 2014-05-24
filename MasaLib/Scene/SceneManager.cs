@@ -25,6 +25,7 @@ namespace Masa.Lib.Scene
 		/// </summary>
 		public void Update()
 		{
+			var lastItem = Scenes.First;
 			while (removeQueue.Any())
 			{
 				var rem = removeQueue.Dequeue();
@@ -42,6 +43,18 @@ namespace Masa.Lib.Scene
 			while (addQueue.Any())
 			{
 				Scenes.AddFirst(addQueue.Dequeue());
+			}
+			var firstItem = Scenes.First;
+			if (lastItem != firstItem)
+			{
+				if (lastItem != null)
+				{
+					lastItem.Value.OnLostFocus();
+				}
+				if (firstItem != null)
+				{
+					firstItem.Value.OnGetFocus();
+				}
 			}
 			var first = true;
 			foreach (var item in Scenes)
@@ -145,6 +158,16 @@ namespace Masa.Lib.Scene
 		public bool Any()
 		{
 			return Scenes.Any() || addQueue.Any();
+		}
+
+		/// <summary>
+		/// ある型のシーンが存在もしくは追加キューに入っているか
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public bool AnyOfType<T>()
+		{
+			return Scenes.Any(x => x is T) || addQueue.Any(x => x is T);
 		}
 	}
 

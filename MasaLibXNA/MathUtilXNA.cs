@@ -94,15 +94,25 @@ namespace Masa.Lib.XNA
 			return MathUtil.Atan2(vec.Y, vec.X);
 		}
 
-		///origin原点の極座標を(Angle, Distance)で返す
+		public static float Angle2(this Vector3 vec)
+		{
+			return MathUtil.Atan2(vec.Z, vec.X);
+		}
+
+		public static float Angle1(this Vector3 vec)
+		{
+			return MathUtil.Atan2(vec.Y, vec.X / MathUtil.Cos(vec.Angle2()));
+		}
+
+		///origin原点の極座標を(Distance, Angle)で返す
 		public static Vector2 ToPolar(this Vector2 p, Vector2 origin)
 		{
-			return new Vector2((p - origin).Angle(), (p - origin).Length());
+			return new Vector2((p - origin).Length(), (p - origin).Angle());
 		}
 
 		public static Vector2 ToPolar(this Vector2 p)
 		{
-			return new Vector2(p.Angle(), p.Length());
+			return new Vector2(p.Length(), p.Angle());
 		}
 
 		//二次元外積
@@ -111,10 +121,10 @@ namespace Masa.Lib.XNA
 			return v1.X * v2.Y - v1.Y * v2.X;
 		}
 
-		///origin原点の極座標(Angle, Distance)を直交座標に変換
+		///origin原点の極座標(Distance, Angle)を直交座標に変換
 		public static Vector2 ToRect(this Vector2 p, Vector2 origin)
 		{
-			return new Vector2(MathUtil.Cos(p.X) * p.Y, MathUtil.Sin(p.X) * p.Y) + origin;
+			return new Vector2(MathUtil.Cos(p.Y) * p.X, MathUtil.Sin(p.Y) * p.X) + origin;
 		}
 
 		public static Vector2 Rotate(this Vector2 v, float angle)
@@ -244,12 +254,27 @@ namespace Masa.Lib.XNA
 		/// <returns></returns>
 		public static bool IsOverRect(Vector2 position, Vector2 frame, Vector2 margin)
 		{
-			return position.X < -margin.X || position.X > frame.X + margin.X || position.Y < -margin.Y || position.Y > frame.Y + margin.Y;
+			return IsOverRect(position, Vector2.Zero, frame, margin);
 		}
 
 		public static bool IsOverRect(Vector2 position, Vector2 leftTop, Vector2 rightBottom, Vector2 margin)
 		{
-			return position.X < leftTop.X -margin.X || position.X > rightBottom.X + margin.X || position.Y <leftTop.Y -margin.Y || position.Y > rightBottom.Y + margin.Y;
+			return position.X < leftTop.X - margin.X || position.X > rightBottom.X + margin.X
+				|| position.Y < leftTop.Y - margin.Y || position.Y > rightBottom.Y + margin.Y;
+		}
+
+		/// <summary>
+		/// 少しでも中に入っているか
+		/// </summary>
+		/// <param name="position"></param>
+		/// <param name="leftTop"></param>
+		/// <param name="rightBottom"></param>
+		/// <param name="margin">キャラクターの大きさ</param>
+		/// <returns></returns>
+		public static bool IsInRect(Vector2 position, Vector2 leftTop, Vector2 rightBottom, Vector2 margin)
+		{
+			return (leftTop.X < position.X + margin.X && position.X - margin.X < rightBottom.X)
+				&& (leftTop.Y < position.Y + margin.Y && position.Y - margin.Y < rightBottom.Y);
 		}
 
 		/// <summary>

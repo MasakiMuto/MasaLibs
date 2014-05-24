@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,11 @@ namespace Masa.Lib.XNA
 {
 	public static class PostEffectCreater
 	{
+		/// <summary>
+		/// return VertexPositionTexture
+		/// </summary>
+		/// <param name="graphics"></param>
+		/// <returns></returns>
 		public static VertexBuffer CreateVertexBuffer(GraphicsDevice graphics)
 		{
 			var vb = new VertexBuffer(graphics, typeof(VertexPositionTexture), 4, BufferUsage.WriteOnly);
@@ -29,9 +35,14 @@ namespace Masa.Lib.XNA
 			return id;
 		}
 
+		/// <summary>
+		/// only draw call
+		/// </summary>
+		/// <param name="graphics"></param>
 		public static void Draw(GraphicsDevice graphics)
 		{
 			graphics.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 4, 0, 2);
 		}
 	}
 }
+*/
