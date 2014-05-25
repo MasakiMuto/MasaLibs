@@ -18,7 +18,7 @@ namespace Masa.ParticleEngine
 		Buffer<ParticleVertex> VertexDataBuffer;
 		//VertexBuffer VertexDataBuffer;
 
-		Buffer<short> Index;
+		//Buffer<short> Index;
 		EffectParameter ParamView, ParamProj, ParamTime, ParamField, ParamColor;
 
 		public Matrix Projection
@@ -72,8 +72,8 @@ namespace Masa.ParticleEngine
 
 			IndexVertexBuffer = Buffer.Vertex.New<ParticleIndexVertex>(device, indexVertex);
 
-			short[] index = new short[] { 0, 1, 2, 0, 2, 3 };
-			Index = Buffer.Index.New<short>(device, index);
+			//short[] index = new short[] { 0, 1, 2, 0, 2, 3 };
+			//Index = Buffer.Index.New<short>(device, index);
 			
 			
 			Drawer = drawer;
@@ -195,13 +195,13 @@ namespace Masa.ParticleEngine
 			}
 
 			SetBuffer();
-			//Drawer.Parameters["Texture"].SetResource(Texture);
+			//Device.SetIndexBuffer(Index, false);
 			Drawer.Parameters["Texture"].SetResource(Texture);
 			Drawer.Parameters["texsampler"].SetResource(Device.SamplerStates.LinearWrap);
 			Drawer.CurrentTechnique.Passes[(int)Mode].Apply();
+			//Device.DrawInstanced(PrimitiveType.TriangleList, 6, VertexDataBuffer.ElementCount);
 			Device.DrawInstanced(PrimitiveType.TriangleList, 6, VertexDataBuffer.ElementCount);
 			//Device.DrawIndexedInstanced(PrimitiveType.TriangleList, 3, VertexDataBuffer.ElementCount);
-			
 			LastCount = Count;
 		}
 
@@ -211,7 +211,7 @@ namespace Masa.ParticleEngine
 			Device.SetVertexBuffer(0, IndexVertexBuffer);
 			Device.SetVertexBuffer(1, VertexDataBuffer);
 			var layout = VertexInputLayout.New(VertexBufferLayout.New(0, typeof(ParticleIndexVertex)),
-				VertexBufferLayout.New(1, typeof(ParticleVertex)));
+				VertexBufferLayout.New(1, typeof(ParticleVertex), 1));
 			Device.SetVertexInputLayout(layout);
 		}
 
@@ -249,11 +249,11 @@ namespace Masa.ParticleEngine
 				IndexVertexBuffer.Dispose();
 				IndexVertexBuffer = null;
 			}
-			if (Index != null)
-			{
-				Index.Dispose();
-				Index = null;
-			}
+			//if (Index != null)
+			//{
+			//	Index.Dispose();
+			//	Index = null;
+			//}
 			GC.SuppressFinalize(this);
 		}
 
