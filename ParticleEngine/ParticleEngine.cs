@@ -172,7 +172,7 @@ namespace Masa.ParticleEngine
 			ParamView.SetValue(view * Projection);
 			ParamTime.SetValue(Time);
 			ParamField.SetValue(FieldSize);
-
+			
 			Draw();
 		}
 
@@ -196,7 +196,8 @@ namespace Masa.ParticleEngine
 
 			SetBuffer();
 			//Drawer.Parameters["Texture"].SetResource(Texture);
-			
+			Drawer.Parameters["Texture"].SetResource(Texture);
+			Drawer.Parameters["texsampler"].SetResource(Device.SamplerStates.LinearWrap);
 			Drawer.CurrentTechnique.Passes[(int)Mode].Apply();
 			Device.DrawInstanced(PrimitiveType.TriangleList, 6, VertexDataBuffer.ElementCount);
 			//Device.DrawIndexedInstanced(PrimitiveType.TriangleList, 3, VertexDataBuffer.ElementCount);

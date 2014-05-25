@@ -228,13 +228,13 @@ namespace Masa.ParticleEngine
 			switch (mode)
 			{
 				case ParticleBlendMode.Add:
-					return Device.BlendStates.Additive;
+					return BlendState.New(Device, SharpDX.Direct3D11.BlendOption.SourceAlpha, SharpDX.Direct3D11.BlendOption.One, SharpDX.Direct3D11.BlendOperation.Add, SharpDX.Direct3D11.BlendOption.Zero, SharpDX.Direct3D11.BlendOption.One, SharpDX.Direct3D11.BlendOperation.Add);
 				case ParticleBlendMode.Subtract:
 					throw new NotImplementedException();
 				case ParticleBlendMode.Mul:
 					throw new NotImplementedException();
 				case ParticleBlendMode.Alpha:
-					return Device.BlendStates.AlphaBlend;
+					return Device.BlendStates.NonPremultiplied;
 				default:
 					throw new NotImplementedException();
 			}
@@ -270,7 +270,7 @@ namespace Masa.ParticleEngine
 				effectParams[(int)EffectParam.ViewProjection].SetValue(view * Projection);
 			}
 			effectParams[(int)EffectParam.Offset].SetValue(Offset);
-			effectParams[(int)EffectParam.Time].SetValue(count);
+			effectParams[(int)EffectParam.Time].SetValue((float)count);
 			effectParams[(int)EffectParam.TargetSize].SetValue(FieldSize);
 			
 		}
