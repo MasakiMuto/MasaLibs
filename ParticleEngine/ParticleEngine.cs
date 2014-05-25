@@ -200,7 +200,8 @@ namespace Masa.ParticleEngine
 			Drawer.Parameters["texsampler"].SetResource(Device.SamplerStates.LinearWrap);
 			Drawer.CurrentTechnique.Passes[(int)Mode].Apply();
 			//Device.DrawInstanced(PrimitiveType.TriangleList, 6, VertexDataBuffer.ElementCount);
-			Device.DrawInstanced(PrimitiveType.TriangleList, 6, VertexDataBuffer.ElementCount);
+			Device.Draw(PrimitiveType.PointList, VertexDataBuffer.ElementCount);
+			//Device.DrawInstanced(PrimitiveType.TriangleList, 6, VertexDataBuffer.ElementCount);
 			//Device.DrawIndexedInstanced(PrimitiveType.TriangleList, 3, VertexDataBuffer.ElementCount);
 			LastCount = Count;
 		}
@@ -208,11 +209,13 @@ namespace Masa.ParticleEngine
 		void SetBuffer()
 		{
 			//Device.SetVertexBuffers(bind, IndexVertexBuffer);
-			Device.SetVertexBuffer(0, IndexVertexBuffer);
-			Device.SetVertexBuffer(1, VertexDataBuffer);
-			var layout = VertexInputLayout.New(VertexBufferLayout.New(0, typeof(ParticleIndexVertex)),
-				VertexBufferLayout.New(1, typeof(ParticleVertex), 1));
-			Device.SetVertexInputLayout(layout);
+			//Device.SetVertexBuffer(0, IndexVertexBuffer);
+			//Device.SetVertexBuffer(1, VertexDataBuffer);
+			//var layout = VertexInputLayout.New(VertexBufferLayout.New(0, typeof(ParticleIndexVertex)),
+			//	VertexBufferLayout.New(1, typeof(ParticleVertex), 1));
+			//Device.SetVertexInputLayout(layout);
+			Device.SetVertexBuffer(VertexDataBuffer);
+			Device.SetVertexInputLayout(VertexInputLayout.FromBuffer(0, VertexDataBuffer));
 		}
 
 		
