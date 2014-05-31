@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using SharpDX;
 using SharpDX.Toolkit.Graphics;
-/*
+
 namespace Masa.Lib.XNA
 {
 	public static class GraphicUtil
@@ -202,32 +202,6 @@ namespace Masa.Lib.XNA
 
 		#endregion
 
-
-		#region Stencil
-
-		static DepthStencilState StencilWriter = new DepthStencilState()
-		{
-			StencilEnable = true,
-			StencilPass = StencilOperation.Replace,
-			StencilFunction = CompareFunction.Always,
-			DepthBufferEnable = false,
-			ReferenceStencil = 1
-		};
-
-		static DepthStencilState StencilUser = new DepthStencilState()
-		{
-			StencilEnable = true,
-			StencilPass = StencilOperation.Keep,
-			StencilFunction =  CompareFunction.Equal,
-			ReferenceStencil = 1
-		};
-
-		public static void DrawStencil(this SpriteBatch sprite, Texture2D stencil, Texture2D texture)
-		{
-			sprite.Begin(SpriteSortMode.Deferred, null, null, StencilWriter, null);
-
-		}
-		#endregion
 	}
 }
- */
+ 
