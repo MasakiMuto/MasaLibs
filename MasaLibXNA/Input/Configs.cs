@@ -28,11 +28,11 @@ namespace Masa.Lib.XNA.Input
 
 		public abstract string XElementName { get; } 
 
-		protected ConfigBase(T a, T b, T x, T y, T st, T es, T db)
+		protected ConfigBase(T a, T b, T x, T y, T l, T r, T st, T es, T db)
 		{
 			ButtonArray = new[]
 			{
-				a, b, x, y, st, es, db
+				a, b, x, y, l, r, st, es, db
 			};
 		}
 
@@ -73,21 +73,21 @@ namespace Masa.Lib.XNA.Input
 			ArrowArray = new[] { Keys.Up, Keys.Down, Keys.Left, Keys.Right };
 		}
 
-		public KeyboardConfig(Keys a, Keys b, Keys x, Keys y, Keys st, Keys es, Keys db)
-			: base(a, b, x, y, st, es, db)
+		public KeyboardConfig(Keys a, Keys b, Keys x, Keys y, Keys l, Keys r, Keys st, Keys es, Keys db)
+			: base(a, b, x, y, l, r, st, es, db)
 		{
 
 		}
 
-		public KeyboardConfig(int a, int b, int x, int y, int st, int es, int db)
-			: this((Keys)a, (Keys)b, (Keys)x, (Keys)y, (Keys)st, (Keys)es, (Keys)db)
+		public KeyboardConfig(int a, int b, int x, int y, int l, int r, int st, int es, int db)
+			: this((Keys)a, (Keys)b, (Keys)x, (Keys)y, (Keys)l, (Keys)r, (Keys)st, (Keys)es, (Keys)db)
 		{
 
 		}
 
 		public static KeyboardConfig GetDefault()
 		{
-			return new KeyboardConfig(Keys.Z, Keys.X, Keys.C, Keys.LeftShift, Keys.Enter, Keys.Escape, Keys.F1);
+			return new KeyboardConfig(Keys.Z, Keys.X, Keys.C, Keys.LeftShift, Keys.Q, Keys.E, Keys.Enter, Keys.Escape, Keys.F1);
 		}
 
 		/// <summary>
@@ -100,7 +100,7 @@ namespace Masa.Lib.XNA.Input
 			var b = XElementToKeyNumbers(inputElement);			
 			//int[] b = EnumerateButtonNames().Select(i=> int.Parse(inputElement.Element(i).Value)).ToArray();
 
-			return new KeyboardConfig(b[Buttons.A], b[Buttons.B], b[Buttons.X], b[Buttons.Y], b[Buttons.Start], b[Buttons.Esc], b[Buttons.Debug]);
+			return new KeyboardConfig(b[Buttons.A], b[Buttons.B], b[Buttons.X], b[Buttons.Y], b[Buttons.L], b[Buttons.R], b[Buttons.Start], b[Buttons.Esc], b[Buttons.Debug]);
 		}
 
 	}
@@ -157,21 +157,21 @@ namespace Masa.Lib.XNA.Input
 		}
 
 
-		public PadConfig(MSButton a, MSButton b, MSButton x, MSButton y, MSButton st, MSButton es, MSButton db)
-			: base(a, b, x, y, st, es, db)
+		public PadConfig(MSButton a, MSButton b, MSButton x, MSButton y, MSButton l, MSButton r, MSButton st, MSButton es, MSButton db)
+			: base(a, b, x, y, l, r, st, es, db)
 		{
 
 		}
 
-		public PadConfig(int a, int b, int x, int y, int st, int es, int db)
-			: base(IntToButton(a), IntToButton(b), IntToButton(x), IntToButton(y),
+		public PadConfig(int a, int b, int x, int y, int l, int r, int st, int es, int db)
+			: base(IntToButton(a), IntToButton(b), IntToButton(x), IntToButton(y), IntToButton(l), IntToButton(r),
 			IntToButton(st), IntToButton(es), IntToButton(db))
 		{
 		}
 
 		public static PadConfig GetDefault()
 		{
-			return new PadConfig(MSButton.A, MSButton.B, MSButton.X, MSButton.Y,
+			return new PadConfig(MSButton.A, MSButton.B, MSButton.X, MSButton.Y, MSButton.LeftShoulder, MSButton.RightShoulder,
 				MSButton.Start, MSButton.Back, MSButton.LeftStick);
 		}
 		/// <summary>
@@ -213,7 +213,7 @@ namespace Masa.Lib.XNA.Input
 			var b = XElementToKeyNumbers(inputElement);
 			//int[] b = EnumerateButtonNames().Select(i=> int.Parse(inputElement.Element(i).Value)).ToArray();
 
-			return new PadConfig(b[Buttons.A], b[Buttons.B], b[Buttons.X], b[Buttons.Y], b[Buttons.Start], b[Buttons.Esc], b[Buttons.Debug]);
+			return new PadConfig(b[Buttons.A], b[Buttons.B], b[Buttons.X], b[Buttons.Y],  b[Buttons.L], b[Buttons.R], b[Buttons.Start], b[Buttons.Esc], b[Buttons.Debug]);
 		}
 	}
 }

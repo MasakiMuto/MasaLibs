@@ -69,6 +69,7 @@
     <Compile Include="Graphics\HSVColor.cs" />
     <Compile Include="Graphics\PostEffectCreater.cs" />
     <Compile Include="Graphics\Primitives.cs" />
+    <Compile Include="Input\Button.cs" />
     <Compile Include="Input\Configs.cs" />
     <Compile Include="Input\ControlState.cs" />
     <Compile Include="Input\GamePad.cs" />

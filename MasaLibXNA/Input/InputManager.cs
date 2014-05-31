@@ -14,9 +14,19 @@ namespace Masa.Lib.XNA.Input
 		B,
 		X,
 		Y,
+		L,
+		R,
 		Start,
 		Esc,
 		Debug,
+	}
+
+	public enum Axises
+	{
+		Horizontal1,
+		Verticla1,
+		Horizontal2,
+		Vertical2
 	}
 
 	[Serializable]
@@ -63,42 +73,7 @@ namespace Masa.Lib.XNA.Input
 	
 
 
-	/// <summary>
-	/// コントローラー・キーボードからの入力キーひとつの状態
-	/// </summary>
-	public class Button
-	{
-		int state;
-		public readonly ButtonTag Tag;
-
-		public bool JustPush { get { return (state == 1); } }
-		public bool Push { get { return state > 0; } }
-		public bool JustRelease { get { return state == -1; } }
-		public bool Release { get { return state <= 0; } }
-		public int PushTime { get { return state; } }
-
-		public Button(ButtonTag tag)
-		{
-			Tag = tag;
-		}
-
-		/// <summary>
-		/// 押されているか否かのデータを入力して、情報を更新する
-		/// </summary>
-		/// <param name="p"></param>
-		public void Input(bool p)
-		{
-			if (p)
-			{
-				state++;
-			}
-			else
-			{
-				if (state > 0) state = -1;
-				else state = 0;
-			}
-		}
-	}
+	
 
 	[Flags]
 	public enum ActiveDevice
@@ -447,12 +422,6 @@ namespace Masa.Lib.XNA.Input
 			//HACK キーボード入力全体の保存には未対応ゆえ、KeyStateを使う場合はバグる。
 			inputValue = value;
 			GamePlayControlState.UpdateFromValue(InputValue);
-			//int i = 0;
-			//foreach (var item in GamePlayControlState.Inputs)
-			//{
-			//	item.Input((InputValue & (short)(1 << i)) != 0);
-			//	i++;
-			//}
 		}
 
 		/// <summary>
@@ -461,13 +430,6 @@ namespace Masa.Lib.XNA.Input
 		public void UpdateGamePlayFromControl()
 		{
 			GamePlayControlState.UpdateFromValue(InputValue);
-			//UpdateControlStateInner(GamePlayControlState, InputValue);
-			//int i = 0;
-			//foreach (var item in GamePlayControlState.Inputs)
-			//{
-			//	item.Input((InputValue & (short)(1 << i)) != 0);
-			//	i++;
-			//}
 		}
 
 		/// <summary>
@@ -476,13 +438,6 @@ namespace Masa.Lib.XNA.Input
 		public void UpdateControlState()
 		{
 			ControlState.UpdateFromValue(InputValue);
-			//UpdateControlStateInner(ControlState, InputValue);
-			//int i = 0;
-			//foreach (var item in ControlState.Inputs)
-			//{
-			//	item.Input((InputValue & (short)(1 << i)) != 0);
-			//	i++;
-			//}
 		}
 
 		/// <summary>
