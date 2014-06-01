@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using SlimDX;
-using SlimDX.DirectInput;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework;
-using XInput = Microsoft.Xna.Framework.Input;
+using SharpDX.DirectInput;
 
 namespace Masa.Lib.XNA.Input
 {
@@ -33,13 +28,13 @@ namespace Masa.Lib.XNA.Input
 
 		JoystickState State { get; set; }
 
-		public GamePad(Game game, int lever, int padNumber, DirectInput directInput)
+		public GamePad(int lever, int padNumber, DirectInput directInput)
 		{
 			Config = PadConfig.GetDefault();
 			StickBorder = lever;
 			try
 			{
-				Device = new GamePadDevice(game.Window.Handle, padNumber, directInput);
+				Device = new GamePadDevice(padNumber, directInput);
 			}
 			catch
 			{
@@ -47,8 +42,8 @@ namespace Masa.Lib.XNA.Input
 			}
 		}
 
-		public GamePad(Game game, int lever, DirectInput directInput)
-			: this(game, lever, 0, directInput)
+		public GamePad(int lever, DirectInput directInput)
+			: this(lever, 0, directInput)
 		{
 
 		}
@@ -92,7 +87,7 @@ namespace Masa.Lib.XNA.Input
 			int k = 0;
 			for (k = 0; k < bt.Length; k++)
 			{
-				if (state.IsPressed(bt[k]))
+				if (state.Buttons[bt[k]])
 				{
 					ret += (short)(1 << k);
 				}
@@ -109,21 +104,23 @@ namespace Masa.Lib.XNA.Input
 			return ret;
 		}
 
+		const int Axis = 65536 / 2;
+
 		bool[] ProcessDirection(JoystickState state)
 		{
 			var dir = new bool[4];//0down 1up 2left 3right 
 			int x = state.X;
 			int y = state.Y;
-			int pov = state.GetPointOfViewControllers()[0];
-			if (Math.Abs(y) >= StickBorder)
+			int pov = state.PointOfViewControllers[0];
+			if (Math.Abs(y - Axis) >= StickBorder)
 			{
-				if (y < 0) dir[0] = true;
-				if (y > 0) dir[1] = true;
+				if (y < Axis) dir[0] = true;
+				if (y > Axis) dir[1] = true;
 			}
-			if (Math.Abs(x) >= StickBorder)
+			if (Math.Abs(x - Axis) >= StickBorder)
 			{
-				if (x < 0) dir[2] = true;
-				if (x > 0) dir[3] = true;
+				if (x < Axis) dir[2] = true;
+				if (x > Axis) dir[3] = true;
 			}
 			if (pov != -1)
 			{
@@ -159,7 +156,7 @@ namespace Masa.Lib.XNA.Input
 			}
 			else
 			{
-				return State.GetButtons()
+				return State.Buttons
 					.Select((b, i) => b ? i : -1)
 					.Where(x => x != -1);
 			}

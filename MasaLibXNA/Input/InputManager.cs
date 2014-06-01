@@ -193,7 +193,7 @@ namespace Masa.Lib.XNA.Input
 		int[] lastPushedButton = {};
 		Keys[] lastPushedKey = {};
 
-		internal SlimDX.DirectInput.DirectInput DirectInput { get; private set; }
+		internal SharpDX.DirectInput.DirectInput DirectInput { get; private set; }
 
 		public IEnumerable<GamePadBase> GetGamePads()
 		{
@@ -211,7 +211,7 @@ namespace Masa.Lib.XNA.Input
 		public InputManager(Game game, ActiveDevice device = ActiveDevice.Keyboard | ActiveDevice.Pad, int lever = 500)
 		{
 			Game = game;
-			DirectInput = new SlimDX.DirectInput.DirectInput();
+			DirectInput = new SharpDX.DirectInput.DirectInput();
 			LeverDead = lever;
 			MouseState = new MouseState();
 			var ms = MSInput::Mouse.GetState();
@@ -288,7 +288,7 @@ namespace Masa.Lib.XNA.Input
 				else
 				{
 					GamePads = Enumerable.Range(0, padNum)
-						.Select<int, GamePadBase>(i => new GamePad(Game, LeverDead, i, DirectInput))
+						.Select<int, GamePadBase>(i => new GamePad(LeverDead, i, DirectInput))
 						.Concat(XInputPad.GetAvailableControllers()
 							.Select(x=>new XInputPad(x)))
 						.ToArray();

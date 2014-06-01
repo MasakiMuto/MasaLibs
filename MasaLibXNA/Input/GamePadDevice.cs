@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using SlimDX.DirectInput;
+using SharpDX.DirectInput;
 
 namespace Masa.Lib.XNA.Input
 {
@@ -15,7 +14,7 @@ namespace Masa.Lib.XNA.Input
 
 		static IList<DeviceInstance> GetDevices(DirectInput directInput)
 		{
-			return directInput.GetDevices(DeviceClass.GameController, DeviceEnumerationFlags.AttachedOnly);
+			return directInput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AttachedOnly);
 		}
 
 		/// <summary>
@@ -37,7 +36,7 @@ namespace Masa.Lib.XNA.Input
 			var states = pads.Select(p => p.GetState()).Where(s => s != null);
 			if (states.Any())
 			{
-				bool[] bt = states.Select(s => s.GetButtons())
+				bool[] bt = states.Select(s => s.Buttons)
 					.Aggregate((a, b) => a.Zip(b, (x, y) => x || y).ToArray()).ToArray();//複数パッドを合成
 				return bt;
 			}
@@ -49,9 +48,8 @@ namespace Masa.Lib.XNA.Input
 		/// </summary>
 		/// <param name="window"></param>
 		/// <param name="padNumber">0始まり</param>
-		public GamePadDevice(IntPtr window, int padNumber, DirectInput directInput)
+		public GamePadDevice(int padNumber, DirectInput directInput)
 		{
-
 			var devices = GetDevices(directInput);
 			if (devices.Count <= padNumber)
 			{
@@ -60,9 +58,9 @@ namespace Masa.Lib.XNA.Input
 			try
 			{
 				Stick = new Joystick(directInput, devices[padNumber].InstanceGuid);
-				Stick.SetCooperativeLevel(window, CooperativeLevel.Exclusive | CooperativeLevel.Foreground);
+				//Stick.SetCooperativeLevel(window, CooperativeLevel.Exclusive | CooperativeLevel.Foreground);
 			}
-			catch (DirectInputException e)
+			catch (Exception e)
 			{
 				throw new Exception("パッドの初期化に失敗", e);
 			}
@@ -70,10 +68,10 @@ namespace Masa.Lib.XNA.Input
 			///スティックの範囲設定
 			foreach (var item in Stick.GetObjects())
 			{
-				if ((item.ObjectType & ObjectDeviceType.Axis) != 0)
-				{
-					Stick.GetObjectPropertiesById((int)item.ObjectType).SetRange(-1000, 1000);
-				}
+				//if ((item.ObjectType & .Axis) != 0)
+				//{
+				//	Stick.GetObjectPropertiesById((int)item.ObjectType).SetRange(-1000, 1000);
+				//}
 
 			}
 			Stick.Acquire();
@@ -83,8 +81,8 @@ namespace Masa.Lib.XNA.Input
 		/// ゲームパッドのデバイスを生成。1番目のパッドを使用。
 		/// </summary>
 		/// <param name="window"></param>
-		public GamePadDevice(IntPtr window, DirectInput directInput)
-			: this(window, 0, directInput)
+		public GamePadDevice(DirectInput directInput)
+			: this(0, directInput)
 		{
 
 		}
@@ -95,14 +93,16 @@ namespace Masa.Lib.XNA.Input
 			{
 				return null;
 			}
-			if (Stick.Acquire().IsFailure)
-			{
-				return null;
-			}
-			if (Stick.Poll().IsFailure)
-			{
-				throw new Exception();
-			}
+			Stick.Acquire();
+			Stick.Poll();
+			//if (Stick.Acquire().IsFailure)
+			//{
+			//	return null;
+			//}
+			//if (Stick.Poll().IsFailure)
+			//{
+			//	throw new Exception();
+			//}
 
 			return Stick.GetCurrentState();
 		}
