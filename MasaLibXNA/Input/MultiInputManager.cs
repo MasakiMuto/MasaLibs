@@ -17,8 +17,8 @@ namespace Masa.Lib.XNA.Input
 			private set;
 		}
 
-		public MultiInputManager()
-			: base()
+		public MultiInputManager(ActiveDevice devices)
+			: base(devices)
 		{
 
 		}
