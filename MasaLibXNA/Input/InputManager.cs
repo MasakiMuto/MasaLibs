@@ -295,6 +295,7 @@ namespace Masa.Lib.XNA.Input
 				if (padNum == 0)
 				{
 					Device -= ActiveDevice.Pad;
+					GamePads = null;
 				}
 				else
 				{

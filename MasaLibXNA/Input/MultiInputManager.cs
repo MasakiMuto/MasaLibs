@@ -45,7 +45,15 @@ namespace Masa.Lib.XNA.Input
 		public override void InitDevices(ActiveDevice device)
 		{
 			base.InitDevices(device);
-			ControlStates = new[] { new ControlState() }.Concat(GamePads.Select(x => x != null ? new ControlState() : null)).ToArray();
+			if (GamePads != null)
+			{
+				ControlStates = new[] { new ControlState() }.Concat(GamePads.Select(x => x != null ? new ControlState() : null)).ToArray();
+			}
+			else
+			{
+				ControlStates = new[] { new ControlState() };
+			}
+			
 		}
 
 		public override void Update()
