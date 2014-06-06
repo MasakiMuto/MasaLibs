@@ -32,7 +32,6 @@ namespace Masa.ParticleEngine
 		//static readonly Matrix Default2DView = Matrix.CreateLookAt(new Vector3(0, 0, 10), Vector3.Zero, Vector3.Up);
 		protected readonly GraphicsDevice Device;
 		internal Random Random;
-		Viewport viewport;
 		readonly Effect particleEffect;
 		int count;
 		public Matrix Projection { get; set; }
@@ -60,7 +59,6 @@ namespace Masa.ParticleEngine
 			ParticleMode mode, Matrix projection, Vector2 filedSize,
 			IEnumerable<ParticleManagerInitializer> particle, Random rnd)
 		{
-			viewport = new Viewport(0, 0, (int)filedSize.X, (int)filedSize.Y);
 			Script = script;
 			effects = new LinkedPoolObjectBaseManager<ScriptEffect>();
 			if (rnd == null)
@@ -258,7 +256,6 @@ namespace Masa.ParticleEngine
 			//Device. = Device.SamplerStates.LinearWrap;
 			
 			Device.SetRasterizerState(Device.RasterizerStates.CullNone);
-			Device.Viewport = viewport;
 			if (mode == ParticleMode.TwoD)
 			{
 				Device.SetDepthStencilState(Device.DepthStencilStates.None);
