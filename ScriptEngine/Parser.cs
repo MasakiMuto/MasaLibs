@@ -13,7 +13,7 @@ namespace Masa.ScriptEngine
 	class PareBlock
 	{
 		public object[] tokens;
-		public PareBlock(object[] t)
+		public PareBlock(IEnumerable<object> t)
 		{
 			tokens = Parser.ParseStatement(t);//再帰
 		}
@@ -55,18 +55,19 @@ namespace Masa.ScriptEngine
 	{
 		public object[] Tokens;
 		public string Name;
-		public OptionBlock(object[] t)
+		public OptionBlock(IEnumerable<object> t)
 		{
-			if (t.Length == 0)
+			var obj = t.FirstOrDefault();
+			if (obj == null)
 			{
 				throw new ParseException("オプションの記法が不正\n : の後にトークンがない");
 			}
-			if (!(t[0] is string))
+			Name = obj as string;
+			if (Name == null)
 			{
 				throw new ParseException("オプションの記法が不正\n : 後のトークンが文字列でない");
 			}
 			//tokens = t;
-			Name = (string)t[0];
 			Tokens = Parser.ParseStatement(t.Skip(1).ToArray());//再帰
 		}
 
@@ -153,12 +154,9 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		/// <param name="line"></param>
 		/// <returns></returns>
-		internal static object[] ParseStatement(object[] line)
+		internal static object[] ParseStatement(IEnumerable<object> line)
 		{
-			object[] tokens = GroupToPareBlock(line);
-			tokens = GroupToOptionBlock(tokens);
-			tokens = GroupToDotBlock(tokens);
-			return tokens;
+			return GroupToDotBlock(GroupToOptionBlock(GroupToPareBlock(line)));
 		}
 
 		/// <summary>
@@ -167,17 +165,21 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		/// <param name="line"></param>
 		/// <returns></returns>
-		static object[] GroupToPareBlock(object[] line)
+		static object[] GroupToPareBlock(IEnumerable<object> line)
 		{
 			var ret = new List<object>();
 			var inner = new List<object>();
 			int pareLevel = 0;
 			bool addFlag;
-			for (int i = 0; i < line.Length; i++)
+			foreach (object token in line)
 			{
-				object token = line[i];
 				addFlag = true;
-				if (Marks.PareOp.Equals(token))
+				var mark = Marks.No;
+				if (token is Marks)
+				{
+					mark = (Marks)token;
+				}
+				if (mark == Marks.PareOp)
 				{
 					if (pareLevel == 0)
 					{
@@ -185,13 +187,13 @@ namespace Masa.ScriptEngine
 					}
 					pareLevel++;
 				}
-				if (Marks.PareCl.Equals(token))
+				else if (mark == Marks.PareCl)
 				{
 					pareLevel--;
 					if (pareLevel == 0)
 					{
 						addFlag = false;
-						var p = new PareBlock(inner.ToArray());
+						var p = new PareBlock(inner);
 						ret.Add(p);
 						inner.Clear();
 					}
@@ -219,25 +221,19 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		/// <param name="line"></param>
 		/// <returns></returns>
-		static object[] GroupToOptionBlock(object[] line)
+		static IEnumerable<object> GroupToOptionBlock(IEnumerable<object> line)
 		{
 			var ret = new List<object>();
 			var inner = new List<object>();
 			bool inOption = false;
-			Action generate = () =>
+			foreach (object token in line)
 			{
-				ret.Add(new OptionBlock(inner.ToArray()));
-				inner.Clear();
-
-			};
-			for (int i = 0; i < line.Length; i++)
-			{
-				object token = line[i];
 				if (Marks.Colon.Equals(token))
 				{
 					if (inOption)
 					{
-						generate();
+						ret.Add(new OptionBlock(inner));
+						inner.Clear();
 					}
 					else
 					{
@@ -256,9 +252,11 @@ namespace Masa.ScriptEngine
 					}
 				}
 			}
+			
 			if (inOption)
 			{
-				generate();
+				ret.Add(new OptionBlock(inner));
+				inner.Clear();
 			}
 			return ret.ToArray();
 		}
@@ -268,11 +266,10 @@ namespace Masa.ScriptEngine
 		/// </summary>
 		/// <param name="block"></param>
 		/// <returns></returns>
-		static object[] GroupToDotBlock(object[] block)
+		static object[] GroupToDotBlock(IEnumerable<object> block)
 		{
-			for (int i = 0; i < block.Length; i++)
+			foreach (object t in block)
 			{
-				object t = block[i];
 				if (t is PareBlock)//引数などに存在しうるドット構文を先に処理
 				{
 					var p = t as PareBlock;
@@ -284,11 +281,12 @@ namespace Masa.ScriptEngine
 					o.Tokens = GroupToDotBlock(o.Tokens);
 				}
 			}
+			
 			var src = new LinkedList<object>(block);
 			LinkedListNode<object> current = src.First;
 			while (current != null)
 			{
-				if (current.Value.Equals(Marks.Dot))
+				if (current.Value is Marks && ((Marks)current.Value) == Marks.Dot)
 				{
 					var dot = new DotBlock(current.Previous.Value, current.Next.Value);
 					src.Remove(current.Previous);
@@ -303,21 +301,6 @@ namespace Masa.ScriptEngine
 				}
 			}
 			return src.ToArray();
-			//var dst = new List<object>();
-			//for (int i = 0; i < block.Length; i++)
-			//{
-			//	object t = block[i];
-			//	if (t.Equals(Marks.Dot))
-			//	{
-			//		var dot = new DotBlock(block[i - 1], block[i + 1]);
-			//		i += 2;
-			//	}
-			//	else
-			//	{
-			//		dst.Add(t);
-			//	}
-			//}
-			//return block;
 		}
 
 		
@@ -380,7 +363,12 @@ namespace Masa.ScriptEngine
 			while (index < tokens.Length)
 			{
 				object token = tokens[index];
-				if (Marks.Return.Equals(token))
+				var mark = Marks.No;
+				if (token is Marks)
+				{
+					mark = (Marks)token;
+				}
+				if (mark == Marks.Return)
 				{
 					ret.Add(line.ToArray());
 					line.Clear();
@@ -388,7 +376,7 @@ namespace Masa.ScriptEngine
 				}
 				else
 				{
-					if (Marks.Semicolon.Equals(token))
+					if (mark == Marks.Semicolon)
 					{
 						comment = true;
 					}
