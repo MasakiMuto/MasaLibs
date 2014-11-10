@@ -31,9 +31,8 @@ namespace Masa.ParticleEngine
 		readonly string[] textureTable;//ScriptEffectのスクリプト生成に使うTable
 		internal readonly ScriptEngine.ScriptManager Script;
 		//static readonly Matrix Default2DView = Matrix.CreateLookAt(new Vector3(0, 0, 10), Vector3.Zero, Vector3.Up);
-		readonly GraphicsDevice Device;
+		protected readonly GraphicsDevice Device;
 		internal Random Random;
-		Viewport viewport;
 		readonly Effect particleEffect;
 		int count;
 		public Matrix Projection { get; set; }
@@ -71,7 +70,6 @@ namespace Masa.ParticleEngine
 			ParticleMode mode, Matrix projection, Vector2 filedSize,
 			IEnumerable<ParticleManagerInitializer> particle, Random rnd)
 		{
-			viewport = new Viewport(0, 0, (int)filedSize.X, (int)filedSize.Y);
 			Script = script;
 			effects = new LinkedPoolObjectBaseManager<ScriptEffect>();
 			if (rnd == null)
@@ -114,7 +112,7 @@ namespace Masa.ParticleEngine
 
 
 		/// <summary>
-		/// 
+		/// 2D用Projection
 		/// </summary>
 		/// <param name="script"></param>
 		/// <param name="device"></param>
@@ -237,13 +235,13 @@ namespace Masa.ParticleEngine
 			switch (mode)
 			{
 				case ParticleBlendMode.Add:
-					return Device.BlendStates.Additive;
+					return BlendState.New(Device, SharpDX.Direct3D11.BlendOption.SourceAlpha, SharpDX.Direct3D11.BlendOption.One, SharpDX.Direct3D11.BlendOperation.Add, SharpDX.Direct3D11.BlendOption.Zero, SharpDX.Direct3D11.BlendOption.One, SharpDX.Direct3D11.BlendOperation.Add);
 				case ParticleBlendMode.Subtract:
 					throw new NotImplementedException();
 				case ParticleBlendMode.Mul:
 					throw new NotImplementedException();
 				case ParticleBlendMode.Alpha:
-					return Device.BlendStates.AlphaBlend;
+					return Device.BlendStates.NonPremultiplied;
 				default:
 					throw new NotImplementedException();
 			}
@@ -271,7 +269,6 @@ namespace Masa.ParticleEngine
 			//Device. = Device.SamplerStates.LinearWrap;
 			
 			Device.SetRasterizerState(Device.RasterizerStates.CullNone);
-			Device.Viewport = viewport;
 			if (mode == ParticleMode.TwoD)
 			{
 				Device.SetDepthStencilState(Device.DepthStencilStates.None);
@@ -283,7 +280,7 @@ namespace Masa.ParticleEngine
 				effectParams[(int)EffectParam.ViewProjection].SetValue(view * Projection);
 			}
 			effectParams[(int)EffectParam.Offset].SetValue(Offset);
-			effectParams[(int)EffectParam.Time].SetValue(count);
+			effectParams[(int)EffectParam.Time].SetValue((float)count);
 			effectParams[(int)EffectParam.TargetSize].SetValue(FieldSize);
 			
 		}
@@ -304,7 +301,7 @@ namespace Masa.ParticleEngine
 		public void DrawLayer(int layer)
 		{
 			SetDrawStates(Matrix.Identity);
-			foreach (var item in particles.Where(p=> p!= null && p.Enable && p.Layer == layer).GroupBy(p=>p.BlendMode))
+			foreach (var item in particles.Where(p=> p!= null && p.Enable && p.Layer == layer).GroupBy(p=>p.BlendMode).OrderByDescending(x=>(int)x.Key))
 			{
 				Device.SetBlendState(GetBlendState(item.Key));
 				foreach (var pt in item)

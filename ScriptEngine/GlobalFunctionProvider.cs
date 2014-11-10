@@ -88,6 +88,16 @@ namespace Masa.ScriptEngine
 			return val.ToString();
 		}
 
+		public static Value Round(Value val)
+		{
+			return (int)val;
+		}
+
+		public static Value Sign(Value val)
+		{
+			return Math.Sign(val);
+		}
+
 		/// <summary>
 		/// 用意されたメソッドの定義
 		/// </summary>
@@ -113,7 +123,8 @@ namespace Masa.ScriptEngine
 			ret.Add("abs", math.GetMethod("Abs", new[] { ValueType }));
 			ret.Add("max", math.GetMethod("Max", new[] { ValueType, ValueType }));
 			ret.Add("min", math.GetMethod("Min", new[] { ValueType, ValueType }));
-			ret["sign"] = math.GetMethod("Sign", args[1]);
+			ret["sign"] = vals.GetMethod("Sign", args[1]);
+			
 			ret["f2"] = ret["float2"] = vals.GetMethod("MakeVector2", args[2]);
 			ret["f3"] = ret["float3"] = vals.GetMethod("MakeVector3", args[3]);
 			ret["f4"] = ret["float4"] = vals.GetMethod("MakeVector4", args[4]);
@@ -127,6 +138,11 @@ namespace Masa.ScriptEngine
 			ret["float2len2"] = vals.GetMethod("GetVectorLengthSquared", vecs);
 			ret["f2x"] = vals.GetMethod("GetVectorX", vecs);
 			ret["f2y"] = vals.GetMethod("GetVectorY", vecs);
+			ret["norm2"] = typeof(Vector2).GetMethod("Normalize", new[]{typeof(Vector2)});
+			ret["norm3"] = typeof(Vector3).GetMethod("Normalize", new[]{typeof(Vector3)});
+			ret["dot2"] = typeof(Vector2).GetMethod("Dot", new[]{typeof(Vector2), typeof(Vector2)});
+			ret["dot3"] = typeof(Vector3).GetMethod("Dot", new[]{typeof(Vector3), typeof(Vector3)});
+
 			ret["in"] = vals.GetMethod("InRange", args[3]);
 			ret["log"] = mu.GetMethod("Log", args[2]);
 			ret["hsv"] = typeof(Masa.Lib.XNA.HSVColor).GetMethod("HSVToRGB");
@@ -137,6 +153,9 @@ namespace Masa.ScriptEngine
 			ret["wrapangle"] = typeof(SharpDX.MathUtil).GetMethod("Mod2PI");
 			ret["tostr"] = vals.GetMethod("ToString", new[]{typeof(object)});
 			ret["valtostr"] = vals.GetMethod("ValueToString");
+			ret["round"] = vals.GetMethod("Round");
+			ret["laim"] = xmath.GetMethod("LimitedAim");
+
 			return ret.ToDictionary(x => x.Key, x => new ScriptMethodInfo(x.Value, x.Key, x.Value.GetParameters().Count()));
 			//return ret;
 		}

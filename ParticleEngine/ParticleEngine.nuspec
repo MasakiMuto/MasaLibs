@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>Masa</authors>
+    <owners>Masa</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>SharpDX ParticleEngine</description>
+    <copyright>Copyright 2014 Masa</copyright>
+    <dependencies>
+      <dependency id="SharpDX" version="2.6.2" />
+      <dependency id="SharpDX.Toolkit.Graphics" version="2.6.2" />
+      <dependency id="SharpDX.DXGI" version="2.6.2" />
+      <dependency id="SharpDX.Direct3D11" version="2.6.2" />
+      <dependency id="MasaLib" version="1.0.0" />
+      <dependency id="MasaLibXNA" version="1.0.0" />
+      <dependency id="ScriptEngine" version="1.0.0" />
+    </dependencies>
+  </metadata>
+</package>

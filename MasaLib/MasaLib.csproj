@@ -24,6 +24,7 @@
     <DocumentationFile>bin\Debug\MasaLib.XML</DocumentationFile>
     <NoWarn>1591, 1573,1570,1587,1572</NoWarn>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

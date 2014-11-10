@@ -84,6 +84,24 @@ namespace Masa.ScriptEngine
 			builder.AppendLine(")");
 		}
 
+		internal static XElement CreateIndex(IEnumerable<Type> types)
+		{
+			var doc = new XElement("html");
+			//doc.SetAttributeValue("xmlns", "http://www.w3.org/1999/xhtml");
+			var head = new XElement("head");
+			var body = new XElement("body");
+			foreach (var item in types.OrderBy(x=>x.Namespace).Select(x=>x.Name).Concat(Enumerable.Repeat("global", 1)))
+			{
+				var a = new XElement("a", item);
+				a.SetAttributeValue("href", item + ".xml");
+				a.SetAttributeValue("target", "main");
+				body.Add(a);
+				body.Add(new XElement("br"));
+			}
+			doc.Add(head, body);
+			return doc;
+		}
+
 		internal static XElement GlobalsToXml(Dictionary<string, MethodInfo> method)
 		{
 			var root = new XElement("class");
@@ -104,7 +122,15 @@ namespace Masa.ScriptEngine
 		internal static XElement ClassToXml(Type target, ClassReflectionInfo info)
 		{
 			var root = new XElement("class");
-			root.Add(NameToXml(target.Name));
+			var atr = Attribute.GetCustomAttribute(target, typeof(ScriptTypeAttribute)) as ScriptTypeAttribute;
+			if (atr != null)
+			{
+				root.Add(NameToXml(target.Name + " (" + atr.Name + ")"));
+			}
+			else
+			{
+				root.Add(NameToXml(target.Name));
+			}
 			var methodRoot = new XElement("methods");
 			methodRoot.Add(info.MethodDict.Select(x => MethodToXml(x.Value)).ToArray());
 			var propRoot = new XElement("propertys");
