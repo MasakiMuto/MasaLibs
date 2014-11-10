@@ -19,6 +19,7 @@ namespace Masa.ParticleEngine
 		{
 			Projection,
 			ViewProjection,
+			World,
 			Offset,
 			Time,
 			TargetSize
@@ -36,6 +37,16 @@ namespace Masa.ParticleEngine
 		readonly Effect particleEffect;
 		int count;
 		public Matrix Projection { get; set; }
+		Matrix world;
+		public Matrix World
+		{
+			get { return world; }
+			set
+			{
+				world = value;
+				effectParams[(int)EffectParam.World].SetValue(world);
+			}	
+		}
 		readonly Vector2 FieldSize;
 		ParticleMode mode;
 		public Vector2 Offset { get; set; }
@@ -97,11 +108,9 @@ namespace Masa.ParticleEngine
 			setParam(EffectParam.Offset, "Offset");
 			setParam(EffectParam.Time, "Time");
 			setParam(EffectParam.TargetSize, "TargetSize");
+			setParam(EffectParam.World, "World");
+			World = Matrix.Identity;
 		}
-
-
-
-		
 
 
 		/// <summary>
@@ -240,6 +249,10 @@ namespace Masa.ParticleEngine
 			}
 		}
 
+		/// <summary>
+		/// 2Dモードではviewは無視される
+		/// </summary>
+		/// <param name="view"></param>
 		public void Draw(Matrix view)
 		{
 			SetDrawStates(view);

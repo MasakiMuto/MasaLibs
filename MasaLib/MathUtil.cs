@@ -225,7 +225,7 @@ namespace Masa.Lib
 
 
 		/// <summary>
-		/// 1以下なら常に0を返す
+		/// dividerが1以下なら常に0を返す
 		/// </summary>
 		/// <param name="x"></param>
 		/// <param name="divider"></param>
@@ -253,7 +253,7 @@ namespace Masa.Lib
 		}
 
 		/// <summary>
-		/// 1以下なら常に0を返す
+		/// dividerが1以下なら常に0を返す
 		/// </summary>
 		/// <param name="x"></param>
 		/// <param name="divider"></param>
