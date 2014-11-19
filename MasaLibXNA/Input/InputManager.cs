@@ -186,6 +186,7 @@ namespace Masa.Lib.XNA.Input
 
 		protected GamePadBase[] GamePads { get; private set; }
 		readonly Game Game;
+
 		readonly int LeverDead;
 		PadConfig padConfig;
 		KeyboardConfig keyConfig;
@@ -441,7 +442,7 @@ namespace Masa.Lib.XNA.Input
 		}
 
 		/// <summary>
-		/// 全てのボタンから押されたボタンを取得する
+		/// 全てのパッドの全てのボタンから押されたボタンを取得する
 		/// </summary>
 		/// <returns>-1なら何も押されていない、それ以外ならPadConfig.IntToButtonに入れられる値</returns>
 		public int GetPushedButton()
@@ -463,7 +464,7 @@ namespace Masa.Lib.XNA.Input
 
 		static readonly Keys[] DirectionKeys = new[] { Keys.Up, Keys.Down, Keys.Left, Keys.Right };
 		/// <summary>
-		/// 全てのキーから押されたキーを取得する
+		/// キーボードの全てのキーから押されたキーを取得する
 		/// </summary>
 		/// <returns>-1なら何も押されてない、それ以外ならMicrosoft.Xna.Framework.Input.Keysにキャスト可能</returns>
 		public int GetPushedKey()

@@ -107,6 +107,11 @@ namespace Masa.Lib.XNA.Input
 			return Stick.GetCurrentState();
 		}
 
+		public string GetDeviceName()
+		{
+			return Stick.Information.InstanceName;
+		}
+
 		public void Dispose()
 		{
 			if (Stick != null)

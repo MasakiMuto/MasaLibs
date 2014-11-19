@@ -21,5 +21,7 @@ namespace Masa.Lib.XNA.Input
 		public abstract IEnumerable<int> GetPushedButton();
 
 		public abstract void Dispose();
+
+		public abstract string GetDeviceName();
 	}
 }

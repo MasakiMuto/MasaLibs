@@ -53,5 +53,25 @@ namespace Masa.Lib.XNA.Input
 				k++;
 			}
 		}
+
+		public IEnumerable<Keys> GetPushedKeys()
+		{
+			return KeyState.GetPressedKeys();
+		}
+
+		public string GetDeviceName()
+		{
+			return "Keyboard";
+		}
+
+		public void Dispose()
+		{
+			GC.SuppressFinalize(this);
+		}
+
+		~KeyBoard()
+		{
+			Dispose();
+		}
 	}
 }

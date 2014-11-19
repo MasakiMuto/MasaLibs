@@ -147,7 +147,10 @@ namespace Masa.Lib.XNA.Input
 			GC.SuppressFinalize(this);
 		}
 
-
+		/// <summary>
+		/// 現在押されているボタンのID
+		/// </summary>
+		/// <returns></returns>
 		public override IEnumerable<int> GetPushedButton()
 		{
 			if (State == null)
@@ -160,6 +163,11 @@ namespace Masa.Lib.XNA.Input
 					.Select((b, i) => b ? i : -1)
 					.Where(x => x != -1);
 			}
+		}
+
+		public override string GetDeviceName()
+		{
+			return Device.GetDeviceName();
 		}
 	}
 }

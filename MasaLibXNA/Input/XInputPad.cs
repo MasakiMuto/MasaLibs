@@ -29,6 +29,11 @@ namespace Masa.Lib.XNA.Input
 			Config = PadConfig.GetDefault();
 		}
 
+		public override string GetDeviceName()
+		{
+			return "XInput Pad ";
+		}
+
 		public override void Update()
 		{
 			GamePadState state = XPad.GetState(padNumber, GamePadDeadZone.IndependentAxes);

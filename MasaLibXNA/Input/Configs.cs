@@ -47,7 +47,12 @@ namespace Masa.Lib.XNA.Input
 
 		public XElement ToXElement()
 		{
-			var item = new XElement(XElementName);
+			return ToXElement(XElementName);
+		}
+
+		public XElement ToXElement(string name)
+		{
+			var item = new XElement(name);
 			item.Add
 			(
 					Enum.GetValues(typeof(Buttons))
