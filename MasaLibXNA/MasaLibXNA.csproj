@@ -113,7 +113,6 @@
     <Compile Include="Input\KeyBoard.cs" />
     <Compile Include="Input\Mouse.cs" />
     <Compile Include="Input\MultiInputManager.cs" />
-    <Compile Include="Input\NativeGamePad.cs" />
     <Compile Include="Input\XInputPad.cs" />
     <Compile Include="ItemSelecter.cs" />
     <Compile Include="LiteCollision.cs" />

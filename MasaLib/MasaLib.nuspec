@@ -11,4 +11,7 @@
     <releaseNotes>Masalib</releaseNotes>
     <copyright>Copyright 2014</copyright>
   </metadata>
+  <files>
+    <file src="bin\Debug\*.pdb" target="lib" />
+  </files>
 </package>

@@ -20,4 +20,7 @@
       <dependency id="MasaLib" version="1.0.0" />
     </dependencies>
   </metadata>
+  <files>
+    <file src="bin\Debug\*.pdb" target="lib" />
+  </files>
 </package>
