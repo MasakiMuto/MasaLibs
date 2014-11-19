@@ -24,12 +24,16 @@ namespace Masa.Lib.XNA.Input
 		{
 			padNumber = number;
 			controller = new SharpDX.XInput.Controller(padNumber);
-
 			if (!controller.IsConnected)
 			{
 				throw new NoDeviceException("XInputパッド" + number.ToString() + "は接続されていない");
 			}
 			Config = PadConfig.GetDefault();
+		}
+
+		public override string GetDeviceName()
+		{
+			return "XInput Pad " + controller.UserIndex;
 		}
 
 		public override void Update()

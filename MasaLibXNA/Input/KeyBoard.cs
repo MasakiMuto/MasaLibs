@@ -64,6 +64,11 @@ namespace Masa.Lib.XNA.Input
 			return KeyState.PressedKeys;
 		}
 
+		public string GetDeviceName()
+		{
+			return keyboard.Information.InstanceName;
+		}
+
 		public void Dispose()
 		{
 			if (keyboard != null)

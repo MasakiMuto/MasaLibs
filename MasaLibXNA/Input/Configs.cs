@@ -46,7 +46,12 @@ namespace Masa.Lib.XNA.Input
 
 		public XElement ToXElement()
 		{
-			var item = new XElement(XElementName);
+			return ToXElement(XElementName);
+		}
+
+		public XElement ToXElement(string name)
+		{
+			var item = new XElement(name);
 			item.Add
 			(
 					Enum.GetValues(typeof(Buttons))
@@ -86,7 +91,7 @@ namespace Masa.Lib.XNA.Input
 
 		public static KeyboardConfig GetDefault()
 		{
-			return new KeyboardConfig(Key.Z, Key.X, Key.C, Key.LeftShift, Key.Q, Key.E, Key.Return, Key.Escape, Key.F1);
+			return new KeyboardConfig(Key.Z, Key.X, Key.C, Key.LeftShift, Key.Q, Key.W, Key.Return, Key.Escape, Key.F1);
 		}
 
 		/// <summary>
@@ -162,7 +167,7 @@ namespace Masa.Lib.XNA.Input
 		public static PadConfig GetDefault()
 		{
 			return new PadConfig(MSButton.A, MSButton.B, MSButton.X, MSButton.Y, MSButton.LeftShoulder, MSButton.RightShoulder,
-				MSButton.Start, MSButton.Back, MSButton.LeftThumb);
+				MSButton.Start, MSButton.Back, MSButton.RightThumb);
 		}
 		/// <summary>
 		/// 対応するボタンがなければしいたけボタンを返す

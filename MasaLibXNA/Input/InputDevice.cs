@@ -9,6 +9,7 @@ namespace Masa.Lib.XNA.Input
 	{
 		void Update();
 		short CurrentValue { get; }
+		string GetDeviceName();
 	}
 
 }
