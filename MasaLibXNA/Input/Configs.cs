@@ -12,7 +12,7 @@ namespace Masa.Lib.XNA.Input
 {
 	public abstract class ConfigBase<T>
 	{
-		public T[] ButtonArray { get; private set; }
+		public T[] ButtonArray { get; protected set; }
 		public T this[Buttons bt]
 		{
 			get
@@ -33,6 +33,11 @@ namespace Masa.Lib.XNA.Input
 			{
 				a, b, x, y, l, r, st, es, db
 			};
+		}
+
+		protected ConfigBase(T[] buttons)
+		{
+			ButtonArray = buttons;
 		}
 
 		protected static Dictionary<Buttons, T> XElementToKeyNumbers(XElement inputElement)
@@ -61,6 +66,8 @@ namespace Masa.Lib.XNA.Input
 			);
 			return item;
 		}
+
+		public abstract void ResetDefault();
 	}
 
 	public class KeyboardConfig : ConfigBase<Key>
@@ -89,9 +96,30 @@ namespace Masa.Lib.XNA.Input
 
 		}
 
+		public KeyboardConfig(Key[] keys)
+			: base(keys)
+		{
+
+		}
+
+		public KeyboardConfig Clone()
+		{
+			return new KeyboardConfig(ButtonArray.Clone() as Key[]);
+		}
+
+		static Key[] GetDefaultButtons()
+		{
+			return new []{Key.Z, Key.X, Key.C, Key.LeftShift, Key.Q, Key.W, Key.Return, Key.Escape, Key.F1};
+		}
+
 		public static KeyboardConfig GetDefault()
 		{
-			return new KeyboardConfig(Key.Z, Key.X, Key.C, Key.LeftShift, Key.Q, Key.W, Key.Return, Key.Escape, Key.F1);
+			return new KeyboardConfig(GetDefaultButtons());
+		}
+
+		public override void ResetDefault()
+		{
+			ButtonArray = GetDefaultButtons();
 		}
 
 		/// <summary>
@@ -164,11 +192,33 @@ namespace Masa.Lib.XNA.Input
 		{
 		}
 
+		public PadConfig(MSButton[] buttons)
+			: base(buttons)
+		{
+
+		}
+
 		public static PadConfig GetDefault()
 		{
-			return new PadConfig(MSButton.A, MSButton.B, MSButton.X, MSButton.Y, MSButton.LeftShoulder, MSButton.RightShoulder,
-				MSButton.Start, MSButton.Back, MSButton.RightThumb);
+			return new PadConfig(GetDefaultButtons());
 		}
+
+		static MSButton[] GetDefaultButtons()
+		{
+			return new[] {MSButton.A, MSButton.B, MSButton.X, MSButton.Y, MSButton.LeftShoulder, MSButton.RightShoulder,
+				MSButton.Start, MSButton.Back, MSButton.RightThumb };
+		}
+
+		public override void ResetDefault()
+		{
+			ButtonArray = GetDefaultButtons();
+		}
+
+		public PadConfig Clone()
+		{
+			return new PadConfig(ButtonArray.Clone() as MSButton[]);
+		}
+
 		/// <summary>
 		/// 対応するボタンがなければしいたけボタンを返す
 		/// </summary>
