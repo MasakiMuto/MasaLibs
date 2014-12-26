@@ -61,14 +61,14 @@ namespace Masa.ScriptEngine
 	[Serializable]
 	internal class ParseException : Exception
 	{
-		internal ParseException(string msg, Line line)
-			: base(MakeMessage(msg, line))
+		internal ParseException(string msg, Line line, Exception inner = null)
+			: base(MakeMessage(msg, line), inner)
 		{
 
 		}
 
-		internal ParseException(string msg)
-			: base(MakeMessage(msg, null))
+		internal ParseException(string msg, Exception inner = null)
+			: base(MakeMessage(msg, null), inner)
 		{
 
 		}

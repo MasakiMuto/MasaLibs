@@ -364,30 +364,36 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		Expression ProcessStatement(Line line)
 		{
-			var id = line.Tokens[0] as string;
-			if (id == "var")
+			try
 			{
-				return DefineVariable(line);
-			}
-			if (id == "varg")
-			{
-				if (line.Tokens.Length > 2)
+				var id = line.Tokens[0] as string;
+				if (id == "var")
 				{
-					throw new ParseException("varg宣言の後に無効なトークン(初期化不可能)", line);
+					return DefineVariable(line);
 				}
-				//return new GlobalVar((string)line[1]);
-				GlobalVarList.Add((string)line.Tokens[1]);
-				return null;
-			}
+				if (id == "varg")
+				{
+					if (line.Tokens.Length > 2)
+					{
+						throw new ParseException("varg宣言の後に無効なトークン(初期化不可能)", line);
+					}
+					//return new GlobalVar((string)line[1]);
+					GlobalVarList.Add((string)line.Tokens[1]);
+					return null;
+				}
 
-			var mark = IsAssignLine(line);
-			if (mark != Marks.No)
+				var mark = IsAssignLine(line);
+				if (mark != Marks.No)
+				{
+					return ProcessAssign(line, mark);
+				}
+				//line[1]がMarkでない && var系でない
+				return ProcessNormalStatement(line);
+			}
+			catch(Exception e)
 			{
-				return ProcessAssign(line, mark);
+				throw new ParseException("Statement Error", line, e);
 			}
-			//line[1]がMarkでない && var系でない
-			return ProcessNormalStatement(line);
-
 		}
 
 		/// <summary>
