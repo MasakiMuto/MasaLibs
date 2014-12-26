@@ -117,9 +117,16 @@ namespace Masa.Lib.XNA.Input
 		{
 			if (Stick != null)
 			{
-				Stick.Unacquire();
-				Stick.Dispose();
-				Stick = null;
+				try
+				{
+					Stick.Unacquire();
+					Stick.Dispose();
+				}
+				catch { }
+				finally
+				{
+					Stick = null;
+				}
 			}
 			GC.SuppressFinalize(this);
 		}
