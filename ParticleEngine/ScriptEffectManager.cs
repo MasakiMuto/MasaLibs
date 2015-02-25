@@ -8,6 +8,10 @@ using Masa.Lib;
 
 namespace Masa.ParticleEngine
 {
+	public interface ISoundPlayer
+	{
+		void PlaySound(string name);
+	}
 
 
 	/// <summary>
@@ -40,6 +44,8 @@ namespace Masa.ParticleEngine
 		ParticleMode mode;
 		public Vector2 Offset { get; set; }
 		readonly EffectParameter[] effectParams;
+
+		public ISoundPlayer SoundPlayer { get; set; }
 
 		public Effect ParticleEffect
 		{

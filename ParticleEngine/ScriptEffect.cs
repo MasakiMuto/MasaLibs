@@ -85,60 +85,11 @@ namespace Masa.ParticleEngine
 			Manager.MakeParticle((int)name, new ParticleParameter(p, vel, ac, alphaInitial, alphaVel, alphaAccel, radius, new Vector2(angle.ValueOr0(), angleVel.ValueOr0()), color == Vector3.Zero ? Vector3.One : color));
 		}
 
-		//Vector3 MakeVector(float r, float theta, float phy)//極座標
-		//{
-		//    if (phy.IsNan())
-		//    {
-		//        return new Vector3(MathUtil.GetVector(r, theta), 0);
-		//    }
-		//    else
-		//    {
-		//        return MathUtil.GetVector(r, theta, phy);
-		//    }
-		//}
-
-		//[ScriptMember("vanish")]
-		//protected void Vanish()
-		//{
-		//    Flag = false;
-		//}
-
-		//[ScriptMember("rand")]
-		//protected float Rand()
-		//{
-		//    return rand.Next();
-		//}
-
-		//[ScriptMember("randpm")]
-		//protected float RandPM()
-		//{
-		//    return rand.NextPN();
-		//}
-
-		//[ScriptMember("x0")]
-		//protected float _X { get { return Position.X; } }
-		//[ScriptMember("y0")]
-		//protected float _Y { get { return Position.Y; } }
-		//[ScriptMember("z0")]
-		//protected float _Z { get { return Position.Z; } }
-
-		///// <summary>
-		///// 歪みrand
-		///// </summary>
-		///// <param name="max"></param>
-		///// <param name="a"></param>
-		///// <returns></returns>
-		//[ScriptMember("randdis")]
-		//protected float RandDist(float max, float a)
-		//{
-		//    return rand.NextDistorted(max, a);
-		//}
-
-		//[ScriptMember("randnml")]
-		//protected float RandNormal(float average, float dis)
-		//{
-		//    return (float)rand.NextNormal(average, dis);
-		//}
+		[ScriptMember("sound")]
+		protected void PlaySound(string name)
+		{
+			Manager.SoundPlayer.PlaySound(name);
+		}
 
 		[ScriptMember("x0")]
 		protected float _X { get { return Position.X; } }
