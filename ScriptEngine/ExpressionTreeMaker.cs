@@ -677,7 +677,7 @@ namespace Masa.ScriptEngine
 		/// <returns></returns>
 		Expression Assign(Marks mark, Expression target, Expression value)
 		{
-			if (!target.Type.IsAssignableFrom(value.Type))
+			if (mark == Marks.Sub && !target.Type.IsAssignableFrom(value.Type))
 			{
 				if(target.Type == typeof(bool))
 				{
