@@ -95,6 +95,7 @@
     <Compile Include="MathUtilXNA.cs" />
     <Compile Include="Graphics\PrimitiveBatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScriptDefinition.cs" />
     <Compile Include="Selecter.cs" />
     <Compile Include="Graphics\TextureColorConverter.cs" />
     <Compile Include="Graphics\WritableVertexBuffer.cs" />
@@ -105,6 +106,10 @@
     <ProjectReference Include="..\MasaLib\MasaLib.csproj">
       <Project>{badd7c9a-bc50-46cf-882c-58d597dc8495}</Project>
       <Name>MasaLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ScriptEngine\ScriptEngine.csproj">
+      <Project>{62865417-0f86-47a2-97e6-1dea541f7b23}</Project>
+      <Name>ScriptEngine</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -192,11 +192,16 @@ namespace Masa.Lib.XNA
 
 		#endregion
 
+		public void Draw(Vector2 targetSize)
+		{
+			Draw(targetSize, Vector2.Zero);
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="targetSize">レンダリングターゲットの大きさ</param>
-		public void Draw(Vector2 targetSize)
+		public void Draw(Vector2 targetSize, Vector2 offset)
 		{
 			if (lastPosition == 0)
 			{
@@ -212,6 +217,7 @@ namespace Masa.Lib.XNA
 			{
 				pass = beltEffect.CurrentTechnique.Passes[0];
 			}
+			beltEffect.Parameters["offset"].SetValue(offset);
 			halfTargetSizeInv.SetValue(targetSize.Inverse() * 2f);
 			graphics.DepthStencilState = DepthStencilState.None;
 			graphics.BlendState = BlendState.AlphaBlend;

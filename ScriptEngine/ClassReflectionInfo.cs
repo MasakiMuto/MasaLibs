@@ -12,7 +12,7 @@ namespace Masa.ScriptEngine
 	using PropDict = Dictionary<string, ScriptPropertyInfo>;
 	using FieldDict = Dictionary<string, FieldInfo>;
 
-	class ClassReflectionInfo
+	public class ClassReflectionInfo
 	{
 		public readonly MethodDict StaticMethodDict;
 		public readonly MethodDict MethodDict;

@@ -10,8 +10,6 @@ using MoreLinq;
 namespace Masa.ScriptEngine
 {
 	using Value = System.Single;
-	using Vector2 = Microsoft.Xna.Framework.Vector2;
-	using Vector3 = Microsoft.Xna.Framework.Vector3;
 
 	//[AttributeUsage(AttributeTargets.Method, Inherited = true)]
 	//public class ScriptDefinedMethodAttribute : Attribute
@@ -135,7 +133,7 @@ namespace Masa.ScriptEngine
 		}
 	}
 
-	internal class ScriptMethodInfo
+	public class ScriptMethodInfo
 	{
 		public readonly string Name;
 		public readonly MethodInfo MethodInfo;
@@ -158,7 +156,7 @@ namespace Masa.ScriptEngine
 		/// <param name="method"></param>
 		/// <param name="name"></param>
 		/// <param name="paramCount"></param>
-		internal ScriptMethodInfo(MethodInfo method, string name, int paramCount)
+		public ScriptMethodInfo(MethodInfo method, string name, int paramCount)
 		{
 			MethodInfo = method;
 			Name = name;
@@ -166,7 +164,7 @@ namespace Masa.ScriptEngine
 			Attribute = null;
 		}
 
-		internal ScriptMethodInfo(MethodInfo method, ScriptMemberAttribute atr)
+		public ScriptMethodInfo(MethodInfo method, ScriptMemberAttribute atr)
 		{
 			MethodInfo = method;
 		
@@ -189,7 +187,7 @@ namespace Masa.ScriptEngine
 		}
 	}
 
-	internal class ScriptPropertyInfo
+	public class ScriptPropertyInfo
 	{
 		public readonly string Name;
 		public readonly PropertyInfo PropertyInfo;

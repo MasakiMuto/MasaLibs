@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Masa.Lib.XNA;
 using Masa.Lib;
-using Microsoft.Xna.Framework;
 using System.Linq.Expressions;
 using System.Reflection;
 using MoreLinq;

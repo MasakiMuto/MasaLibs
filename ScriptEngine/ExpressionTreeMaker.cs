@@ -12,8 +12,6 @@ namespace Masa.ScriptEngine
 {
 	using System.Diagnostics;
 	using Value = System.Single;
-	using Vector2 = Microsoft.Xna.Framework.Vector2;
-	using Vector3 = Microsoft.Xna.Framework.Vector3;
 
 	public class ExpressionTreeMaker : IExpressionTreeMaker
 	{
@@ -45,10 +43,42 @@ namespace Masa.ScriptEngine
 		//static readonly LabelTarget LOOPEND = Expression.Label("EndLoop");
 		//static readonly Dictionary<string, FieldInfo> EnvironmentField = ExpressionTreeMakerHelper.GetEnvironmentFieldInfo();
 		static readonly Dictionary<string, PropertyInfo> EnvironmentProperty = ExpressionTreeMakerHelper.GetEnvironmentPropertyInfo();
-		static readonly Dictionary<string, ScriptMethodInfo> StaticMethodDict = GlobalFunctionProvider.GetStaticMethodInfo();
-		static readonly Dictionary<Type, ClassReflectionInfo> ReflectionCashe = GlobalFunctionProvider.GetLibraryClassScriptInfo();
-		static readonly Dictionary<string, Expression> ConstantValueDict = GlobalFunctionProvider.GetConstantValueDictionary();
-		static readonly Dictionary<string, Type> TypeNameDictionary = GlobalFunctionProvider.GetTypeNameDictionary();//組み込み型のスクリプト内名称
+		static Dictionary<string, ScriptMethodInfo> StaticMethodDict = GlobalFunctionProvider.GetStaticMethodInfo();
+		static Dictionary<Type, ClassReflectionInfo> ReflectionCashe = new Dictionary<Type, ClassReflectionInfo>();
+		static Dictionary<string, Expression> ConstantValueDict = GlobalFunctionProvider.GetConstantValueDictionary();
+		static Dictionary<string, Type> TypeNameDictionary = GlobalFunctionProvider.GetTypeNameDictionary();//組み込み型のスクリプト内名称
+
+		public static void AddDictionarys(Dictionary<string, ScriptMethodInfo> staticMethods, Dictionary<Type, ClassReflectionInfo> libraryClasses, Dictionary<string, Expression> constants, Dictionary<string, Type> typeNames)
+		{
+			if (staticMethods != null)
+			{
+				foreach (var item in staticMethods)
+				{
+					StaticMethodDict[item.Key] = item.Value;
+				}
+			}
+			if (libraryClasses != null)
+			{
+				foreach (var item in libraryClasses)
+				{
+					ReflectionCashe[item.Key] = item.Value;
+				}
+			}
+			if (constants != null)
+			{
+				foreach (var item in constants)
+				{
+					ConstantValueDict[item.Key] = item.Value;
+				}
+			}
+			if (typeNames != null)
+			{
+				foreach (var item in typeNames)
+				{
+					TypeNameDictionary[item.Key] = item.Value;
+				}
+			}
+		}
 
 		public ExpressionTreeMaker(object[] token, Type targetType)
 			: this(token, targetType, null)
