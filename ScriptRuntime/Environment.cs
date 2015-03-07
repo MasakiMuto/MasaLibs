@@ -54,7 +54,7 @@ namespace Masa.ScriptEngine
 		public static readonly PropertyInfo Info_State = typeof(Environment).GetProperty("State");
 
 		float[] GlobalVar;
-		internal object TargetObject;
+		public object TargetObject;
 
 	
 		internal float this[int i]
