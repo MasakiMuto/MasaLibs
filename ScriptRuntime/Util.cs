@@ -17,7 +17,7 @@ namespace Masa.ScriptEngine
 
 	//}
 
-	class Line
+	public class Line
 	{
 		/// <summary>
 		/// テキストエディタ上での行番号
@@ -57,15 +57,15 @@ namespace Masa.ScriptEngine
 	}
 
 	[Serializable]
-	internal class ParseException : Exception
+	public class ParseException : Exception
 	{
-		internal ParseException(string msg, Line line, Exception inner = null)
+		public ParseException(string msg, Line line, Exception inner = null)
 			: base(MakeMessage(msg, line), inner)
 		{
 
 		}
 
-		internal ParseException(string msg, Exception inner = null)
+		public ParseException(string msg, Exception inner = null)
 			: base(MakeMessage(msg, null), inner)
 		{
 

@@ -48,10 +48,10 @@ namespace Masa.ScriptEngine
 
 	public class Environment : SimpleEnvironment
 	{
-		internal static readonly FieldInfo Info_TargetObject = typeof(Environment).GetField("TargetObject", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-		internal static readonly PropertyInfo Info_StateFrame = typeof(Environment).GetProperty("StateFrame");
-		internal static readonly PropertyInfo Info_Item = typeof(Environment).GetProperty("Item", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-		internal static readonly PropertyInfo Info_State = typeof(Environment).GetProperty("State");
+		public static readonly FieldInfo Info_TargetObject = typeof(Environment).GetField("TargetObject", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+		public static readonly PropertyInfo Info_StateFrame = typeof(Environment).GetProperty("StateFrame");
+		public static readonly PropertyInfo Info_Item = typeof(Environment).GetProperty("Item", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+		public static readonly PropertyInfo Info_State = typeof(Environment).GetProperty("State");
 
 		float[] GlobalVar;
 		internal object TargetObject;
