@@ -21,66 +21,33 @@ namespace Masa.ScriptEngine
 			ModuleBuilder mdlBldr = asmBldr.DefineDynamicModule(mdl, asmName.Name + ".dll");
 			foreach (var f in files)
 			{
-				TypeBuilder typBldr = mdlBldr.DefineType(nameSpace + "." + Path.GetFileNameWithoutExtension(f), TypeAttributes.Public | TypeAttributes.Abstract);
-				var scan = new Scanner(File.ReadAllText(f), header);
-				var tree = new ExpressionTreeMaker(scan.Tokens.ToArray(), target, table);
-				tree.Compile(GetMethodBuilder(typBldr, "main"));
-				if (labels != null)
-				{
-					foreach (var l in labels)
-					{
-						if (tree.LabelExist(l))
-						{
-							tree.CompileLabel(l, GetMethodBuilder(typBldr, l));
-						}
-					}
-				}
-				int gvn = tree.GlobalVarNumber;
-				//System.Linq.Expressions.Expression<Func<int>> gb = () => (gvn);
-				//gb.CompileToMethod(GetMethodBuilder(typBldr, "GlobalVarNumber"));
-				typBldr.DefineField("GlobalVarNumber", typeof(int), FieldAttributes.Public | FieldAttributes.Static).SetConstant(tree.GlobalVarNumber);
-				var type = typBldr.CreateType();
+				DefineType(mdlBldr, nameSpace, f, target, table, labels, header);
 			}
 
 			asmBldr.Save(asmName.Name + ".dll");
 		}
 
-		/*
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="asm">アセンブリ名</param>
-		/// <param name="mdl">モジュール名</param>
-		/// <param name="cls">名前空間付きのクラス完全名</param>
-		/// <param name="files">スクリプトのパス</param>
-		public static void Compile(string asm, string mdl, string cls, Type target, string[] table, string[] labels, string[] files)
+		static void DefineType(ModuleBuilder module, string nameSpace, string scriptFileName, Type targetType, string[] table, string[] labels, Dictionary<string, string> header)
 		{
-			AssemblyName asmName = new AssemblyName(asm);
-			AssemblyBuilder asmBldr = AppDomain.CurrentDomain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndSave);
-			ModuleBuilder mdlBldr = asmBldr.DefineDynamicModule(mdl, asm + ".dll");
-			TypeBuilder typBldr = mdlBldr.DefineType(cls, TypeAttributes.Public | TypeAttributes.Abstract);
-			foreach (var item in files)
+			var builder = module.DefineType(nameSpace + "." + Path.GetFileNameWithoutExtension(scriptFileName), TypeAttributes.Public | TypeAttributes.Abstract);
+			var scan = new Scanner(File.ReadAllText(scriptFileName), header);
+			var tree = new ExpressionTreeMaker(scan.Tokens.ToArray(), targetType, table);
+			tree.Compile(GetMethodBuilder(builder, "main"));
+			if (labels != null)
 			{
-				string baseName = Path.GetFileNameWithoutExtension(item);
-				MethodBuilder mtd = GetMethodBuilder(typBldr, baseName);
-				var scan = new Scanner(File.ReadAllText(item));
-				var tree = new ExpressionTreeMaker(scan.Tokens.ToArray(), target, table);
-				tree.Compile(mtd);
-				if (labels != null)
+				foreach (var l in labels)
 				{
-					foreach (var l in labels)
+					if (tree.LabelExist(l))
 					{
-						tree.CompileLabel(l, GetMethodBuilder(typBldr, baseName + "_" + l));
+						tree.CompileLabel(l, GetMethodBuilder(builder, l));
 					}
 				}
-				int gvn = tree.GlobalVarNumber;
-				System.Linq.Expressions.Expression<Func<int>> gb = () => (gvn);
-				gb.CompileToMethod(GetMethodBuilder(typBldr, baseName + "_" + "VarNumber"));
 			}
-			var type = typBldr.CreateType();
-			asmBldr.Save(asmName.Name + ".dll");
+			builder.DefineField("GlobalVarNumber", typeof(int), FieldAttributes.Public | FieldAttributes.Static).SetConstant(tree.GlobalVarNumber);
+			builder.CreateType();
 		}
-		 * */
+
+		
 
 		static MethodBuilder GetMethodBuilder(TypeBuilder tp, string name)
 		{
@@ -100,6 +67,29 @@ namespace Masa.ScriptEngine
 		{
 			Compile(name, name, "Script." + target.Name, target, table, labels, Directory.EnumerateFiles(directry, "*.mss", SearchOption.TopDirectoryOnly).ToArray(), header);
 			//Compiler.Compile(directry, directry, "Script." + target.Name + "." + , target, table, labels, Directory.EnumerateFiles(directry, "*.msc", SearchOption.TopDirectoryOnly).ToArray());
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="scriptDirectory">スクリプトのルートディレクトリ</param>
+		/// <param name="outputFile">アセンブリのファイル名(パスを含まない)</param>
+		/// <param name="typeDirectoryDict">ディレクトリ名と型名の対応辞書</param>
+		/// <param name="labels">init込みのラベルリスト</param>
+		/// <param name="header"></param>
+		public static void Compile(string scriptDirectory, string outputFile, Dictionary<string, Type> typeDirectoryDict, string[] labels, Dictionary<string, string> header)
+		{
+			var name = new AssemblyName(Path.GetFileNameWithoutExtension(outputFile));
+			var asm = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save);
+			var module = asm.DefineDynamicModule(name.Name, outputFile);
+			foreach (var item in typeDirectoryDict)
+			{
+				foreach (var file in Directory.EnumerateFiles(Path.Combine(scriptDirectory, item.Key), "*.mss", SearchOption.TopDirectoryOnly))
+				{
+					DefineType(module, "Script." + item.Value.Name, file, item.Value, null, labels, header);
+				}
+			}
+			asm.Save(outputFile);
 		}
 	}
 
