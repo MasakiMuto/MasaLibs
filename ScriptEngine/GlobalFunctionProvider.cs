@@ -9,7 +9,26 @@ using System.Linq.Expressions;
 namespace Masa.ScriptEngine
 {
 	using Value = System.Single;
-	
+
+	public static class ScriptDefinitionHelper
+	{
+		/// <summary>
+		/// tuple of (scriptName, MethodName, argments)
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="names"></param>
+		/// <returns></returns>
+		public static Dictionary<string, ScriptMethodInfo> GetMethods(Type type, IEnumerable<Tuple<string, string, int>> names)
+		{
+			return names.ToDictionary(x => x.Item1, x => new ScriptMethodInfo(type.GetMethod(x.Item2), x.Item1, x.Item3));
+		}
+
+		public static Dictionary<string, ScriptPropertyInfo> GetPropertys(Type type, IEnumerable<Tuple<string, string>> names)
+		{
+			return names.ToDictionary(x => x.Item1, x => new ScriptPropertyInfo(type.GetProperty(x.Item2), x.Item1));
+		}
+
+	}
 
 	static class GlobalFunctionProvider
 	{

@@ -31,6 +31,8 @@ namespace Masa.ScriptEngine
 
 		public ClassReflectionInfo(Type target)
 		{
+			TargetType = target;
+
 			var md = new MethodDict();
 			var pd = new PropDict();
 			var fd = new FieldDict();

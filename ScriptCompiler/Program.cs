@@ -19,11 +19,7 @@ namespace Masa.ScriptCompiler
 		/// <param name="args"></param>
 		static void Main(string[] args)
 		{
-			args = new[] {
-				@"d:\projects\onryonoita\Assets\Resources\Scripts",
-				@"D:\projects\OnryoNoita\Library\ScriptAssemblies\Assembly-CSharp.dll",
-				@"D:\projects\OnryoNoita\Assets\Plugins\hoge.huga",
-			};
+			UnityScriptDefinition.AppendDefinition();
 
 			var asm = Assembly.Load(File.ReadAllBytes(args[1]));
 			var dict = Directory.EnumerateDirectories(args[0], "*", SearchOption.TopDirectoryOnly)
@@ -35,10 +31,6 @@ namespace Masa.ScriptCompiler
 
 			ScriptEngine.Compiler.Compile(args[0], Path.GetFileName(args[2]), dict, new[] { "init" }, null);
 
-			//var t = Path.GetDirectoryName(args[0]);
-			//var type = System.Reflection.Assembly.LoadFile(args[1]).GetType("Enemy");
-			//var name = Path.GetFileNameWithoutExtension(args[2]);
-			//ScriptEngine.Compiler.Compile(args[0], name, type, null, new[]{"init"}, null);
 			File.Copy(Path.GetFileName(args[2]), args[2], true);
 		}
 

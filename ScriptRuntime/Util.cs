@@ -199,6 +199,14 @@ namespace Masa.ScriptEngine
 			Attribute = atr;
 			Name = atr.Name;
 		}
+
+		public ScriptPropertyInfo(PropertyInfo prop, string name)
+		{
+			PropertyInfo = prop;
+			Name = name;
+			Attribute = null;
+		}
+
 	}
 
 	
