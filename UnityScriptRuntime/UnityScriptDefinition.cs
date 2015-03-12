@@ -14,6 +14,7 @@ namespace Masa.ScriptCompiler
 		static Type v3 = typeof(Vector3);
 		static Type v2 = typeof(Vector2);
 		static Type def = typeof(UnityScriptDefinition);
+		static Type math = typeof(Mathf);
 
 		[ScriptMember("float2angle")]
 		public static Vector2 Float2Angle(float length, float angle)
@@ -32,6 +33,7 @@ namespace Masa.ScriptCompiler
 					dict[atr.Name] = new ScriptMethodInfo(item, atr);
 				}
 			}
+			dict["deltaangle"] = new ScriptMethodInfo(math.GetMethod("DeltaAngle"), "deltaangle", 2);
 			return dict;
 		}
 
