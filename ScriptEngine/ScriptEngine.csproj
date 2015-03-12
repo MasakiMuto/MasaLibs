@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArithExpressionMaker.cs" />
-    <Compile Include="ClassReflectionInfo.cs" />
     <Compile Include="CompiledScriptManager.cs" />
     <Compile Include="Compiler.cs" />
     <Compile Include="DocumentCreater.cs" />

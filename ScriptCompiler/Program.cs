@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Masa.ScriptCompiler
 {
@@ -19,7 +20,7 @@ namespace Masa.ScriptCompiler
 		/// <param name="args"></param>
 		static void Main(string[] args)
 		{
-			UnityScriptDefinition.AppendDefinition();
+			Masa.ScriptEngine.ExpressionTreeMaker.AddDictionarys(UnityScriptDefinition.GetStaticMethodInfo(), UnityScriptDefinition.GetLibraryClassScriptInfo(), null, UnityScriptDefinition.GetTypeNameDictionary());
 
 			var asm = Assembly.Load(File.ReadAllBytes(args[1]));
 			var dict = Directory.EnumerateDirectories(args[0], "*", SearchOption.TopDirectoryOnly)
@@ -32,6 +33,32 @@ namespace Masa.ScriptCompiler
 			ScriptEngine.Compiler.Compile(args[0], Path.GetFileName(args[2]), dict, new[] { "init" }, null);
 
 			File.Copy(Path.GetFileName(args[2]), args[2], true);
+
+
+			OutputDocument(Path.Combine(args[0], @"..\..\..\doc"));
+		}
+
+		static void OutputDocument(string dir)
+		{
+			Func<string, string> fileName = x => Path.Combine(dir, x);
+			if (!Directory.Exists(dir))
+			{
+				Directory.CreateDirectory(dir);
+			}
+			foreach (var item in ScriptEngine.ExpressionTreeMaker.OutputClassesXml())
+			{
+				SaveDocument(fileName(item.Key.Name + ".xml"), item.Value);
+			}
+			SaveDocument(fileName("global.xml"), ScriptEngine.ExpressionTreeMaker.OutputGlobalXml());
+			SaveDocument(fileName("list.html"), ScriptEngine.ExpressionTreeMaker.OutputIndex());
+			
+		}
+
+		static void SaveDocument(string fn, XElement elm)
+		{
+			var doc = new XDocument(new XDeclaration("1.0", "utf-8", "yes"), elm);
+			doc.Add(new XProcessingInstruction("xml-stylesheet", "type='text/css' href='doc.css'"));
+			doc.Save(fn);
 		}
 
 

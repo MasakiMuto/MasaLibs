@@ -5,12 +5,15 @@ using System.Text;
 using MoreLinq;
 using System.Reflection;
 using Masa.Lib;
+using ScriptRuntime.Util;
 
 namespace Masa.ScriptEngine
 {
 	using MethodDict = Dictionary<string, ScriptMethodInfo>;
 	using PropDict = Dictionary<string, ScriptPropertyInfo>;
 	using FieldDict = Dictionary<string, FieldInfo>;
+
+	
 
 	public class ClassReflectionInfo
 	{

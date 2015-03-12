@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Masa.ScriptEngine;
 using System.Reflection;
+using ScriptRuntime.Util;
 
 namespace Masa.ScriptCompiler
 {
@@ -21,12 +21,12 @@ namespace Masa.ScriptCompiler
 			return new Vector2(Mathf.Cos(angle) * length, Mathf.Sin(angle) * length);
 		}
 
-		static Dictionary<string, ScriptMethodInfo> GetStaticMethodInfo()
+		public static Dictionary<string, ScriptMethodInfo> GetStaticMethodInfo()
 		{
 			var dict = new Dictionary<string, ScriptMethodInfo>();
 			foreach (var item in def.GetMethods(BindingFlags.Static | BindingFlags.Public))
 			{
-				var atr = item.GetCustomAttribute<ScriptMemberAttribute>();
+				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), false).OfType<ScriptMemberAttribute>().FirstOrDefault();
 				if (atr != null)
 				{
 					dict[atr.Name] = new ScriptMethodInfo(item, atr);
@@ -35,7 +35,7 @@ namespace Masa.ScriptCompiler
 			return dict;
 		}
 
-		static Dictionary<Type, ClassReflectionInfo> GetLibraryClassScriptInfo()
+		public static Dictionary<Type, ClassReflectionInfo> GetLibraryClassScriptInfo()
 		{
 			var dict = new Dictionary<Type, ClassReflectionInfo>();
 			//Func<string, int, Type, Dictionary<string, ScriptMethodInfo>> getMethod = 
@@ -92,16 +92,16 @@ namespace Masa.ScriptCompiler
 				{
 					{"rotate", new ScriptMethodInfo(transform.GetMethod("Rotate", Enumerable.Repeat(typeof(float), 3).ToArray()), "rotate", 3)},
 				},
-				ScriptDefinitionHelper.GetPropertys(transform, new[]{
-					Tuple.Create("pos", "position")
-				}),
+				new Dictionary<string, ScriptPropertyInfo>(){
+					{"pos", new ScriptPropertyInfo(transform.GetProperty("transform"), "pos")}
+				},
 				new Dictionary<string, System.Reflection.FieldInfo>(),
 				new Dictionary<string,ScriptMethodInfo>());
 
 			return dict;
 		}
 
-		static Dictionary<string, Type> GetTypeNameDictionary()
+		public static Dictionary<string, Type> GetTypeNameDictionary()
 		{
 			return new Dictionary<string, Type>()
 			{
@@ -110,9 +110,6 @@ namespace Masa.ScriptCompiler
 			};
 		}
 
-		public static void AppendDefinition(){
-			ExpressionTreeMaker.AddDictionarys(GetStaticMethodInfo(), GetLibraryClassScriptInfo(), null, GetTypeNameDictionary());
-		}
 
 	}
 }

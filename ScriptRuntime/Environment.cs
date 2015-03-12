@@ -57,7 +57,7 @@ namespace Masa.ScriptEngine
 		public object TargetObject;
 
 	
-		internal float this[int i]
+		public float this[int i]
 		{
 			get
 			{

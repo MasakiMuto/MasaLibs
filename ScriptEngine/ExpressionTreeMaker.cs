@@ -78,6 +78,7 @@ namespace Masa.ScriptEngine
 					TypeNameDictionary[item.Key] = item.Value;
 				}
 			}
+			AggregateCache();
 		}
 
 		public ExpressionTreeMaker(object[] token, Type targetType)
@@ -120,6 +121,16 @@ namespace Masa.ScriptEngine
 			if (atr != null)
 			{
 				TypeNameDictionary[atr.Name] = target;
+			}
+			AggregateCache();
+		}
+
+		static void AggregateCache()
+		{
+			foreach (var item in ReflectionCashe)
+			{
+				var target = ReflectionCashe.Where(x => item.Key.IsSubclassOf(x.Key)).Select(x=>x.Value).Except(item.Value.BaseClasses);
+				item.Value.BaseClasses.AddRange(target);
 			}
 		}
 
@@ -299,8 +310,46 @@ namespace Masa.ScriptEngine
 			{
 				return Expression.Property(left, p);
 			}
+			prp = TryGetAncestorProperty(info, id);
+			if (prp != null)
+			{
+				return Expression.Property(left, prp.PropertyInfo);
+			}
+			fld = TryGetAncestorField(info, id);
+			if (fld != null)
+			{
+				return Expression.Field(left, fld);
+			}
+
 			return null;
 		}
+
+		ScriptPropertyInfo TryGetAncestorProperty(ClassReflectionInfo info, string id)
+		{
+			ScriptPropertyInfo r;
+			foreach (var item in info.BaseClasses)
+			{
+				if (item.PropertyDict.TryGetValue(id, out r))
+				{
+					return r;
+				}
+			}
+			return null;
+		}
+
+		FieldInfo TryGetAncestorField(ClassReflectionInfo info, string id)
+		{
+			FieldInfo r;
+			foreach (var item in info.BaseClasses)
+			{
+				if (item.FieldDict.TryGetValue(id, out r))
+				{
+					return r;
+				}
+			}
+			return null;
+		}
+
 
 		/// <summary>
 		/// 文字列を変数(内部変数、Global変数、外部変数、列挙文字列すべて)としてパース。
