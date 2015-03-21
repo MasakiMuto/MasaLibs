@@ -31,7 +31,7 @@ namespace Masa.ScriptEngine
 		{
 			var builder = module.DefineType(nameSpace + "." + Path.GetFileNameWithoutExtension(scriptFileName), TypeAttributes.Public | TypeAttributes.Abstract);
 			var scan = new Scanner(File.ReadAllText(scriptFileName), header);
-			var tree = new ExpressionTreeMaker(scan.Tokens.ToArray(), targetType, table);
+			var tree = new ExpressionTreeMaker(scan.Tokens.ToArray(), targetType, table, false);
 			tree.Compile(GetMethodBuilder(builder, "main"));
 			if (labels != null)
 			{
@@ -86,7 +86,15 @@ namespace Masa.ScriptEngine
 			{
 				foreach (var file in Directory.EnumerateFiles(Path.Combine(scriptDirectory, item.Key), "*.mss", SearchOption.TopDirectoryOnly))
 				{
-					DefineType(module, "Script." + item.Value.Name, file, item.Value, null, labels, header);
+					try
+					{
+						DefineType(module, "Script." + item.Value.Name, file, item.Value, null, labels, header);
+					}
+					catch(Exception e)
+					{
+						throw new Exception("Error in " + file, e);
+					}
+					
 				}
 			}
 			asm.Save(outputFile);

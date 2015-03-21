@@ -24,10 +24,10 @@ namespace Masa.ScriptEngine
 
 		Dictionary<string, Action<Environment>> LabelStatementCashe;
 		Expression[] TotalBlock;
-		List<string> GlobalVarList;
-		List<string> TypeUndefinedVarList;
-		Dictionary<string, ParameterExpression> VarDict;
-		Dictionary<string, Expression> LabelDict;
+		List<string> GlobalVarList = new List<string>();
+		List<string> TypeUndefinedVarList = new List<string>();
+		Dictionary<string, ParameterExpression> VarDict = new Dictionary<string,ParameterExpression>();
+		Dictionary<string, Expression> LabelDict = new Dictionary<string,Expression>();
 		ClassReflectionInfo ClassInfo;
 		ParameterExpression Environment;
 		string[] NameValueTable;
@@ -82,7 +82,7 @@ namespace Masa.ScriptEngine
 		}
 
 		public ExpressionTreeMaker(object[] token, Type targetType)
-			: this(token, targetType, null)
+			: this(token, targetType, null, true)
 		{
 
 		}
@@ -93,19 +93,23 @@ namespace Masa.ScriptEngine
 		/// <param name="token"></param>
 		/// <param name="targetType"></param>
 		/// <param name="nameValueTable"></param>
-		public ExpressionTreeMaker(object[] token, Type targetType, string[] nameValueTable)
+		public ExpressionTreeMaker(object[] token, Type targetType, string[] nameValueTable, bool useStandard)
 		{
 			NameValueTable = nameValueTable;
 			TargetType = targetType;
-			VarDict = new Dictionary<string, ParameterExpression>();
-			LabelDict = new Dictionary<string, Expression>();
 			Environment = Expression.Parameter(typeof(ScriptEngine.Environment));
-			GlobalVarList = new List<string>();
-			TypeUndefinedVarList = new List<string>();
-			//MethodDict = new Dictionary<string, ScriptMethodInfo>();
-			//PropertyDict = new Dictionary<string, PropertyInfo>();
 			GetTargetInfo();
 			Parse(token);
+			if (useStandard)
+			{
+				CompileStandardMethods();
+			}
+		}
+
+		public ExpressionTreeMaker(object[] token, Type targetType, string[] nameValueTable)
+			: this(token, targetType, nameValueTable, true)
+		{
+				
 		}
 
 		#region 準備系
@@ -210,6 +214,12 @@ namespace Masa.ScriptEngine
 			lambda.CompileToMethod(mtd);
 		}
 
+		/// <summary>
+		/// ラベルが見つからなければfalse
+		/// </summary>
+		/// <param name="label"></param>
+		/// <param name="mtd"></param>
+		/// <returns></returns>
 		public bool CompileLabel(string label, System.Reflection.Emit.MethodBuilder mtd)
 		{
 			if (!LabelDict.ContainsKey(label)) return false;
@@ -277,6 +287,11 @@ namespace Masa.ScriptEngine
 			topStatements.Add(Expression.Label(ExitLabel));
 			TotalBlock = topStatements.ToArray();
 
+			
+		}
+
+		void CompileStandardMethods()
+		{
 			var lambda = Expression.Lambda<Action<ScriptEngine.Environment>>(Expression.Block(VarDict.Values, TotalBlock), Environment);
 			//Console.WriteLine(lambda.ToString());
 
