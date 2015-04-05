@@ -12,6 +12,7 @@ namespace Masa.ScriptEngine
 {
 	using System.Diagnostics;
 	using Value = System.Single;
+	using ScriptMethod = Action<Environment>;
 
 	public class ExpressionTreeMaker : IExpressionTreeMaker
 	{
@@ -32,7 +33,11 @@ namespace Masa.ScriptEngine
 		ParameterExpression Environment;
 		string[] NameValueTable;
 		Line[] Lines;
-		
+		public Dictionary<string, List<Expression>> CoroutineDict = new Dictionary<string, List<Expression>>();
+		public Dictionary<string, List<ScriptMethod>> CompiledCoroutineDict;
+
+
+
 		public readonly Type TargetType;
 
 		static readonly LabelTarget ExitLabel = Expression.Label("_ScriptExit");
@@ -228,6 +233,17 @@ namespace Masa.ScriptEngine
 			return true;
 		}
 
+		public void CompileCoroutineNames(System.Reflection.Emit.MethodBuilder mtd)
+		{
+			Expression.Lambda<Func<string[]>>(Expression.NewArrayInit(typeof(string), CoroutineDict.Keys.Select(x => Expression.Constant(x, typeof(string))))).CompileToMethod(mtd);
+			//returns dict
+		}
+
+		public void CompileCoroutineTask(System.Reflection.Emit.MethodBuilder mtd, Expression exp)
+		{
+			Expression.Lambda<Action<Environment>>(Expression.Block(VarDict.Values, exp), Environment).CompileToMethod(mtd);
+		}
+
 		public Type CompileToClass(Type original, string className, System.Reflection.Emit.ModuleBuilder mb)
 		{
 			TypeBuilder tp = mb.DefineType(className, TypeAttributes.Public, original);
@@ -298,6 +314,8 @@ namespace Masa.ScriptEngine
 			Statement = lambda.Compile();
 
 			InitStatement = GetLabelStatement("init");
+
+			CompiledCoroutineDict = CoroutineDict.ToDictionary(x => x.Key, x => x.Value.Select(l => Expression.Lambda<ScriptMethod>(l, Environment).Compile()).ToList());
 		}
 
 		/// <summary>
@@ -844,6 +862,15 @@ namespace Masa.ScriptEngine
 					{
 						throw new ParseException("未定義のラベル " + s, line);
 					}
+				case "coroutine":
+					CreateCoroutineFromBlock((string)line.Tokens[1], TakeBlockLines(line));
+					return null;
+				case "begin":
+					return CallExternalMethodInner(Masa.ScriptEngine.Environment.CoroutineBegin, line.Tokens.Skip(1).ToArray(), Environment);
+				case "break":
+					return CallExternalMethodInner(Masa.ScriptEngine.Environment.CoroutineBreak, line.Tokens.Skip(1).ToArray(), Environment);
+				case "wait":
+					return CallExternalMethodInner(Masa.ScriptEngine.Environment.CoroutineWait, line.Tokens.Skip(1).ToArray(), Environment);
 				case "blank":
 					return Expression.Empty();
 				default:
@@ -1137,20 +1164,25 @@ namespace Masa.ScriptEngine
 
 		Expression InnerGetBlock(List<Expression> list, Line user)
 		{
-			if (Lines[user.Index + 1].Level != user.Level + 1)
+			foreach (var item in TakeBlockLines(user))
 			{
-				throw new ParseException("ブロックの書き方が不正", user);
-			}
-			for (int i = user.Index + 1; i < Lines.Length; i++)
-			{
-				if (Lines[i].Level <= user.Level) break;
-				if (Lines[i].Level == user.Level + 1)
+				if(item.Level == user.Level + 1)
 				{
-					var e = ProcessStatement(Lines[i]);
+					var e = ProcessStatement(item);
 					if (e != null) list.Add(e);
 				}
 			}
+
 			return Expression.Block(list.ToArray());
+		}
+
+		IEnumerable<Line> TakeBlockLines(Line user)
+		{
+			if (Lines.Length <= user.Index + 1 || user.Level + 1 != Lines[user.Index + 1].Level)
+			{
+				throw new ParseException("ブロックの書き方が不正", user);
+			}
+			return Lines.Skip(user.Index + 1).TakeWhile(x => x.Level > user.Level);
 		}
 
 		#endregion
@@ -1227,5 +1259,31 @@ namespace Masa.ScriptEngine
 			}
 			return info;
 		}
+
+		#region Coroutine
+
+		void CreateCoroutineFromBlock(string name, IEnumerable<Line> block)
+		{
+			var list = new List<Expression>();
+			int level = block.First().Level;
+
+			foreach (var item in block)
+			{
+				if (level == item.Level)
+				{
+					var exp = ProcessStatement(item);
+					if (exp != null)
+					{
+						list.Add(exp);
+					}
+				}
+			}
+
+			CoroutineDict[name] = list;
+		}
+
+
+		#endregion
+
 	}
 }

@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClassReflectionInfo.cs" />
+    <Compile Include="Coroutine.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="GlobalFunction.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.MaxBy.cs" />

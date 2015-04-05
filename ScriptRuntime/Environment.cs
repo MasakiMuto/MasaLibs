@@ -7,6 +7,8 @@ using System.Reflection;
 namespace Masa.ScriptEngine
 {
 	using Value = System.Single;
+	using TaskUnit = Action<Environment>;
+
 	public class SimpleEnvironment
 	{
 		[ScriptMember("state")]
@@ -37,7 +39,7 @@ namespace Masa.ScriptEngine
 		[ScriptMember("slcount")]
 		public Value LastStateFrame { get; set; }
 		
-		public void FrameUpdate()
+		public virtual void FrameUpdate()
 		{
 			LastFrame = Frame;
 			LastStateFrame = StateFrame;
@@ -52,11 +54,17 @@ namespace Masa.ScriptEngine
 		public static readonly PropertyInfo Info_StateFrame = typeof(Environment).GetProperty("StateFrame");
 		public static readonly PropertyInfo Info_Item = typeof(Environment).GetProperty("Item", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 		public static readonly PropertyInfo Info_State = typeof(Environment).GetProperty("State");
+		public static readonly ScriptMethodInfo CoroutineBegin = new ScriptMethodInfo(typeof(Environment).GetMethod("BeginCoroutine"), "begin", 1);
+		public static readonly ScriptMethodInfo CoroutineBreak = new ScriptMethodInfo(typeof(Environment).GetMethod("BreakCoroutine"), "break", 0);
+		public static readonly ScriptMethodInfo CoroutineWait = new ScriptMethodInfo(typeof(Environment).GetMethod("SetCoroutineWait"), "wait", 1);
 
 		float[] GlobalVar;
 		public object TargetObject;
 
-	
+		public Dictionary<string, List<TaskUnit>> CoroutineDict { get; set; }
+		LinkedList<Coroutine> coroutines;
+		Coroutine currentCoroutine;
+
 		public float this[int i]
 		{
 			get
@@ -77,6 +85,55 @@ namespace Masa.ScriptEngine
 				GlobalVar = new float[globalNum];
 			}
 			TargetObject = target;
+		}
+
+		public void BeginCoroutine(string name)
+		{
+			if (coroutines == null)
+			{
+				coroutines = new LinkedList<Coroutine>();
+			}
+			coroutines.AddLast(new Coroutine(CoroutineDict[name], this));
+		}
+
+		public void BreakCoroutine()
+		{
+			currentCoroutine.ExitFlag = true;
+		}
+
+		public void SetCoroutineWait(int time)
+		{
+			currentCoroutine.SetWait(time);
+		}
+
+		public override void FrameUpdate()
+		{
+			base.FrameUpdate();
+			if (coroutines != null)
+			{
+				UpdateCoroutines();
+			}
+		}
+
+		void UpdateCoroutines()
+		{
+			var head = coroutines.First;
+			while (head != null)
+			{
+				currentCoroutine = head.Value;
+				currentCoroutine.Update();
+				if (currentCoroutine.ExitFlag)
+				{
+					var tmp = head;
+					head = head.Next;
+					coroutines.Remove(tmp);
+				}
+				else
+				{
+					head = head.Next;
+				}
+			}
+			currentCoroutine = null;
 		}
 
 	}

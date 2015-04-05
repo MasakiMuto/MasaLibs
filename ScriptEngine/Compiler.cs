@@ -43,8 +43,20 @@ namespace Masa.ScriptEngine
 					}
 				}
 			}
+			tree.CompileCoroutineNames(builder.DefineMethod("GetCoroutineNames", MethodAttributes.Public | MethodAttributes.Static, typeof(string[]), Type.EmptyTypes));
+			int i = 0;
+			foreach (var coroutine in tree.CoroutineDict)
+			{
+				i = 0;
+				foreach (var item in coroutine.Value)
+				{
+					tree.CompileCoroutineTask(GetMethodBuilder(builder, "coroutine_" + coroutine.Key + "_" + i), item);
+					i++;
+				}
+			}
 			builder.DefineField("GlobalVarNumber", typeof(int), FieldAttributes.Public | FieldAttributes.Static).SetConstant(tree.GlobalVarNumber);
 			builder.CreateType();
+			
 		}
 
 		
