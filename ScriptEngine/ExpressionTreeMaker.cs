@@ -873,6 +873,10 @@ namespace Masa.ScriptEngine
 					return CallExternalMethodInner(Masa.ScriptEngine.Environment.CoroutineWait, line.Tokens.Skip(1).ToArray(), Environment);
 				case "blank":
 					return Expression.Empty();
+				case "lambda":
+					var name = "_lambda" + CoroutineDict.Count;
+					CreateCoroutineFromBlock(name, TakeBlockLines(line));
+					return CallExternalMethodInner(Masa.ScriptEngine.Environment.CoroutineBegin, new[]{name}, Environment);
 				default:
 					return ProcessExpression(line.Tokens);
 			}
