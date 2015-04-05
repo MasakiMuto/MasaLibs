@@ -807,6 +807,10 @@ namespace Masa.ScriptEngine
 		Expression ProcessNormalStatement(Line line)
 		{
 			Func<Expression> exp = () => ProcessExpression(line.Tokens.Skip(1));
+			if (line.Tokens[0].Equals(Marks.Dollar))
+			{
+				return MakeScountIfStatement(line);
+			}
 			switch (line.Tokens[0] as string)
 			{
 				case "if":
@@ -845,6 +849,12 @@ namespace Masa.ScriptEngine
 				default:
 					return ProcessExpression(line.Tokens);
 			}
+		}
+
+		Expression MakeScountIfStatement(Line line)
+		{
+			var t = ProcessExpression(new[]{ line.Tokens[1] });
+			return Expression.IfThen(Expression.Equal(Expression.Property(Environment, ScriptEngine.Environment.Info_StateFrame), t), ProcessExpression(line.Tokens.Skip(2)));
 		}
 
 		Expression MakeIfStatement(Line line, Expression pred)
