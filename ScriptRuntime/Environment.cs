@@ -23,6 +23,7 @@ namespace Masa.ScriptEngine
 				if (state != value)
 				{
 					state = value;
+					LastStateFrame = -1;
 					StateFrame = 0;
 				}
 			}
@@ -52,6 +53,7 @@ namespace Masa.ScriptEngine
 	{
 		public static readonly FieldInfo Info_TargetObject = typeof(Environment).GetField("TargetObject", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 		public static readonly PropertyInfo Info_StateFrame = typeof(Environment).GetProperty("StateFrame");
+		public static readonly PropertyInfo InfoStateLastFrame = typeof(Environment).GetProperty("LastStateFrame");
 		public static readonly PropertyInfo Info_Item = typeof(Environment).GetProperty("Item", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 		public static readonly PropertyInfo Info_State = typeof(Environment).GetProperty("State");
 		public static readonly ScriptMethodInfo CoroutineBegin = new ScriptMethodInfo(typeof(Environment).GetMethod("BeginCoroutine"), "begin", 1);
@@ -85,6 +87,7 @@ namespace Masa.ScriptEngine
 				GlobalVar = new float[globalNum];
 			}
 			TargetObject = target;
+			LastFrame = -1;
 		}
 
 		public void BeginCoroutine(string name)

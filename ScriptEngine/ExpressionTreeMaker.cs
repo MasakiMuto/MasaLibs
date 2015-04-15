@@ -921,6 +921,7 @@ namespace Masa.ScriptEngine
 			if (opt.Length == 0)
 			{
 				frame = Expression.Property(Environment, ScriptEngine.Environment.Info_StateFrame);
+				last = Expression.Property(Environment, ScriptEngine.Environment.InfoStateLastFrame);
 			}
 			else
 			{
@@ -950,21 +951,21 @@ namespace Masa.ScriptEngine
 					Expression.LessThan(frame, Expression.Add(from, Expression.Multiply(freq, times)))
 				)
 			);
-			if (opt.Length == 0)
-			{
-				//Expression fr = Expression.Field(Environment, ScriptEngine.Environment.Info_StateFrame);
+			//if (opt.Length == 0)
+			//{
+			//	//Expression fr = Expression.Field(Environment, ScriptEngine.Environment.Info_StateFrame);
 
-				//if ((stateFrame >= from &&
-				//(times == 0 || stateFrame < from + freq * times)) &&
-				//((stateFrame - from) % freq == 0))
-				return Expression.IfThen(Expression.AndAlso
-					(
-						firstSentence,
-						Expression.Equal(Expression.Modulo(Expression.Subtract(frame, from), freq), ZeroExpression)
-					),
-					GetBlock(line));
-			}
-			else
+			//	//if ((stateFrame >= from &&
+			//	//(times == 0 || stateFrame < from + freq * times)) &&
+			//	//((stateFrame - from) % freq == 0))
+			//	return Expression.IfThen(Expression.AndAlso
+			//		(
+			//			firstSentence,
+			//			Expression.Equal(Expression.Modulo(Expression.Subtract(frame, from), freq), ZeroExpression)
+			//		),
+			//		GetBlock(line));
+			//}
+			//else
 			{
 				//Expression fr = o.Args[0];
 				//Expression lfr = o.Args[1];
@@ -983,7 +984,7 @@ namespace Masa.ScriptEngine
 					(
 						Expression.Divide
 						(
-							Expression.Subtract(Expression.Subtract(counter, Expression.Constant(0.1f, typeof(float))), from),
+							Expression.Subtract(counter, from),
 							freq
 						),
 						typeof(int)
