@@ -1073,7 +1073,8 @@ namespace Masa.ScriptEngine
 							if (param[x].ParameterType == ValueType) return NanExpression;
 							if (param[x].DefaultValue != DBNull.Value) return Expression.Constant(param[x].DefaultValue);
 							if (param[x].ParameterType.IsClass) return Expression.Constant(null);
-							return Expression.Constant(Activator.CreateInstance(param[x].ParameterType), param[x].ParameterType);
+							return Expression.New(param[x].ParameterType);
+							//return Expression.Constant(Activator.CreateInstance(param[x].ParameterType), param[x].ParameterType);
 						}));
 						index += argCount;
 					}
