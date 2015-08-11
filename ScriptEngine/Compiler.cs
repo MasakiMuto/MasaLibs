@@ -33,16 +33,20 @@ namespace Masa.ScriptEngine
 			var scan = new Scanner(File.ReadAllText(scriptFileName), header);
 			var tree = new ExpressionTreeMaker(scan.Tokens.ToArray(), targetType, table, false);
 			tree.Compile(GetMethodBuilder(builder, "main"));
-			if (labels != null)
-			{
-				foreach (var l in labels)
-				{
-					if (tree.LabelExist(l))
-					{
-						tree.CompileLabel(l, GetMethodBuilder(builder, l));
-					}
-				}
-			}
+            foreach (var item in tree.EnumrateLabels())
+            {
+                tree.CompileLabel(item, GetMethodBuilder(builder, "label_" + item));
+            }
+			//if (labels != null)
+			//{
+			//	foreach (var l in labels)
+			//	{
+			//		if (tree.LabelExist(l))
+			//		{
+			//			tree.CompileLabel(l, GetMethodBuilder(builder, l));
+			//		}
+			//	}
+			//}
 			tree.CompileCoroutineNames(builder.DefineMethod("GetCoroutineNames", MethodAttributes.Public | MethodAttributes.Static, typeof(string[]), Type.EmptyTypes));
 			int i = 0;
 			foreach (var coroutine in tree.CoroutineDict)
@@ -88,7 +92,7 @@ namespace Masa.ScriptEngine
 		/// <param name="outputFile">アセンブリのファイル名(パスを含まない)</param>
 		/// <param name="typeDirectoryDict">ディレクトリ名と型名の対応辞書</param>
 		/// <param name="labels">init込みのラベルリスト</param>
-		/// <param name="header"></param>
+		/// <param name="header">拡張子抜きファイル名とその中身のテキストの辞書</param>
 		public static void Compile(string scriptDirectory, string outputFile, Dictionary<string, Type> typeDirectoryDict, string[] labels, Dictionary<string, string> header)
 		{
 			var name = new AssemblyName(Path.GetFileNameWithoutExtension(outputFile));

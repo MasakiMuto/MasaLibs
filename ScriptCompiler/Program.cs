@@ -25,17 +25,39 @@ namespace Masa.ScriptCompiler
 			var asm = Assembly.Load(File.ReadAllBytes(args[1]));
 			var dict = Directory.EnumerateDirectories(args[0], "*", SearchOption.TopDirectoryOnly)
 				.Select(x => x.Split('\\').Last())
-				.Except(args.Skip(3))
+				.Except(args.Skip(3).Concat(new[] {"header"}))
 				.Select(x => asm.GetType(x, false, true))
 				.Where(x => x != null)
 				.ToDictionary(x => x.Name, x => x);
 
-			ScriptEngine.Compiler.Compile(args[0], Path.GetFileName(args[2]), dict, new[] { "init" }, null);
+            Dictionary<string, string> headers = null;
+            try
+            {
+                headers = Directory.EnumerateFiles(Path.Combine(args[0], "header")).Where(x => Path.GetExtension(x).Contains("mss"))
+                    .ToDictionary(x => Path.GetFileNameWithoutExtension(x), x => File.ReadAllText(x));
+            }
+            catch(Exception e)
+            {
+                Console.Error.WriteLine("header impport error\n" + e);
+                return;
+            }
+
+            try
+            {
+                ScriptEngine.Compiler.Compile(args[0], Path.GetFileName(args[2]), dict, null, headers);
+            }
+            catch(Exception e)
+            {
+                
+                Console.Error.WriteLine(Uri.EscapeDataString(e.ToString()));
+                return;
+            }
+			
 
 			File.Copy(Path.GetFileName(args[2]), args[2], true);
 
 
-			OutputDocument(Path.Combine(args[0], @"..\..\..\doc"));
+			OutputDocument(Path.Combine(args[0], @"..\..\doc"));
 		}
 
 		static void OutputDocument(string dir)
