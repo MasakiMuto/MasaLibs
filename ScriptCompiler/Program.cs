@@ -20,6 +20,8 @@ namespace Masa.ScriptCompiler
 		/// <param name="args"></param>
 		static void Main(string[] args)
 		{
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
 			Masa.ScriptEngine.ExpressionTreeMaker.AddDictionarys(UnityScriptDefinition.GetStaticMethodInfo(), UnityScriptDefinition.GetLibraryClassScriptInfo(), null, UnityScriptDefinition.GetTypeNameDictionary());
 
 			var asm = Assembly.Load(File.ReadAllBytes(args[1]));
@@ -48,7 +50,6 @@ namespace Masa.ScriptCompiler
             }
             catch(Exception e)
             {
-                
                 Console.Error.WriteLine(Uri.EscapeDataString(e.ToString()));
                 return;
             }
@@ -60,7 +61,12 @@ namespace Masa.ScriptCompiler
 			OutputDocument(Path.Combine(args[0], @"..\..\doc"));
 		}
 
-		static void OutputDocument(string dir)
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Console.Error.WriteLine(Uri.EscapeDataString(e.ToString()));
+        }
+
+        static void OutputDocument(string dir)
 		{
 			Func<string, string> fileName = x => Path.Combine(dir, x);
 			if (!Directory.Exists(dir))

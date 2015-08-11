@@ -17,21 +17,40 @@ namespace Masa.ScriptCompiler
 		static Type math = typeof(Mathf);
 
 		[ScriptMember("float2angle")]
-		public static Vector2 Float2Angle(float length, float angle)
+        [ScriptMember("f2a")]
+        public static Vector2 Float2Angle(float length, float angle)
 		{
-			return new Vector2(Mathf.Cos(angle) * length, Mathf.Sin(angle) * length);
+			return new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad) * length, Mathf.Sin(angle * Mathf.Deg2Rad) * length);
 		}
 
-		public static Dictionary<string, ScriptMethodInfo> GetStaticMethodInfo()
+        [ScriptMember("float2")]
+        [ScriptMember("f2")]
+        public static Vector2 MakeVector2(float x, float y)
+        {
+            return new Vector2(x, y);
+        }
+
+        [ScriptMember("float3")]
+        [ScriptMember("f3")]
+        public static Vector3 MakeVector3(float x, float y, float z)
+        {
+            return new Vector3(x, y, z);
+        }
+
+        public static Dictionary<string, ScriptMethodInfo> GetStaticMethodInfo()
 		{
 			var dict = new Dictionary<string, ScriptMethodInfo>();
 			foreach (var item in def.GetMethods(BindingFlags.Static | BindingFlags.Public))
 			{
-				var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), false).OfType<ScriptMemberAttribute>().FirstOrDefault();
-				if (atr != null)
-				{
-					dict[atr.Name] = new ScriptMethodInfo(item, atr);
-				}
+                var atr = item.GetCustomAttributes(typeof(ScriptMemberAttribute), false).OfType<ScriptMemberAttribute>();
+                foreach (var a in atr)
+                {
+                    dict[a.Name] = new ScriptMethodInfo(item, a);
+                }
+				//if (atr != null)
+				//{
+				//	dict[atr.Name] = new ScriptMethodInfo(item, atr);
+				//}
 			}
 			dict["deltaangle"] = new ScriptMethodInfo(math.GetMethod("DeltaAngle"), "deltaangle", 2);
 			return dict;
@@ -112,6 +131,7 @@ namespace Masa.ScriptCompiler
 			};
 		}
 
+        
 
 	}
 }

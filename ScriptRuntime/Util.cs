@@ -84,7 +84,7 @@ namespace Masa.ScriptEngine
 		}
 	}
 
-	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field, Inherited = true, AllowMultiple = true)]
 	public class ScriptMemberAttribute : Attribute
 	{
 		string name;
