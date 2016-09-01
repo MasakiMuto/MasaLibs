@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
+using System.Reflection.Emit;
 
 namespace Masa.ScriptCompiler
 {
@@ -46,24 +47,54 @@ namespace Masa.ScriptCompiler
 
             try
             {
-                ScriptEngine.Compiler.Compile(args[0], Path.GetFileName(args[2]), dict, null, headers);
+                //ScriptEngine.Compiler.Compile(args[0], Path.GetFileName(args[2]), dict, null, headers);
+                Compile(args[0], Path.GetFileName(args[2]), dict, null, headers);
             }
             catch(Exception e)
             {
                 Console.Error.WriteLine(Uri.EscapeDataString(e.ToString()));
                 return;
             }
-			
 
-			File.Copy(Path.GetFileName(args[2]), args[2], true);
+
+            File.Delete(args[2]);
+			File.Move(Path.GetFileName(args[2]), args[2]);
+            
 
 
 			OutputDocument(Path.Combine(args[0], @"..\..\doc"));
 		}
 
+        static void Compile(string scriptDirectory, string outputFile, Dictionary<string, Type> typeDirectoryDict, string[] labels, Dictionary<string, string> header)
+        {
+            var name = new AssemblyName(Path.GetFileNameWithoutExtension(outputFile));
+            var asm = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Save);
+            var module = asm.DefineDynamicModule(name.Name, outputFile);
+            NameDataDictionaryGenerator gen = new NameDataDictionaryGenerator();
+            foreach (var item in typeDirectoryDict)
+            {
+                foreach (var file in Directory.EnumerateFiles(Path.Combine(scriptDirectory, item.Key), "*.mss", SearchOption.TopDirectoryOnly))
+                {
+                    try
+                    {
+                        var t = ScriptEngine.Compiler.DefineType(module, "Script." + item.Value.Name, file, item.Value, null, labels, header);
+                        //BehaviourGenerator.Define(module, item.Value, t);
+                        gen.Regist(Path.GetFileNameWithoutExtension(file), t, item.Value);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("Error in " + file, e);
+                    }
+
+                }
+            }
+            gen.Generate(module);
+            asm.Save(outputFile);
+        }
+
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            Console.Error.WriteLine(Uri.EscapeDataString(e.ToString()));
+            Console.Error.WriteLine(Uri.EscapeDataString(e.ExceptionObject.ToString()));
         }
 
         static void OutputDocument(string dir)

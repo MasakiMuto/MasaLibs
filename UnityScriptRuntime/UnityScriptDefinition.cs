@@ -16,12 +16,18 @@ namespace Masa.ScriptCompiler
 		static Type def = typeof(UnityScriptDefinition);
 		static Type math = typeof(Mathf);
 
-		[ScriptMember("float2angle")]
+		[ScriptMember("float2arc")]
         [ScriptMember("f2a")]
-        public static Vector2 Float2Angle(float length, float angle)
+        public static Vector2 Float2Arc(float length, float angle)
 		{
 			return new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad) * length, Mathf.Sin(angle * Mathf.Deg2Rad) * length);
 		}
+
+        [ScriptMember("float2ang")]
+        public static float Float2Angle(Vector2 vector)
+        {
+            return Mathf.Atan2(vector.y, vector.x);
+        }
 
         [ScriptMember("float2")]
         [ScriptMember("f2")]
@@ -35,6 +41,18 @@ namespace Masa.ScriptCompiler
         public static Vector3 MakeVector3(float x, float y, float z)
         {
             return new Vector3(x, y, z);
+        }
+
+        [ScriptMember("r2d")]
+        public static float Rad2Deg()
+        {
+            return Mathf.Rad2Deg;
+        }
+
+        [ScriptMember("d2r")]
+        public static float Deg2Rad()
+        {
+            return Mathf.Deg2Rad;
         }
 
         public static Dictionary<string, ScriptMethodInfo> GetStaticMethodInfo()
@@ -84,7 +102,7 @@ namespace Masa.ScriptCompiler
 					Tuple.Create("dot", "Dot", 2),
 				})
 			);
-			
+
 			dict[v3] = new ClassReflectionInfo(v3,
 				new Dictionary<string, ScriptMethodInfo>(),
 				new Dictionary<string, ScriptPropertyInfo>(),

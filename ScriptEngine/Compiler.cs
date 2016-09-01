@@ -27,15 +27,24 @@ namespace Masa.ScriptEngine
 			asmBldr.Save(asmName.Name + ".dll");
 		}
 
-		static void DefineType(ModuleBuilder module, string nameSpace, string scriptFileName, Type targetType, string[] table, string[] labels, Dictionary<string, string> header)
+		public static Type DefineType(ModuleBuilder module, string nameSpace, string scriptFileName, Type targetType, string[] table, string[] labels, Dictionary<string, string> header)
 		{
 			var builder = module.DefineType(nameSpace + "." + Path.GetFileNameWithoutExtension(scriptFileName), TypeAttributes.Public | TypeAttributes.Abstract);
 			var scan = new Scanner(File.ReadAllText(scriptFileName), header);
 			var tree = new ExpressionTreeMaker(scan.Tokens.ToArray(), targetType, table, false);
 			tree.Compile(GetMethodBuilder(builder, "main"));
+            bool inited = false;
             foreach (var item in tree.EnumrateLabels())
             {
+                if(item == "init")
+                {
+                    inited = true;
+                }
                 tree.CompileLabel(item, GetMethodBuilder(builder, "label_" + item));
+            }
+            if (!inited)
+            {
+                Expression.Lambda<Action<Environment>>(Expression.Empty()).CompileToMethod(GetMethodBuilder(builder, "label_init"));
             }
 			//if (labels != null)
 			//{
@@ -59,7 +68,13 @@ namespace Masa.ScriptEngine
 				}
 			}
 			builder.DefineField("GlobalVarNumber", typeof(int), FieldAttributes.Public | FieldAttributes.Static).SetConstant(tree.GlobalVarNumber);
-			builder.CreateType();
+
+            var methodGV = builder.DefineMethod("GetGlobalVarNumberEx", MethodAttributes.Public | MethodAttributes.Static, typeof(int), Type.EmptyTypes).GetILGenerator();
+            //Expression.Lambda<Func<int>>(Expression.Constant(tree.GlobalVarNumber)).CompileToMethod(methodGV);
+            methodGV.Emit(OpCodes.Ldc_I4, tree.GlobalVarNumber);
+            methodGV.Emit(OpCodes.Ret);
+
+			return builder.CreateType();
 			
 		}
 
@@ -104,8 +119,9 @@ namespace Masa.ScriptEngine
 				{
 					try
 					{
-						DefineType(module, "Script." + item.Value.Name, file, item.Value, null, labels, header);
-					}
+						var t = DefineType(module, "Script." + item.Value.Name, file, item.Value, null, labels, header);
+
+                    }
 					catch(Exception e)
 					{
 						throw new Exception("Error in " + file, e);
